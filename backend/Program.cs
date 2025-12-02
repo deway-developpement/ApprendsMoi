@@ -1,17 +1,52 @@
+using Microsoft.EntityFrameworkCore;
+using backend.Database;
+using backend.Domains.Users;
+using FluentMigrator.Runner;
+
+DotNetEnv.Env.Load();
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
+// Add services to the container
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+// Swagger services
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+
+// Database services
+var defaultCo = Environment.GetEnvironmentVariable("POSTGRES__CONNECTION_STRING");
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(defaultCo)
+);
+
+// Application services
+builder.Services.AddScoped<UserHandler>();
+
+// Register FluentMigrator services
+builder.Services.AddFluentMigratorCore()
+    .ConfigureRunner(rb => rb
+        .AddPostgres()
+        .WithGlobalConnectionString(defaultCo)
+        .ScanIn(typeof(backend.Database.Migrations.InitialDbSetup).Assembly).For.All()
+    )
+    .AddLogging(lb => lb.AddFluentMigratorConsole());
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
+// Apply database migrations at startup
+using (var scope = app.Services.CreateScope()) {
+    var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
+    runner.MigrateUp();
+}
+
+// Configure the HTTP request pipeline
+if (app.Environment.IsDevelopment()) {
     app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
