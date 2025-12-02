@@ -45,7 +45,6 @@ dlldata.c
 project.lock.json
 project.fragment.lock.json
 artifacts/
-**/Properties/launchSettings.json
 
 # VS Code
 .vscode/
@@ -236,6 +235,9 @@ FakesAssemblies/
 # Node.js Tools for Visual Studio
 .ntvs_analysis.dat
 node_modules/
+
+# Local env file
+.env
 
 # Typescript v1 declaration files
 typings/

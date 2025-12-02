@@ -11,6 +11,9 @@
 npm-debug.log
 yarn-error.log
 
+# Local env file
+.env
+
 # IDEs and editors
 .idea/
 .project
@@ -22,6 +25,7 @@ yarn-error.log
 
 # Visual Studio Code
 .vscode/*
+/public/.vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
