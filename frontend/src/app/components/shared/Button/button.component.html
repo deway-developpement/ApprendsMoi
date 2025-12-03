@@ -1,0 +1,10 @@
+<button
+  [attr.type]="type"
+  class="btn"
+  [ngClass]="{
+    'btn--ghost': variant === 'ghost',
+    'btn--primary': variant === 'primary'
+  }"
+>
+  <ng-content></ng-content>
+</button>

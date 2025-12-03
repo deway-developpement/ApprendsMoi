@@ -1,3 +1,21 @@
 <div class="header-container">
-  <h1 class="header-title">My Header</h1>
+  <app-header></app-header>
+
+  <!-- Black curved header background -->
+  <app-search-bar></app-search-bar>
+
+  <div class="hero-intro-container">
+    <app-hero-intro></app-hero-intro>
+    <app-hero-intro-right></app-hero-intro-right>
+  </div>
+
+  <!-- White curve drawn ON TOP, covering the bottom of the picture -->
+  <svg
+    class="header-white-curve"
+    viewBox="0 0 1440 340"
+    preserveAspectRatio="none"
+  >
+    <!-- zone sous la courbe -->
+    <path d="M0,300 Q720,360 1440,300 L1440,340 L0,340 Z" />
+  </svg>
 </div>

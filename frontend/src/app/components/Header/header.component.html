@@ -1,0 +1,39 @@
+<header class="header" [ngClass]="'header--' + theme">
+
+  <!-- LOGO À GAUCHE -->
+  <div class="header__logo">
+    <a routerLink="/">
+      <img src="assets/logo.png" alt="Logo">
+    </a>
+  </div>
+
+
+  <!-- NAV + BOUTONS À DROITE -->
+  <div class="header__right">
+    <nav class="header__nav">
+      <ul class="header__nav-list">
+        <li class="header__nav-item">
+          <a href="#" class="header__nav-link">Fonctionnement</a>
+        </li>
+        <li class="header__nav-item">
+          <a href="#" class="header__nav-link">Avantages</a>
+        </li>
+        <li class="header__nav-item">
+          <a href="#" class="header__nav-link">Témoignages</a>
+        </li>
+        <li class="header__nav-item">
+          <a href="#" class="header__nav-link">Inscriptions</a>
+        </li>
+        <li class="header__nav-item">
+          <a href="#" class="header__nav-link">FAQ</a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="header__actions">
+      <app-button variant="ghost">Connexion</app-button>
+      <app-button variant="primary">Inscription</app-button>
+    </div>
+  </div>
+
+</header>

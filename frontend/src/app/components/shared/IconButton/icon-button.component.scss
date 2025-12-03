@@ -1,0 +1,49 @@
+@import "variables";
+
+/* CIBLE EXPLICITE DU <button> */
+button.icon-btn {
+  position: relative;
+  background-color: $SecondaryColor;
+  border: none;
+  outline: none;
+  border-radius: 0.75rem;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0; // important pour certains navigateurs
+  transition: background-color 150ms ease, transform 150ms ease,
+    box-shadow 150ms ease;
+
+  /* On neutralise TOUS les focus possibles */
+  &:focus,
+  &:focus-visible,
+  &:-moz-focusring {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Spécifique Firefox pour enlever le contour interne bleu */
+  &::-moz-focus-inner {
+    border: 0;
+  }
+
+  &:hover {
+    background-color: $SecondaryColorHover;
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    background-color: $SecondaryColorActive;
+    transform: scale(0.96);
+  }
+
+  .icon-btn__img {
+    width: 55%;
+    height: 55%;
+    object-fit: contain;
+    filter: brightness(0) invert(1); // rend le SVG blanc automatiquement
+    pointer-events: none;
+  }
+}

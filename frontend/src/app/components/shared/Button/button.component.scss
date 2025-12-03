@@ -1,0 +1,37 @@
+@import "variables";
+
+.btn {
+  border-radius: 999px;
+  padding: 0.45rem 1.6rem;
+  font-family: inherit;
+  font-size: $regularFontSize;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+/* Bouton "Connexion" (fond blanc) */
+.btn--ghost {
+  background-color: #ffffff;
+  color: #111111;
+}
+
+/* Bouton "Inscription" (orange) */
+.btn--primary {
+  background-color: $SecondaryColor;
+  color: #ffffff;
+}
+
+.btn--primary:hover {
+  background-color: $SecondaryColorHover;
+}
+
+.btn--primary:active {
+  background-color: $SecondaryColorActive;
+}

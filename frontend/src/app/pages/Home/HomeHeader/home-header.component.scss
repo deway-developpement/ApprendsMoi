@@ -1,7 +1,31 @@
 .header-container {
+  position: relative;
   width: 100vw;
   height: 100vh;
-  background-color: #0B0C10;
+  overflow: hidden;
+  background: #0b0c10;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+/* Triangle blanc incliné en haut à gauche (par-dessus le noir) */
+.header-container::before {
+  content: '';
+  position: absolute;
+  top: -80vh;
+  left: -35vw;
+  width: 130vw;
+  height: 65vh;
+  background: #ffffff;
+  transform: rotate(-30deg);
+  z-index: 1;
+}
+
+/* Contenu du header au-dessus de tout */
+.header-container app-header {
+  position: relative;
+  z-index: 2;
 }
 
 .header-title {
@@ -9,4 +33,35 @@
   margin: 0;
   font-size: 1.8rem;
   text-align: center;
+}
+
+
+.hero-intro-container {
+  width:100vw;
+  padding: 0 1rem;
+  margin-top: 10vh;
+  display: flex;
+  justify-content: center;
+  z-index: 2;
+}
+
+/* White curve that hides the bottom of the girl image */
+.header-white-curve {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 4;        // ABOVE the hero images
+  pointer-events: none;
+}
+
+.header-white-curve path {
+  fill: #ffffff;
+}
+
+@media (max-width: 1200px) {
+  .header-container::before {
+    top: -75vh;
+  }
 }

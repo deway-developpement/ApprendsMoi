@@ -1,0 +1,27 @@
+<div class="text-input" [class.text-input--full]="fullWidth" [class.text-input--disabled]="disabled">
+  <label class="text-input__label" *ngIf="label">
+    {{ label }}
+  </label>
+
+  <div class="text-input__wrapper" [class.text-input__wrapper--error]="error">
+    <!-- Icône à gauche (optionnelle, via classe CSS) -->
+    <span *ngIf="iconLeft" class="text-input__icon text-input__icon--left">
+      <i class="material-icons">{{ iconLeft }}</i>
+    </span>
+
+    <input
+      class="text-input__field"
+      [class.text-input__field--with-icon-left]="iconLeft"
+      [type]="type"
+      [placeholder]="placeholder"
+      [ngModel]="value"
+      (ngModelChange)="onInputChange($event)"
+      (keydown)="onKeyDown($event)"
+      [disabled]="disabled"
+    />
+  </div>
+
+  <p class="text-input__error" *ngIf="error">
+    {{ error }}
+  </p>
+</div>
