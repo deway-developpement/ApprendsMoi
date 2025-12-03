@@ -13,8 +13,8 @@ public class UsersController(UserHandler handler) : ControllerBase {
         return Ok(list);
     }
 
-    [HttpGet("{id:int}")]
-    public async Task<ActionResult<UserDto>> GetById(int id, CancellationToken ct) {
+    [HttpGet("{id}")]
+    public async Task<ActionResult<UserDto>> GetById(string id, CancellationToken ct) {
         var user = await _handler.GetByIdAsync(id, ct);
         if (user == null) return NotFound();
         return Ok(user);
