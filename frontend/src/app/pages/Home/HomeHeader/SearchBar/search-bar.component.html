@@ -1,0 +1,39 @@
+<div class="search-bar">
+  <!-- Matière -->
+  <app-select
+    class="search-bar__field search-bar__field--select"
+    label=""
+    placeholder="Matière"
+    [options]="subjects"
+    [(value)]="selectedSubject"
+    [fullWidth]="true">
+  </app-select>
+
+  <!-- Niveau scolaire -->
+  <app-select
+    class="search-bar__field search-bar__field--select"
+    label=""
+    placeholder="Niveau"
+    [options]="levels"
+    [(value)]="selectedLevel"
+    [fullWidth]="true">
+  </app-select>
+
+  <!-- Ville / Code postal -->
+  <app-text-input
+    class="search-bar__field search-bar__field--input"
+    label=""
+    placeholder="Ville ou code postal"
+    [(value)]="location"
+    [fullWidth]="false">
+  </app-text-input>
+
+  <!-- Bouton recherche -->
+  <app-icon-button
+    class="search-bar__button"
+    icon="assets/icons/search.svg"
+    [size]="38"
+    (click)="onSearch()">
+  </app-icon-button>
+
+</div>

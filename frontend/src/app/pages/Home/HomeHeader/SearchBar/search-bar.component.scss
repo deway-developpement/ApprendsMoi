@@ -1,0 +1,44 @@
+$search-bar-gap: 0.75rem;
+
+.search-bar {
+  display: flex;
+  align-items: stretch;
+  gap: $search-bar-gap;
+  max-width: 100%;
+  margin-right: 4rem;
+}
+
+.search-bar__field {
+  display: flex;
+  flex: 1 1 0;
+
+  &--select {
+    max-width: 220px;
+  }
+
+  &--input {
+    flex: 2 1 0;
+  }
+}
+
+/* OPTIONNEL : ajuster légèrement le bouton */
+.search-bar__button {
+  flex-shrink: 0;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .search-bar {
+    gap: 0.5rem;
+  }
+
+  .search-bar__field--select {
+    max-width: 150px;
+  }
+}
+
+@media (max-width: 1000px){
+  .search-bar {
+    margin-right: 2rem;
+  }
+}

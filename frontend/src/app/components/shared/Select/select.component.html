@@ -1,0 +1,33 @@
+<div class="select" [class.select--full]="fullWidth" [class.select--disabled]="disabled">
+  <label class="select__label" *ngIf="label">
+    {{ label }}
+  </label>
+
+  <div class="select__wrapper" [class.select__wrapper--error]="error">
+    <select
+      class="select__field"
+      [ngModel]="value"
+      (ngModelChange)="onChange($event)"
+      [disabled]="disabled"
+    >
+      <!-- Placeholder -->
+      <option [ngValue]="null" disabled selected *ngIf="value === null">
+        {{ placeholder }}
+      </option>
+
+      <!-- Options -->
+      <option *ngFor="let option of options" [ngValue]="option.value">
+        {{ option.label }}
+      </option>
+    </select>
+
+    <!-- Petite flèche de dropdown -->
+    <span class="select__arrow">
+      ▾
+    </span>
+  </div>
+
+  <p class="select__error" *ngIf="error">
+    {{ error }}
+  </p>
+</div>

@@ -1,0 +1,22 @@
+@import "variables";
+
+.small-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-color: $green; // correct SCSS variable
+  border-radius: 50%;
+  padding: 0;
+
+  user-select: none;
+
+  .small-icon__img {
+    width: 55%;
+    height: 55%;
+    object-fit: contain;
+
+    /* GUARANTEED white icon */
+    filter: brightness(0) invert(1);
+  }
+}

@@ -1,0 +1,23 @@
+@import "variables";
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-color: $SecondaryColor;
+  border-radius: 0.55rem;
+  padding: 0;
+
+  /* pas d'interaction */
+  cursor: default;
+  user-select: none;
+  pointer-events: none; 
+  
+  .icon__img {
+    width: 55%;
+    height: 55%;
+    object-fit: contain;
+    filter: brightness(0) invert(1); // même rendu SVG que ton button
+  }
+}

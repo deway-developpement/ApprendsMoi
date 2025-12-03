@@ -1,0 +1,36 @@
+@import "variables"; // pour utiliser $SecondaryColor & co
+
+.hero-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  max-width: 700px;
+  z-index: 2;
+  width:60%;
+  margin-left: 10vw
+}
+
+.hero-intro__title {
+  font-size: $titleFontSize;
+  line-height: 1.2;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.hero-intro__highlight {
+  color: $SecondaryColor;
+}
+
+.hero-intro__subtitle {
+  margin: 0;
+  margin-top: 1rem;
+  font-size: $biggerFontSize;
+  line-height: 1.5;
+  color: #cccccc;
+}
+
+.hero-intro__actions {
+  margin-top: 0.6rem;
+  margin-top: 1rem;
+}

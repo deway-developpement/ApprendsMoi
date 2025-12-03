@@ -1,0 +1,108 @@
+.hero-intro-right {
+  width: 50vw;
+  position: relative;
+  height: 80vh;
+}
+
+.bg-img {
+  position: absolute;
+  width: auto;
+  height: 100%;
+  z-index: 1;
+  right: 5vw;
+  bottom: 0;
+}
+
+.fg-img {
+  position: absolute;
+  top: 0;
+  right: 11vw;
+  height: 75vh;
+  z-index: 2;
+}
+
+.app-notification {
+  position: absolute;
+  z-index: 3;
+}
+
+.app-notification--calendar {
+  top: 20vh;
+  left: 16%;
+}
+
+.app-notification--email {
+  top: 35vh;
+  right: 15%;
+}
+
+.app-notification--people {
+  top: 47vh;
+  left: 15%;
+}
+
+.__book-icon {
+  top: 40vh;
+  left: 25%;
+}
+
+.__correct-icon {
+  top: 25vh;
+  right: 25%;
+}
+
+@media (max-width: 1450px) {
+  .app-notification--calendar {
+    left: 10%
+  }
+
+}
+
+@media (max-width: 1350px) {
+  .fg-img {
+    right: 5vw
+  }
+  .bg-img {
+    right: 0;
+  }
+}
+
+@media (max-width: 1150px) {
+  .fg-img {
+    right: 0vw
+  }
+  .bg-img {
+    right: -5vw;
+  }
+  .app-notification--email {
+    right: 0%;
+  }
+}
+
+@media (max-width: 1000px) {
+  .app-notification--calendar {
+    left: 0%
+  }
+  .app-notification--people {
+    left: 5%;
+  }
+  .__correct-icon {
+    right: 15%;
+  }
+
+}
+
+@media (max-width: 900px) {
+  .fg-img {
+    right: -5vw
+  }
+  .bg-img {
+    right: -10vw;
+  }
+}
+
+@media (max-width: 800px) {
+  .fg-img {
+    right: -10vw
+  }
+}
