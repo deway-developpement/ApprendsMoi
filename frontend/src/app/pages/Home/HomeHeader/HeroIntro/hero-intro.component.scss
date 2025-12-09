@@ -34,3 +34,11 @@
   margin-top: 0.6rem;
   margin-top: 1rem;
 }
+
+@media (max-width:850px) {
+  .hero-intro {
+    max-width: 70vw;
+    z-index: 2;
+    width:100%;
+  }
+}

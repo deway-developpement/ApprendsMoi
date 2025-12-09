@@ -12,4 +12,21 @@ import { ButtonComponent } from '../shared/Button/button.component';
 })
 export class HeaderComponent {
   @Input() theme: 'light' | 'dark' = 'dark';
+  
+  isMenuOpen = false;
+
+  toggleMenu() {
+    this.isMenuOpen = !this.isMenuOpen;
+    // Prevent background scrolling when menu is open
+    if (this.isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+  }
+
+  closeMenu() {
+    this.isMenuOpen = false;
+    document.body.style.overflow = 'auto';
+  }
 }

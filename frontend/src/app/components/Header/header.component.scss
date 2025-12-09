@@ -1,35 +1,45 @@
 @import "variables";
 
+/* --- BASE STYLES --- */
 .header {
+  /* Change relative to fixed */
+  position: absolute; 
+  top: 0;
+  left: 0;
+  
+  /* Keep your existing styles */
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem 4rem;
+  margin:0;
   height: 80px;
-
+  width: 100%; /* or 100% to avoid horizontal scrollbars */
   font-family: 'Poppins', sans-serif;
   font-size: $regularFontSize;
-  width: 100vw;
+  box-sizing: border-box;
+  
+  z-index: 999; /* High z-index ensures it stays on top */
+  transition: background-color 0.3s ease;
 }
 
 .header__logo {
-  margin-left: 6rem;
+  z-index: 102; /* Ensure logo stays above backdrop if desired */
+  margin-top: 1rem;
+  margin-left: 0vw;
+  img {
+    height: 80px; /* Slightly smaller for better fit */
+    width: auto;
+  }
 }
 
-/* LOGO À GAUCHE */
-.header__logo img {
-  height: 80px;
-  width: auto;
-}
-
-/* Container NAV + actions à droite */
-.header__right {
+/* --- DESKTOP MENU LAYOUT (Default) --- */
+.header__menu {
   display: flex;
   align-items: center;
   gap: 2rem;
 }
 
-/* NAVIGATION */
 .header__nav-list {
   display: flex;
   align-items: center;
@@ -44,37 +54,170 @@
   font-weight: 400;
   transition: opacity 0.2s ease, transform 0.15s ease;
   white-space: nowrap;
+
+  &:hover {
+    opacity: 0.75;
+    transform: translateY(-1px);
+  }
 }
 
-.header__nav-link:hover {
-  opacity: 0.75;
-  transform: translateY(-1px);
-}
-
-/* BOUTONS */
 .header__actions {
   display: flex;
   align-items: center;
   gap: 0.8rem;
 }
 
-/* THEMES */
-.header--dark .header__nav-link {
-  color: #f5f5f5;
+/* Burger & Backdrop hidden on desktop */
+.header__burger, 
+.header__backdrop,
+.header__close-btn {
+  display: none;
 }
 
-.header--light .header__nav-link {
-  color: #111111;
+/* --- THEMES (Desktop) --- */
+.header--dark {
+  background-color: transparent; /* Or specific color */
+  .header__nav-link { color: #f5f5f5; }
+  .header__burger span { background-color: #f5f5f5; }
 }
 
-@media (max-width: 1000px){
-  .header__right {
-    gap: 1rem;
-  }
+.header--light {
+  background-color: #ffffff;
+  .header__nav-link { color: #111111; }
+  .header__burger span { background-color: #111111; }
+}
+
+@media (max-width:850px) {
+  
   .header {
-    padding : 0.5rem 2rem
+    padding: 0.5rem 1.5rem;
   }
+
   .header__logo {
-    margin-left: 4rem;
+    margin-left: -10px;
+  }
+
+  /* 1. The Burger Button */
+  .header__burger {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 30px;
+    height: 21px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    z-index: 105; /* Highest priority */
+    padding: 0;
+
+    span {
+      display: block;
+      width: 100%;
+      height: 3px;
+      border-radius: 3px;
+      transition: all 0.3s ease-in-out;
+    }
+
+    /* Animation to X shape */
+    &.is-active {
+      span:nth-child(1) { transform: translateY(9px) rotate(45deg); }
+      span:nth-child(2) { opacity: 0; }
+      span:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
+    }
+  }
+
+  /* 2. The Side Menu (Drawer) */
+  .header__menu {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    width: 200px; /* Width of the side menu */
+    background-color: #fff; /* Default background */
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 6rem 2rem 2rem 2rem; /* Top padding to clear close button area */
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+    transform: translateX(100%); /* Hidden by default */
+    transition: transform 0.3s ease-in-out;
+    z-index: 104;
+
+    &.is-open {
+      transform: translateX(0);
+    }
+  }
+
+  /* Theme adjustments for the Side Menu */
+  .header--dark .header__menu {
+    background-color: #1a1a1a; /* Dark background for menu */
+    .header__nav-link { color: #fff; }
+    .header__close-btn { color: #fff; }
+  }
+  
+  .header--light .header__menu {
+    background-color: #fff;
+    .header__nav-link { color: #111; }
+    .header__close-btn { color: #111; }
+  }
+
+  /* Vertical Nav */
+  .header__nav-list {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+    width: 100%;
+    margin-bottom: 2rem;
+  }
+  
+  .header__nav-link {
+    font-size: 1.2rem;
+  }
+
+  /* Vertical Actions */
+  .header__actions {
+    flex-direction: column;
+    width: 100%;
+    align-items: stretch; /* Full width buttons */
+    
+    /* Assuming app-button renders a native button, 
+       you might need ::ng-deep or strict styles to make them full width */
+    app-button {
+      width: 100%;
+      text-align: center;
+    }
+  }
+
+  /* 3. The Close 'X' Button inside menu */
+  .header__close-btn {
+    display: block;
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+  }
+
+  /* 4. Backdrop Overlay */
+  .header__backdrop {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(2px);
+    z-index: 103;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+
+    &.is-visible {
+      opacity: 1;
+      visibility: visible;
+    }
   }
 }

@@ -91,3 +91,9 @@ $select-transition: 150ms ease-out;
     color: $select-error;
   }
 }
+
+@media (max-width:850px) {
+  .select {
+    min-width: 150px;
+  }
+}
