@@ -82,9 +82,13 @@
 }
 
 .header--light {
-  background-color: #ffffff;
+  background-color: $backgroundColor;
   .header__nav-link { color: #111111; }
   .header__burger span { background-color: #111111; }
+}
+
+.header__menu__simple--true {
+  display: none;
 }
 
 @media (max-width:850px) {
@@ -124,6 +128,10 @@
       span:nth-child(2) { opacity: 0; }
       span:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
     }
+  }
+
+  .header__burger__simple--true {
+    display: none;
   }
 
   /* 2. The Side Menu (Drawer) */

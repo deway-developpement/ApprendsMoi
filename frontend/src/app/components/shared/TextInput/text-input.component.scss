@@ -1,15 +1,21 @@
-$text-input-bg: #ffffff;
-$text-input-border: #d0d5dd;
-$text-input-border-focus: #3b82f6;
-$text-input-border-error: #ef4444;
-$text-input-text: #111827;
-$text-input-placeholder: #9ca3af;
-$text-input-label: #374151;
-$text-input-error: #b91c1c;
-$text-input-shadow-focus: 0 0 0 1px rgba(59, 130, 246, 0.3);
-$text-input-radius: 999px;
-$text-input-transition: 150ms ease-out;
 @import "variables";
+
+// Fallbacks variables (si non définies globalement)
+$text-input-bg: #ffffff !default;
+$text-input-border: #d0d5dd !default;
+$text-input-border-focus: #3b82f6 !default;
+$text-input-border-error: #ef4444 !default;
+$text-input-text: #111827 !default;
+$text-input-placeholder: #9ca3af !default;
+$text-input-label: #374151 !default;
+$text-input-error: #b91c1c !default;
+$text-input-shadow-focus: 0 0 0 1px rgba(59, 130, 246, 0.3) !default;
+$text-input-radius: 999px !default;
+$text-input-transition: 150ms ease-out !default;
+
+$smallerFontSize: clamp(0.8rem, 1.2vw, 0.85rem) !default;
+$regularFontSize: clamp(0.9rem, 1.3vw, 0.9rem) !default;
+$tinierFontSize: clamp(0.75rem, 1.1vw, 0.80rem) !default;
 
 .text-input {
   display: flex;
@@ -42,7 +48,7 @@ $text-input-transition: 150ms ease-out;
     align-items: center;
     padding: 0;
     margin: 0;
-    max-height: 36px; 
+    max-height: 36px;
     min-height: 36px;
     background-color: $text-input-bg;
     border-radius: $text-input-radius;
@@ -62,6 +68,27 @@ $text-input-transition: 150ms ease-out;
     }
   }
 
+  // --- NOUVEAU STYLE POUR TA STRUCTURE ---
+  .icon {
+    position: absolute;
+    left: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.2rem; // Taille par défaut de l'icone
+    height: 1.2rem;
+    pointer-events: none; // Le clic passe à travers pour atteindre l'input
+    z-index: 10;
+    filter: brightness(0) invert(0.5); // même rendu SVG que ton button
+
+    &__img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+  // ---------------------------------------
+
   &__field {
     width: 100%;
     border: none;
@@ -77,25 +104,7 @@ $text-input-transition: 150ms ease-out;
     }
 
     &--with-icon-left {
-      padding-left: 2.2rem;
-    }
-  }
-
-  &__icon {
-    position: absolute;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-    font-size: 1.1rem;
-    color: $text-input-placeholder;
-
-    &--left {
-      left: 0.6rem;
-    }
-
-    .material-icons {
-      font-size: 1.1rem;
+      padding-left: 2.4rem; // Espace pour ne pas chevaucher l'icône
     }
   }
 

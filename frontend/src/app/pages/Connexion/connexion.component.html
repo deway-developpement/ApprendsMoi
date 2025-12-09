@@ -1,0 +1,52 @@
+<section class="connexion-page">
+  <app-header theme="light" simple="true"></app-header>
+  <div class="connexion-card">
+    
+    <header class="connexion-header">
+      <h1>Bienvenue</h1>
+      <p>Connectez-vous à votre compte</p>
+    </header>
+
+    <form (ngSubmit)="onSubmit()" class="connexion-form">
+      
+      <app-text-input
+        label="Email"
+        placeholder="exemple@email.com"
+        type="email"
+        [iconLeft]="'assets/icons/email 2 1.svg'"
+        [fullWidth]="true"
+        [(value)]="email">
+      </app-text-input>
+
+      <div class="password-group">
+        <app-text-input
+          label="Mot de passe"
+          placeholder="••••••••"
+          type="password"
+          [iconLeft]="'assets/icons/lock.svg'"
+          [fullWidth]="true"
+          [(value)]="password">
+        </app-text-input>
+        
+        <a href="javascript:void(0)" (click)="onForgotPassword()" class="forgot-password">
+          Mot de passe oublié ?
+        </a>
+      </div>
+
+      <div class="actions">
+        <app-button 
+          variant="primary" 
+          type="submit"
+          class="submit-btn">
+          Se connecter
+        </app-button>
+      </div>
+
+    </form>
+
+    <footer class="connexion-footer">
+      <p>Pas encore de compte ? <a href="#">Créer un compte</a></p>
+    </footer>
+
+  </div>
+</section>

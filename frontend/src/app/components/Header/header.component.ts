@@ -12,6 +12,7 @@ import { ButtonComponent } from '../shared/Button/button.component';
 })
 export class HeaderComponent {
   @Input() theme: 'light' | 'dark' = 'dark';
+  @Input() simple: 'false' | 'true' = 'false';
   
   isMenuOpen = false;
 
