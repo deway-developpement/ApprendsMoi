@@ -1,5 +1,7 @@
+using Microsoft.EntityFrameworkCore;
 using backend.Database;
 using backend.Domains.Users;
+using FluentMigrator.Runner;
 
 DotNetEnv.Env.Load();
 
@@ -13,35 +15,32 @@ builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// MongoDB settings from environment or configuration. If a connection string
-// isn't provided but root credentials are present, build an authenticated
-// connection string using host/port and authSource=admin.
-var mongoConnection = Environment.GetEnvironmentVariable("MONGODB__CONNECTION_STRING") ?? builder.Configuration.GetValue<string>("MongoDb:ConnectionString");
-var mongoDbName = Environment.GetEnvironmentVariable("MONGODB__DATABASE") ?? builder.Configuration.GetValue<string>("MongoDb:DatabaseName");
 
-if (string.IsNullOrWhiteSpace(mongoConnection)) {
-    var host = Environment.GetEnvironmentVariable("MONGODB__HOST") ?? builder.Configuration.GetValue<string>("MongoDb:Host") ?? "localhost";
-    var port = Environment.GetEnvironmentVariable("MONGODB__PORT") ?? builder.Configuration.GetValue<string>("MongoDb:Port") ?? "27017";
-    var rootUser = Environment.GetEnvironmentVariable("MONGODB__ROOT_USER");
-    var rootPassword = Environment.GetEnvironmentVariable("MONGODB__ROOT_PASSWORD");
-
-    if (!string.IsNullOrWhiteSpace(rootUser) && !string.IsNullOrWhiteSpace(rootPassword)) {
-        var userEsc = System.Uri.EscapeDataString(rootUser);
-        var pwdEsc = System.Uri.EscapeDataString(rootPassword);
-        mongoConnection = $"mongodb://{userEsc}:{pwdEsc}@{host}:{port}/?authSource=admin";
-    } else {
-        mongoConnection = $"mongodb://{host}:{port}";
-    }
-}
-
-var mongoSettings = new MongoDbSettings { ConnectionString = mongoConnection, DatabaseName = mongoDbName ?? "apprendsmoi" };
-builder.Services.AddSingleton(mongoSettings);
-builder.Services.AddSingleton<MongoDbContext>();
+// Database services
+var defaultCo = Environment.GetEnvironmentVariable("POSTGRES__CONNECTION_STRING");
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(defaultCo)
+);
 
 // Application services
 builder.Services.AddScoped<UserHandler>();
 
+// Register FluentMigrator services
+builder.Services.AddFluentMigratorCore()
+    .ConfigureRunner(rb => rb
+        .AddPostgres()
+        .WithGlobalConnectionString(defaultCo)
+        .ScanIn(typeof(backend.Database.Migrations.InitialDbSetup).Assembly).For.All()
+    )
+    .AddLogging(lb => lb.AddFluentMigratorConsole());
+
 var app = builder.Build();
+
+// Apply database migrations at startup
+using (var scope = app.Services.CreateScope()) {
+    var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
+    runner.MigrateUp();
+}
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment()) {

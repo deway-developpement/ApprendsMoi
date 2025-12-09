@@ -1,14 +1,22 @@
+version: '3.8'
+
 services:
-  mongodb:
-    image: mongo:6
-    container_name: apprendsmoi-mongo
-    ports:
-      - "${MONGODB__PORT:-27017}:27017"
-    volumes:
-      - mongodata:/data/db
+  postgres:
+    image: postgres:15
+    container_name: apprendsmoi-postgres
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=${MONGODB__ROOT_USER}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB__ROOT_PASSWORD}
+      - POSTGRES_USER=${POSTGRES__USER}
+      - POSTGRES_PASSWORD=${POSTGRES__PASSWORD}
+      - POSTGRES_DB=${POSTGRES__DB}
+    ports:
+      - "${POSTGRES__PORT}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES__USER} -d ${POSTGRES__DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 30
 
 volumes:
-  mongodata:
+  pgdata:
