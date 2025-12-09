@@ -1,5 +1,8 @@
+@import "variables";
+
 $search-bar-gap: 0.75rem;
 
+/* --- DESKTOP (Default - Unchanged) --- */
 .search-bar {
   display: flex;
   align-items: stretch;
@@ -21,22 +24,50 @@ $search-bar-gap: 0.75rem;
   }
 }
 
-/* OPTIONNEL : ajuster légèrement le bouton */
 .search-bar__button {
   flex-shrink: 0;
 }
 
-/* Mobile */
-@media (max-width: 768px) {
+/* --- MOBILE (< 768px) --- */
+@media (max-width:850px) {
   .search-bar {
+    /* 1. Allow items to wrap onto multiple lines */
+    flex-wrap: wrap; 
+    /* Ensure we use flex, not grid (overriding previous code if necessary) */
+    display: flex;
     gap: 0.5rem;
+    margin: 0;
+    padding:0;
   }
 
+  /* 2. Top Row: The two Selects (Matière, Niveau) */
   .search-bar__field--select {
-    max-width: 150px;
+    /* Calculate 50% width minus half the gap so they fit perfectly on one line */
+    flex: 0 0 calc(50% - 0.25rem);
+    width: calc(50% - 0.25rem);
+    
+    /* Remove the desktop max-width limitation */
+    max-width: none; 
+  }
+
+  /* 3. Bottom Row: The Text Input (Ville) */
+  .search-bar__field--input {
+    /* Grow to fill all available space next to the button */
+    flex: 1 1 auto;
+    /* Ensure it doesn't shrink too small */
+    min-width: 0;
+  }
+
+  /* 4. Bottom Row: The Button */
+  .search-bar__button {
+    /* Keep its natural size */
+    flex: 0 0 auto;
+    /* Remove any margins if previously set */
+    margin: 0;
   }
 }
 
+/* --- TABLET ADAPTATION (Unchanged) --- */
 @media (max-width: 1000px){
   .search-bar {
     margin-right: 2rem;

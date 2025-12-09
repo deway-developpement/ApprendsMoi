@@ -23,7 +23,7 @@
 
 /* Titre en gris foncé */
 .notification__title {
-  font-size: $biggerFontSize;
+  font-size: $regularFontSize;
   font-weight: 600;
   color: #333; // gris foncé
 }
@@ -31,7 +31,7 @@
 /* Sous-titre en gris un peu plus clair */
 .notification__subtitle {
   margin-top: 0.15rem;
-  font-size: $regularFontSize;
+  font-size: $smallerFontSize;
   font-weight: 400;
   color: #4a4a4a; // gris foncé mais plus léger
 }
