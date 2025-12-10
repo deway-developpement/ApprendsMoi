@@ -4,6 +4,7 @@ services:
   postgres:
     image: postgres:15
     container_name: apprendsmoi-postgres
+    restart: unless-stopped
     environment:
       - POSTGRES_USER=${POSTGRES__USER}
       - POSTGRES_PASSWORD=${POSTGRES__PASSWORD}
