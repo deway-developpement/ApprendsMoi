@@ -7,69 +7,35 @@
     <p class="visio-hero__subtitle">
       Lancez la session Zoom et gardez le chat de classe juste a cote.
     </p>
-    <div class="visio-hero__actions">
-      <app-button variant="primary">Rejoindre la session</app-button>
-      <app-button variant="ghost">Copier le lien Zoom</app-button>
-    </div>
   </div>
 </section>
 
 <main class="visio-layout">
   <section class="visio-card visio-card--meeting">
     <header class="visio-card__header">
-      <div>
-        <p class="visio-card__eyebrow">Integration Zoom</p>
+      <div class="visio-card__title-group">
         <h2 class="visio-card__title">Classe en direct</h2>
+        <span class="visio-badge">Live</span>
       </div>
       <div class="visio-card__actions">
-        <app-button variant="primary" (click)="initZoomSdk()">Lancer dans la page (SDK)</app-button>
-        <app-button variant="ghost" (click)="openZoomInNewTab()">Ouvrir dans un onglet</app-button>
-        <span class="visio-badge">Live</span>
+        <app-button variant="primary" (click)="initZoomSdk()">Lancer SDK</app-button>
+        <app-button variant="ghost" (click)="openZoomInNewTab()">Nouvel onglet</app-button>
       </div>
     </header>
 
-    <!-- <div class="meeting-frame">
-      <iframe
-        [src]="safeZoomUrl"
-        title="Zoom meeting"
-        allow="microphone; camera; fullscreen; display-capture; autoplay; clipboard-write"
-        allowfullscreen
-        referrerpolicy="origin"
-        (load)="onZoomLoad()"
-      ></iframe>
-    </div> -->
-
-    <div class="sdk-embed">
-      <div class="sdk-embed__header">
-        <p class="visio-card__eyebrow">Web SDK (component view)</p>
-        <h3 class="visio-card__title">Affichage integre</h3>
+    <div class="zoom-container" #zoomContainer>
+      <div *ngIf="!sdkReady && !isInitializingSdk && !sdkError" class="zoom-placeholder">
+        <p>Cliquez sur "Lancer SDK" pour demarrer la visioconference</p>
       </div>
-      <div class="sdk-embed__body">
-        <div class="sdk-embed__container" #zoomContainer></div>
-        <div class="sdk-embed__status">
-          <p *ngIf="isFetchingSignature">Recuperation de la signature...</p>
-          <p *ngIf="isInitializingSdk">Initialisation du SDK...</p>
-          <p *ngIf="sdkReady">SDK charge. La visioconference doit apparaitre ici.</p>
-          <p *ngIf="sdkError" class="sdk-embed__error">{{ sdkError }}</p>
-          <p class="sdk-embed__hint">
-            Les scripts du Zoom Web Meeting SDK (Component view) sont charges via CDN. La signature est demandee a
-            l API locale <code>/api/zoom/signature</code>.
-          </p>
-        </div>
-      </div>
+      <div *ngIf="isFetchingSignature" class="zoom-status">Connexion en cours...</div>
+      <div *ngIf="isInitializingSdk" class="zoom-status">Chargement de la reunion...</div>
+      <div *ngIf="sdkError" class="zoom-error">{{ sdkError }}</div>
     </div>
-
-    <p class="visio-note">
-      Si l integration est bloquee par le navigateur, utilisez le bouton "Ouvrir dans un onglet" pour rejoindre la reunion.
-    </p>
   </section>
 
   <aside class="visio-card visio-card--chat">
-    <header class="visio-card__header visio-card__header--chat">
-      <div>
-        <p class="visio-card__eyebrow">Notre chat</p>
-        <h2 class="visio-card__title">Conversations</h2>
-      </div>
+    <header class="visio-card__header">
+      <h2 class="visio-card__title">Chat de classe</h2>
     </header>
     <div class="chat-window">
       <div class="chat-message chat-message--teacher">

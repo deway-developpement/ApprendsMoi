@@ -8,21 +8,27 @@
 }
 
 .visio-hero {
-  padding: 8rem 4rem 3rem;
+  padding: clamp(4rem, 10vh, 8rem) clamp(1.5rem, 5vw, 4rem) 3rem;
   color: #f8fafc;
   position: relative;
   overflow: hidden;
-}
 
-.visio-hero::after {
-  content: '';
-  position: absolute;
-  inset: 2rem 6rem auto auto;
-  width: 320px;
-  height: 320px;
-  background: radial-gradient(circle at 30% 30%, rgba(249, 115, 22, 0.28), transparent 60%);
-  filter: blur(1px);
-  z-index: 1;
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 2rem 6rem auto auto;
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle at 30% 30%, rgba(249, 115, 22, 0.28), transparent 60%);
+    filter: blur(1px);
+    z-index: 1;
+    
+    @media (max-width: 768px) {
+      width: 200px;
+      height: 200px;
+      inset: 1rem 2rem auto auto;
+    }
+  }
 }
 
 .visio-hero__content {
@@ -41,29 +47,28 @@
 
 .visio-hero__title {
   margin: 0;
-  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
   font-weight: 700;
 }
 
 .visio-hero__subtitle {
-  margin: 0.75rem 0 1.5rem;
+  margin: 0.75rem 0 0;
   color: rgba(248, 250, 252, 0.82);
-  font-size: $regularFontSize;
+  font-size: clamp($smallerFontSize, 2vw, $regularFontSize);
   line-height: 1.6;
-}
-
-.visio-hero__actions {
-  display: flex;
-  gap: 0.8rem;
-  flex-wrap: wrap;
 }
 
 .visio-layout {
   display: grid;
   grid-template-columns: 1.75fr 1fr;
-  gap: 1.5rem;
-  padding: 0 4rem 3.5rem;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  padding: 0 clamp(1.5rem, 5vw, 4rem) 3.5rem;
   margin-top: -3rem;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: 1fr;
+    margin-top: 0;
+  }
 }
 
 .visio-card {
@@ -71,12 +76,18 @@
   border: 2px solid #0f172a;
   border-radius: 14px;
   box-shadow: 0 18px 35px rgba(0, 0, 0, 0.08);
-  padding: 1.5rem;
+  padding: clamp(1rem, 2vw, 1.5rem);
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .visio-card--meeting {
-  min-height: 60vh;
+  min-height: 70vh;
+
+  @media (max-width: 1100px) {
+    min-height: 60vh;
+  }
 }
 
 .visio-card__header {
@@ -84,31 +95,37 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: clamp(0.75rem, 2vw, 1rem);
+  flex-wrap: wrap;
 }
 
-.visio-card__actions {
-  display: inline-flex;
+.visio-card__title-group {
+  display: flex;
   align-items: center;
   gap: 0.75rem;
-}
-
-.visio-card__header--chat {
-  margin-bottom: 0.75rem;
-}
-
-.visio-card__eyebrow {
-  margin: 0;
-  font-size: $tinierFontSize;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #94a3b8;
+  flex-wrap: wrap;
 }
 
 .visio-card__title {
-  margin: 0.15rem 0 0;
-  font-size: clamp(1.1rem, 1.5vw, 1.3rem);
+  margin: 0;
+  font-size: clamp(1.1rem, 2vw, 1.3rem);
   color: #0f172a;
+  font-weight: 600;
+}
+
+.visio-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    
+    app-button {
+      flex: 1;
+    }
+  }
 }
 
 .visio-badge {
@@ -124,93 +141,78 @@
   font-size: $smallerFontSize;
 }
 
-.meeting-frame {
-  position: relative;
-  width: 100%;
-  border-radius: 10px;
-  overflow: hidden;
+.zoom-container {
+  flex: 1;
+  min-height: 500px;
   border: 2px solid #0f172a;
-  background: linear-gradient(145deg, #111827, #0b0c10);
-  aspect-ratio: 16 / 9;
-}
-
-.meeting-frame iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
+  border-radius: 10px;
   background: #0b0c10;
-}
-
-.sdk-embed {
-  margin-top: 1.25rem;
-  border: 1px dashed #e2e8f0;
-  border-radius: 12px;
-  padding: 1rem;
-  background: #f8fafc;
-}
-
-.sdk-embed__header {
-  margin-bottom: 0.5rem;
-}
-
-.sdk-embed__body {
+  position: relative;
+  overflow: hidden;
   display: flex;
-  gap: 1rem;
-  align-items: stretch;
-  flex-wrap: wrap;
-}
+  align-items: center;
+  justify-content: center;
 
-.sdk-embed__container {
-  flex: 1 1 320px;
-  min-height: 600px;
-  width: 100%;
-  border: 2px solid #0f172a;
-  border-radius: 10px;
-  background: #0b0c10;
-  color: #f8fafc;
-  position: relative;
-  overflow: hidden;
-  
-  // Ensure Zoom SDK elements fill the container
-  :deep(> *) {
+  @media (max-width: 768px) {
+    min-height: 400px;
+  }
+
+  :deep(> *:not(.zoom-placeholder):not(.zoom-status):not(.zoom-error)) {
     width: 100% !important;
     height: 100% !important;
-    min-height: 600px !important;
+    position: absolute !important;
+    inset: 0 !important;
   }
 }
 
-.sdk-embed__status {
-  flex: 1 1 240px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
+.zoom-placeholder {
+  text-align: center;
+  color: #94a3b8;
   font-size: $smallerFontSize;
-  color: #475569;
+  padding: 2rem;
 }
 
-.sdk-embed__error {
-  color: #dc2626;
-  font-weight: 600;
+.zoom-status {
+  text-align: center;
+  color: #f8fafc;
+  font-size: $regularFontSize;
+  padding: 2rem;
+  
+  &::after {
+    content: '';
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-left: 0.5rem;
+    border-radius: 50%;
+    background: $SecondaryColor;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
 }
 
-.sdk-embed__hint {
-  margin: 0.25rem 0 0;
-}
-
-.visio-note {
-  margin: 1rem 0 0;
+.zoom-error {
+  text-align: center;
+  color: #fca5a5;
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  margin: 2rem;
   font-size: $smallerFontSize;
-  color: #475569;
-  background: #f8fafc;
-  border: 1px dashed #e2e8f0;
-  padding: 0.75rem 0.9rem;
-  border-radius: 10px;
+  max-width: 500px;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
 }
 
 .visio-card--chat {
-  display: flex;
-  flex-direction: column;
   min-height: 60vh;
+
+  @media (max-width: 1100px) {
+    min-height: 50vh;
+  }
 }
 
 .chat-window {
@@ -218,10 +220,12 @@
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 1rem;
+  padding: clamp(0.75rem, 2vw, 1rem);
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
+  overflow-y: auto;
+  max-height: 50vh;
 }
 
 .chat-message {
@@ -282,38 +286,14 @@
   box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
 }
 
-@media (max-width: 1100px) {
-  .visio-layout {
-    grid-template-columns: 1fr;
-    margin-top: 0;
-  }
-
-  .visio-card--meeting,
-  .visio-card--chat {
-    min-height: auto;
-  }
-}
-
 @media (max-width: 768px) {
-  .visio-hero {
-    padding: 6rem 1.5rem 2.5rem;
-  }
-
-  .visio-layout {
-    padding: 0 1.25rem 2.5rem;
-  }
-
-  .visio-card {
-    padding: 1.25rem;
-  }
-
-  .sdk-embed__body {
-    flex-direction: column;
-  }
-
   .chat-input {
     flex-direction: column;
     align-items: stretch;
+    
+    app-button {
+      width: 100%;
+    }
   }
 
   .chat-input app-button {
