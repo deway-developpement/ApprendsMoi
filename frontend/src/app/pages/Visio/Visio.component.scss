@@ -162,15 +162,21 @@
 
 .sdk-embed__container {
   flex: 1 1 320px;
-  min-height: 340px;
+  min-height: 600px;
+  width: 100%;
   border: 2px solid #0f172a;
   border-radius: 10px;
   background: #0b0c10;
   color: #f8fafc;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
+  position: relative;
+  overflow: hidden;
+  
+  // Ensure Zoom SDK elements fill the container
+  :deep(> *) {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 600px !important;
+  }
 }
 
 .sdk-embed__status {
