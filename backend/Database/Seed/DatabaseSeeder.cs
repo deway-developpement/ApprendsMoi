@@ -60,12 +60,27 @@ public static class DatabaseSeeder
 
             parentUser.Parent.UserId = parentUser.Id;
 
+            var studentUser = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "student1",
+                PasswordHash = "hashed-student-password",
+                FirstName = "Emma",
+                LastName = "Martin",
+                IsActive = true,
+                IsVerified = true,
+                CreatedAt = DateTime.UtcNow,
+                Profile = ProfileType.Student
+            };
+
+            db.Users.Add(studentUser);
+
             var child = new Student
             {
-                UserId = Guid.NewGuid(),
+                UserId = studentUser.Id,
                 ParentId = parentUser.Id,
                 GradeLevel = "CE1",
-                BirthDate = new DateTime(2017, 4, 12)
+                BirthDate = new DateTime(2017, 4, 12, 0, 0, 0, DateTimeKind.Utc)
             };
 
             db.Students.Add(child);

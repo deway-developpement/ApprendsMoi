@@ -317,16 +317,11 @@ namespace backend.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("sender_id");
 
-                    b.Property<Guid>("SenderId1")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
                     b.HasIndex("ConversationId");
 
                     b.HasIndex("SenderId");
-
-                    b.HasIndex("SenderId1");
 
                     b.ToTable("messages", (string)null);
                 });
@@ -520,12 +515,12 @@ namespace backend.Migrations
                         .HasColumnType("text")
                         .HasColumnName("grade_level");
 
-                    b.Property<Guid?>("ParentUserId")
+                    b.Property<Guid>("ParentId")
                         .HasColumnType("uuid");
 
                     b.HasKey("UserId");
 
-                    b.HasIndex("ParentUserId");
+                    b.HasIndex("ParentId");
 
                     b.ToTable("students", (string)null);
                 });
@@ -577,7 +572,7 @@ namespace backend.Migrations
                         .HasColumnName("is_premium");
 
                     b.Property<string>("Location")
-                        .HasColumnType("geography(POINT)")
+                        .HasColumnType("text")
                         .HasColumnName("location");
 
                     b.Property<int?>("TravelRadiusKm")
@@ -851,15 +846,9 @@ namespace backend.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("backend.Database.Models.User", null)
+                    b.HasOne("backend.Database.Models.User", "Sender")
                         .WithMany("MessagesSent")
                         .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("backend.Database.Models.User", "Sender")
-                        .WithMany()
-                        .HasForeignKey("SenderId1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -925,15 +914,19 @@ namespace backend.Migrations
 
             modelBuilder.Entity("backend.Database.Models.Student", b =>
                 {
-                    b.HasOne("backend.Database.Models.Parent", null)
+                    b.HasOne("backend.Database.Models.Parent", "Parent")
                         .WithMany("Students")
-                        .HasForeignKey("ParentUserId");
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("backend.Database.Models.User", "User")
                         .WithOne("Student")
                         .HasForeignKey("backend.Database.Models.Student", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Parent");
 
                     b.Navigation("User");
                 });

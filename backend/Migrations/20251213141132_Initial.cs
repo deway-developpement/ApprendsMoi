@@ -115,7 +115,7 @@ namespace backend.Migrations
                     bio = table.Column<string>(type: "text", nullable: true),
                     verification_status = table.Column<string>(type: "text", nullable: false),
                     is_premium = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    location = table.Column<string>(type: "geography(POINT)", nullable: true),
+                    location = table.Column<string>(type: "text", nullable: true),
                     travel_radius_km = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
@@ -183,18 +183,19 @@ namespace backend.Migrations
                 columns: table => new
                 {
                     user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ParentId = table.Column<Guid>(type: "uuid", nullable: false),
                     grade_level = table.Column<string>(type: "text", nullable: false),
-                    birth_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ParentUserId = table.Column<Guid>(type: "uuid", nullable: true)
+                    birth_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_students", x => x.user_id);
                     table.ForeignKey(
-                        name: "FK_students_parents_ParentUserId",
-                        column: x => x.ParentUserId,
+                        name: "FK_students_parents_ParentId",
+                        column: x => x.ParentId,
                         principalTable: "parents",
-                        principalColumn: "user_id");
+                        principalColumn: "user_id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_students_users_user_id",
                         column: x => x.user_id,
@@ -383,7 +384,6 @@ namespace backend.Migrations
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     conversation_id = table.Column<Guid>(type: "uuid", nullable: false),
                     sender_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    SenderId1 = table.Column<Guid>(type: "uuid", nullable: false),
                     content = table.Column<string>(type: "text", nullable: true),
                     attachment_url = table.Column<string>(type: "text", nullable: true),
                     read_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -396,12 +396,6 @@ namespace backend.Migrations
                         name: "FK_messages_conversations_conversation_id",
                         column: x => x.conversation_id,
                         principalTable: "conversations",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_messages_users_SenderId1",
-                        column: x => x.SenderId1,
-                        principalTable: "users",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -555,11 +549,6 @@ namespace backend.Migrations
                 column: "sender_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_messages_SenderId1",
-                table: "messages",
-                column: "SenderId1");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_parents_email",
                 table: "parents",
                 column: "email",
@@ -586,9 +575,9 @@ namespace backend.Migrations
                 column: "last_edited_by");
 
             migrationBuilder.CreateIndex(
-                name: "IX_students_ParentUserId",
+                name: "IX_students_ParentId",
                 table: "students",
-                column: "ParentUserId");
+                column: "ParentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_subjects_slug",

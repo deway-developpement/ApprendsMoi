@@ -71,7 +71,7 @@ public class AppDbContext : DbContext
             e.Property(x => x.Bio).HasColumnName("bio").HasColumnType("text");
             e.Property(x => x.VerificationStatus).HasColumnName("verification_status");
             e.Property(x => x.IsPremium).HasColumnName("is_premium").HasDefaultValue(false);
-            e.Property(x => x.Location).HasColumnName("location").HasColumnType("geography(POINT)").IsRequired(false);
+            e.Property(x => x.Location).HasColumnName("location").HasColumnType("text").IsRequired(false);
             e.Property(x => x.TravelRadiusKm).HasColumnName("travel_radius_km");
             e.HasOne(x => x.User).WithOne(u => u.Teacher).HasForeignKey<Teacher>(t => t.UserId);
         });
@@ -273,7 +273,7 @@ public class AppDbContext : DbContext
             e.Property(x => x.ReadAt).HasColumnName("read_at");
             e.Property(x => x.CreatedAt).HasColumnName("created_at");
             e.HasOne(x => x.Conversation).WithMany(c => c.Messages).HasForeignKey(x => x.ConversationId);
-            e.HasOne<User>().WithMany(u => u.MessagesSent).HasForeignKey(x => x.SenderId).HasPrincipalKey(u => u.Id);
+            e.HasOne(x => x.Sender).WithMany(u => u.MessagesSent).HasForeignKey(x => x.SenderId);
         });
 
         // REPORTS
