@@ -18,6 +18,8 @@ builder.Services.AddSwaggerGen();
 
 // Database services
 var defaultCo = Environment.GetEnvironmentVariable("POSTGRES__CONNECTION_STRING");
+Console.WriteLine(builder.Configuration.GetConnectionString("DefaultConnection"));
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(defaultCo)
 );
@@ -37,13 +39,17 @@ builder.Services.AddFluentMigratorCore()
 var app = builder.Build();
 
 // Apply database migrations at startup
-using (var scope = app.Services.CreateScope()) {
-    var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
-    runner.MigrateUp();
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.MigrateAsync();
+    await backend.Database.Seed.DatabaseSeeder.SeedAsync(db);
 }
 
+
 // Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment()) {
+if (app.Environment.IsDevelopment())
+{
     app.MapOpenApi();
     app.UseSwagger();
     app.UseSwaggerUI();
