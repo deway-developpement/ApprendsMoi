@@ -24,12 +24,15 @@
     </header>
 
     <div class="zoom-container" #zoomContainer>
-      <div *ngIf="!sdkReady && !isInitializingSdk && !sdkError" class="zoom-placeholder">
-        <p>Cliquez sur "Lancer SDK" pour demarrer la visioconference</p>
+      <div *ngIf="isCreatingMeeting" class="zoom-status">Creation de la reunion...</div>
+      <div *ngIf="!sdkReady && !isInitializingSdk && !isCreatingMeeting && !sdkError" class="zoom-placeholder">
+        <p>Initialisation de la visioconference...</p>
       </div>
-      <div *ngIf="isFetchingSignature" class="zoom-status">Connexion en cours...</div>
       <div *ngIf="isInitializingSdk" class="zoom-status">Chargement de la reunion...</div>
-      <div *ngIf="sdkError" class="zoom-error">{{ sdkError }}</div>
+      <div *ngIf="sdkError" class="zoom-error">
+        <p>{{ sdkError }}</p>
+        <button (click)="createAndInitMeeting()" class="retry-button">Reessayer</button>
+      </div>
     </div>
   </section>
 

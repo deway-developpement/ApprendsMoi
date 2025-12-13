@@ -33,6 +33,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Application services
 builder.Services.AddScoped<UserHandler>();
 
+// Zoom services
+builder.Services.AddHttpClient<backend.Domains.Zoom.ZoomService>();
+builder.Services.AddScoped<backend.Domains.Zoom.ZoomService>();
+
 // Register FluentMigrator services
 builder.Services.AddFluentMigratorCore()
     .ConfigureRunner(rb => rb

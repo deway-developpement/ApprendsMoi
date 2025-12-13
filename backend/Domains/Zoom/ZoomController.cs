@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-using System.Text;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Domains.Zoom;
@@ -8,77 +6,76 @@ namespace backend.Domains.Zoom;
 [Route("api/zoom")]
 public class ZoomController : ControllerBase
 {
-    private readonly string? _sdkKey;
-    private readonly string? _sdkSecret;
+    private readonly ZoomService _zoomService;
 
-    public ZoomController(IConfiguration config)
+    public ZoomController(ZoomService zoomService)
     {
-        _sdkKey = Environment.GetEnvironmentVariable("ZOOM_SDK_KEY") ?? config["Zoom:SdkKey"];
-        _sdkSecret = Environment.GetEnvironmentVariable("ZOOM_SDK_SECRET") ?? config["Zoom:SdkSecret"];
+        _zoomService = zoomService;
     }
 
+    /// <summary>
+    /// Creates a new instant Zoom meeting
+    /// </summary>
+    [HttpPost("meeting")]
+    public async Task<IActionResult> CreateMeeting([FromBody] CreateMeetingRequest? request)
+    {
+        try
+        {
+            var topic = request?.Topic ?? "ApprendsMoi - Session";
+            var meeting = await _zoomService.CreateInstantMeetingAsync(topic);
+            var hostSignature = _zoomService.GenerateSignature(meeting.Id.ToString(), 1);
+            var participantSignature = _zoomService.GenerateSignature(meeting.Id.ToString(), 0);
+
+            return Ok(new
+            {
+                meetingId = meeting.Id,
+                meetingNumber = meeting.Id.ToString(),
+                topic = meeting.Topic,
+                joinUrl = meeting.JoinUrl,
+                startUrl = meeting.StartUrl,
+                password = meeting.Password,
+                signature = hostSignature,
+                hostSignature,
+                participantSignature,
+                sdkKey = _zoomService.GetSdkKey()
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = $"Erreur lors de la création de la réunion: {ex.Message}" });
+        }
+    }
+
+    /// <summary>
+    /// Generates signature for an existing meeting
+    /// </summary>
     [HttpPost("signature")]
     public IActionResult GenerateSignature([FromBody] ZoomSignatureRequest request)
     {
-        if (string.IsNullOrWhiteSpace(_sdkKey) || string.IsNullOrWhiteSpace(_sdkSecret))
-        {
-            return StatusCode(500, "ZOOM_SDK_KEY / ZOOM_SDK_SECRET manquants dans l'environnement ou la configuration.");
-        }
-
         if (string.IsNullOrWhiteSpace(request.MeetingNumber))
         {
-            return BadRequest("meetingNumber requis");
+            return BadRequest(new { error = "meetingNumber requis" });
         }
 
         try
         {
-            var signature = CreateZoomSignature(_sdkKey, _sdkSecret, request.MeetingNumber, request.Role);
-            return Ok(new { signature, sdkKey = _sdkKey });
+            var signature = _zoomService.GenerateSignature(request.MeetingNumber, request.Role);
+            return Ok(new { signature, sdkKey = _zoomService.GetSdkKey() });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, $"Erreur lors de la génération de la signature Zoom: {ex.Message}");
+            return StatusCode(500, new { error = $"Erreur lors de la génération de la signature: {ex.Message}" });
         }
     }
+}
 
-    private static string CreateZoomSignature(string sdkKey, string sdkSecret, string meetingNumber, int role)
-    {
-        // Based on Zoom docs: header + payload signed with SDK secret (HS256), base64url encoded.
-        var ts = ToUnixTimeSeconds(DateTime.UtcNow) - 30; // iat slightly backdated
-        var exp = ts + 60 * 60 * 2; // 2h validity
-
-        var header = new { alg = "HS256", typ = "JWT" };
-        var payload = new
-        {
-            sdkKey,
-            mn = meetingNumber,
-            role,
-            iat = ts,
-            exp,
-            appKey = sdkKey,
-            tokenExp = exp
-        };
-
-        string headerBase64 = Base64UrlEncode(Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(header)));
-        string payloadBase64 = Base64UrlEncode(Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(payload)));
-        string message = $"{headerBase64}.{payloadBase64}";
-
-        using var hasher = new HMACSHA256(Encoding.UTF8.GetBytes(sdkSecret));
-        var hash = hasher.ComputeHash(Encoding.UTF8.GetBytes(message));
-        string signature = Base64UrlEncode(hash);
-
-        return $"{message}.{signature}";
-    }
-
-    private static long ToUnixTimeSeconds(DateTime dateTime) =>
-        (long)Math.Floor((dateTime - DateTime.UnixEpoch).TotalSeconds);
-
-    private static string Base64UrlEncode(byte[] input) =>
-        Convert.ToBase64String(input).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+public class CreateMeetingRequest
+{
+    public string? Topic { get; set; }
 }
 
 public class ZoomSignatureRequest
 {
     public string MeetingNumber { get; set; } = string.Empty;
-    public int Role { get; set; } = 0; // 0 = participant, 1 = host
+    public int Role { get; set; } = 0;
 }

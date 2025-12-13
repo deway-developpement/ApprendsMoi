@@ -15,71 +15,80 @@ declare const ZoomMtgEmbedded: any;
 export class Visio implements AfterViewInit {
   @ViewChild('zoomContainer', { static: false }) zoomContainer?: ElementRef<HTMLDivElement>;
 
-  private readonly signatureEndpoint = 'http://localhost:5254/api/zoom/signature';
+  private readonly apiBaseUrl = 'http://localhost:5254/api/zoom';
   
-  zoomMeetingUrl = 'https://us05web.zoom.us/j/86098037935?pwd=P8vUnsgeTHza0RDKBUwDsOwobRxTR1.1';
+  zoomMeetingUrl = '';
   isInitializingSdk = false;
   sdkReady = false;
   sdkError = '';
-  isFetchingSignature = false;
+  isCreatingMeeting = false;
+  participantSignature = '';
+  private hasRetriedAsParticipant = false;
 
   zoomSdkConfig = {
     sdkKey: '',
     signature: '',
-    meetingNumber: '86098037935',
-    userName: 'Invite ApprendsMoi',
+    meetingNumber: '',
+    userName: 'Enseignant ApprendsMoi',
     userEmail: '',
-    passWord: 'P8vUnsgeTHza0RDKBUwDsOwobRxTR1.1',
-    role: 0
+    passWord: '',
+    role: 1
   };
 
-  ngAfterViewInit(): void {
-    // SDK initialized on button click
+  async ngAfterViewInit(): Promise<void> {
+    // Auto-create meeting when page loads
+    await this.createAndInitMeeting();
   }
 
   openZoomInNewTab() {
-    if (typeof window !== 'undefined') {
+    if (this.zoomMeetingUrl && typeof window !== 'undefined') {
       window.open(this.zoomMeetingUrl, '_blank', 'noopener,noreferrer');
     }
   }
 
-  async initZoomSdk(): Promise<void> {
+  async createAndInitMeeting(): Promise<void> {
     try {
-      await this.ensureSignature();
+      this.isCreatingMeeting = true;
+      this.sdkError = '';
+
+      const response = await fetch(`${this.apiBaseUrl}/meeting`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic: 'ApprendsMoi - Session de classe' })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Erreur lors de la création de la réunion');
+      }
+
+      const data = await response.json();
+      
+      // Update config with meeting data
+      this.zoomSdkConfig.meetingNumber = data.meetingNumber;
+      this.zoomSdkConfig.passWord = data.password || '';
+      this.zoomSdkConfig.signature = data.hostSignature || data.signature;
+      this.participantSignature = data.participantSignature || '';
+      this.zoomSdkConfig.sdkKey = data.sdkKey;
+      this.zoomMeetingUrl = data.joinUrl;
+      this.hasRetriedAsParticipant = false;
+
+      this.isCreatingMeeting = false;
+
+      // Auto-initialize SDK
       this.tryInitZoomSdk();
     } catch (err) {
-      this.sdkError = 'Impossible de recuperer la signature du serveur.';
-      console.error('Signature fetch error:', err);
+      this.isCreatingMeeting = false;
+      this.sdkError = err instanceof Error ? err.message : 'Erreur lors de la création de la réunion';
+      console.error('Meeting creation error:', err);
     }
   }
 
-  private async ensureSignature(): Promise<void> {
-    if (this.zoomSdkConfig.signature) return;
-    this.isFetchingSignature = true;
-    this.sdkError = '';
-
-    const body = {
-      meetingNumber: this.zoomSdkConfig.meetingNumber,
-      role: this.zoomSdkConfig.role
-    };
-
-    const res = await fetch(this.signatureEndpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-
-    this.isFetchingSignature = false;
-
-    if (!res.ok) {
-      const msg = await res.text();
-      throw new Error(msg || 'Erreur serveur');
-    }
-
-    const data = await res.json();
-    this.zoomSdkConfig.signature = data.signature;
-    if (data.sdkKey) {
-      this.zoomSdkConfig.sdkKey = data.sdkKey;
+  async initZoomSdk(): Promise<void> {
+    if (!this.zoomSdkConfig.meetingNumber) {
+      await this.createAndInitMeeting();
+    } else {
+      this.tryInitZoomSdk();
     }
   }
 
@@ -124,6 +133,19 @@ export class Visio implements AfterViewInit {
         this.isInitializingSdk = false;
         this.sdkError = this.formatZoomError(err);
         console.error('Zoom SDK error:', err);
+        const formattedError = this.formatZoomError(err);
+
+        // Fallback: if host join failed, retry once as participant
+        if (!this.hasRetriedAsParticipant && this.participantSignature) {
+          this.hasRetriedAsParticipant = true;
+          this.zoomSdkConfig.signature = this.participantSignature;
+          this.zoomSdkConfig.role = 0;
+          this.zoomSdkConfig.userName = 'Participant ApprendsMoi';
+          this.tryInitZoomSdk();
+          return;
+        }
+
+        this.sdkError = formattedError;
       });
   }
 
