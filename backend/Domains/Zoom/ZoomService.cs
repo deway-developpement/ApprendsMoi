@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Linq;
 
 namespace backend.Domains.Zoom;
 
@@ -66,17 +67,28 @@ public class ZoomService
     {
         var token = await GetAccessTokenAsync();
 
+        // Use scheduled meeting with unique start time to allow unlimited concurrent meetings
+        // Add random offset (0-30 seconds) to ensure each meeting has a unique start_time
+        var random = new Random();
+        var randomOffset = random.Next(0, 30);
+        var startTime = DateTime.UtcNow.AddSeconds(randomOffset);
+        // Use precise format with milliseconds for uniqueness
+        var startTimeFormatted = startTime.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+
         var meetingData = new
         {
             topic,
-            type = 1, // Instant meeting
+            type = 2, // Scheduled meeting (type 1 = instant has concurrency limits, type 2 = scheduled allows unlimited)
+            start_time = startTimeFormatted,
+            duration = 60, // 1 hour duration
             settings = new
             {
                 join_before_host = true,
                 waiting_room = false,
                 mute_upon_entry = false,
                 approval_type = 2, // No registration required
-                auto_recording = "none"
+                auto_recording = "none",
+                allow_multiple_devices = true
             }
         };
 
@@ -182,6 +194,12 @@ public class ZoomMeeting
 
     [JsonPropertyName("password")]
     public string Password { get; set; } = string.Empty;
+
+    [JsonPropertyName("start_time")]
+    public DateTime StartTime { get; set; }
+
+    [JsonPropertyName("duration")]
+    public int Duration { get; set; }
 
     [JsonPropertyName("settings")]
     public ZoomMeetingSettings? Settings { get; set; }

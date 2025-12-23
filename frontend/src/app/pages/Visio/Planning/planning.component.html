@@ -1,0 +1,79 @@
+<app-header theme="light"></app-header>
+
+<section class="planning-hero">
+  <div class="planning-hero__content">
+    <p class="planning-hero__eyebrow">ApprendsMoi · Visio</p>
+    <h1 class="planning-hero__title">Planification des sessions</h1>
+    <p class="planning-hero__subtitle">
+      Créez et accédez à vos sessions de visioconférence.
+    </p>
+  </div>
+</section>
+
+<main class="planning-container">
+  <div class="planning-header">
+    <h2 class="planning-header__title">Vos sessions à venir</h2>
+    <app-button 
+      variant="primary" 
+      (click)="createNewMeeting()"
+      [disabled]="isCreating">
+      {{ isCreating ? 'Création...' : 'Nouvelle session' }}
+    </app-button>
+  </div>
+
+  <div *ngIf="error" class="error-message">
+    <p>{{ error }}</p>
+    <app-button variant="ghost" (click)="loadMeetings()">Réessayer</app-button>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <p>Chargement des sessions...</p>
+  </div>
+
+  <div *ngIf="!isLoading && !error" class="meetings-grid">
+    <div *ngIf="meetings.length === 0" class="empty-state">
+      <p>Aucune session créée pour le moment.</p>
+      <p class="empty-state__subtitle">Cliquez sur "Nouvelle session" pour commencer.</p>
+    </div>
+
+    <div 
+      *ngFor="let meeting of meetings" 
+      class="meeting-card"
+      [class.meeting-card--past]="!isFutureMeeting(meeting)"
+      (click)="openMeeting(meeting.id)">
+      <div class="meeting-card__header">
+        <h3 class="meeting-card__title">{{ meeting.topic }}</h3>
+        <span class="meeting-card__badge" *ngIf="isFutureMeeting(meeting)">À venir</span>
+        <span class="meeting-card__badge meeting-card__badge--past" *ngIf="!isFutureMeeting(meeting)">Passée</span>
+      </div>
+      
+      <div class="meeting-card__details">
+        <div class="meeting-detail">
+          <span class="meeting-detail__label">Créée le :</span>
+          <span class="meeting-detail__value">{{ formatDate(meeting.createdAt) }}</span>
+        </div>
+        
+        <div class="meeting-detail" *ngIf="meeting.scheduledStartTime">
+          <span class="meeting-detail__label">Début prévu :</span>
+          <span class="meeting-detail__value">{{ formatDate(meeting.scheduledStartTime) }}</span>
+        </div>
+        
+        <div class="meeting-detail">
+          <span class="meeting-detail__label">Durée :</span>
+          <span class="meeting-detail__value">{{ meeting.duration }} minutes</span>
+        </div>
+        
+        <div class="meeting-detail">
+          <span class="meeting-detail__label">ID de réunion :</span>
+          <span class="meeting-detail__value">{{ meeting.zoomMeetingId }}</span>
+        </div>
+      </div>
+
+      <div class="meeting-card__footer">
+        <app-button variant="primary" size="small">
+          Rejoindre
+        </app-button>
+      </div>
+    </div>
+  </div>
+</main>

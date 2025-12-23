@@ -1,9 +1,13 @@
 <button
   [attr.type]="type"
+  [disabled]="disabled"
   class="btn"
   [ngClass]="{
     'btn--ghost': variant === 'ghost',
-    'btn--primary': variant === 'primary'
+    'btn--primary': variant === 'primary',
+    'btn--small': size === 'small',
+    'btn--medium': size === 'medium',
+    'btn--large': size === 'large'
   }"
 >
   <ng-content></ng-content>
