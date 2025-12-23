@@ -70,8 +70,22 @@
       </div>
 
       <div class="meeting-card__footer">
-        <app-button variant="primary" size="small">
-          Rejoindre
+        <app-button 
+          variant="ghost" 
+          size="small"
+          (click)="copyMeetingLink(meeting, $event)">
+          Copier lien
+        </app-button>
+        <app-button 
+          variant="ghost" 
+          size="small"
+          (click)="openInZoom(meeting, $event)">
+          Ouvrir Zoom
+        </app-button>
+        <app-button 
+          variant="primary" 
+          size="small">
+          Rejoindre SDK
         </app-button>
       </div>
     </div>

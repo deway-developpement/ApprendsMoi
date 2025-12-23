@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { HeaderComponent } from '../../components/Header/header.component';
@@ -13,7 +13,7 @@ declare const ZoomMtgEmbedded: any;
   styleUrls: ['./Visio.component.scss'],
   imports: [CommonModule, HeaderComponent, ButtonComponent]
 })
-export class Visio implements OnInit {
+export class Visio implements OnInit, OnDestroy {
   @ViewChild('zoomContainer', { static: false }) zoomContainer?: ElementRef<HTMLDivElement>;
 
   private readonly apiBaseUrl = 'http://localhost:5254/api/zoom';
@@ -26,12 +26,13 @@ export class Visio implements OnInit {
   isLoadingMeeting = false;
   participantSignature = '';
   private hasRetriedAsParticipant = false;
+  private zoomClient: any = null;
 
   zoomSdkConfig = {
     sdkKey: '',
     signature: '',
     meetingNumber: '',
-    userName: 'Participant ApprendsMoi',
+    userName: this.generateUniqueUsername(),
     userEmail: '',
     passWord: '',
     role: 0
@@ -41,6 +42,12 @@ export class Visio implements OnInit {
     private cdr: ChangeDetectorRef,
     private route: ActivatedRoute
   ) {}
+
+  private generateUniqueUsername(): string {
+    const randomId = Math.floor(Math.random() * 100000);
+    const timestamp = Date.now().toString().slice(-6);
+    return `Participant-${randomId}-${timestamp}`;
+  }
 
   async ngOnInit(): Promise<void> {
     // Get meeting ID from route parameter
@@ -54,6 +61,18 @@ export class Visio implements OnInit {
         this.sdkError = 'ID de réunion manquant';
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    // Clean up Zoom client when component is destroyed
+    if (this.zoomClient) {
+      try {
+        this.zoomClient.leaveMeeting?.();
+        this.zoomClient = null;
+      } catch (err) {
+        console.error('Error cleaning up Zoom client:', err);
+      }
+    }
   }
 
   openZoomInNewTab() {
@@ -165,16 +184,31 @@ export class Visio implements OnInit {
     this.isInitializingSdk = true;
     this.sdkError = '';
 
-    const client = ZoomMtgEmbedded.createClient();
+    // Create a new client instance for this session
+    this.zoomClient = ZoomMtgEmbedded.createClient();
     const container = this.zoomContainer.nativeElement;
 
-    client
+    // Clear the container before initializing
+    container.innerHTML = '';
+
+    this.zoomClient
       .init({
         zoomAppRoot: container,
         language: 'fr-FR',
-        leaveUrl: window.location.origin
+        leaveUrl: window.location.origin,
+        customize: {
+          video: {
+            isResizable: true,
+            viewSizes: {
+              default: {
+                width: 1000,
+                height: 600
+              }
+            }
+          }
+        }
       })
-      .then(() => client.join({
+      .then(() => this.zoomClient.join({
         sdkKey: this.zoomSdkConfig.sdkKey,
         signature: this.zoomSdkConfig.signature,
         meetingNumber: this.zoomSdkConfig.meetingNumber,
@@ -197,7 +231,7 @@ export class Visio implements OnInit {
           this.hasRetriedAsParticipant = true;
           this.zoomSdkConfig.signature = this.participantSignature;
           this.zoomSdkConfig.role = 0;
-          this.zoomSdkConfig.userName = `Participant ApprendsMoi ${Math.floor(Math.random()*1000)}`;
+          this.zoomSdkConfig.userName = this.generateUniqueUsername();
           this.tryInitZoomSdk();
           return;
         }

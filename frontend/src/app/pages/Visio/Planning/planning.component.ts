@@ -104,4 +104,24 @@ export class PlanningComponent implements OnInit {
     const scheduledTime = new Date(meeting.scheduledStartTime);
     return scheduledTime > new Date();
   }
+
+  copyMeetingLink(meeting: Meeting, event: Event): void {
+    event.stopPropagation();
+    const link = `${window.location.origin}/visio/${meeting.id}`;
+    navigator.clipboard.writeText(link).then(() => {
+      alert('Lien copié dans le presse-papiers!');
+    });
+  }
+
+  copyZoomLink(meeting: Meeting, event: Event): void {
+    event.stopPropagation();
+    navigator.clipboard.writeText(meeting.joinUrl).then(() => {
+      alert('Lien Zoom copié dans le presse-papiers!');
+    });
+  }
+
+  openInZoom(meeting: Meeting, event: Event): void {
+    event.stopPropagation();
+    window.open(meeting.joinUrl, '_blank', 'noopener,noreferrer');
+  }
 }
