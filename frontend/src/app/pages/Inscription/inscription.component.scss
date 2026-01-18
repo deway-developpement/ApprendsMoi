@@ -1,6 +1,6 @@
 @import "variables";
 
-.connexion-page {
+.inscription-page {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -8,75 +8,51 @@
   background-color: $backgroundColor;
 }
 
-.connexion-card {
+.inscription-card {
   width: 100%;
-  max-width: 400px;
-  background: white; // Slightly distinct from $backgroundColor for card effect
+  max-width: 450px; // Légèrement plus large pour les formulaires longs
+  background: white;
   border-radius: 12px;
   padding: 2.5rem;
+  padding-top:1rem;
+  padding-bottom: 1rem;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1rem;
 
   @media (max-width: 480px) {
     padding: 1.5rem;
-    box-shadow: none; // Cleaner look on small mobile
+    box-shadow: none;
     background: transparent;
   }
 }
 
-.connexion-header {
+.inscription-header {
   text-align: center;
-
   h1 {
     font-size: $titleFontSize;
     font-weight: 700;
     color: #1a1a1a;
     margin-bottom: 0.5rem;
   }
-
   p {
     font-size: $regularFontSize;
     color: #666;
   }
 }
 
-.connexion-form {
+.inscription-form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-}
-
-.password-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-
-  .forgot-password {
-    font-size: $tinierFontSize;
-    color: #666;
-    text-align: right;
-    text-decoration: none;
-    transition: color 0.2s ease;
-
-    &:hover {
-      color: $SecondaryColor;
-      text-decoration: underline;
-    }
-  }
+  gap: 1.25rem;
 }
 
 .actions {
-  margin-top: 0.5rem;
-  
-  // Ensuring the app-button stretches if needed
+  margin-top: 1rem;
   app-button {
     width: 100%;
     display: block;
-    
-    // Deep selector might be needed depending on button encapsulation
-    // to make the button inside the component full width
     ::ng-deep button {
       width: 100%;
       justify-content: center;
@@ -84,21 +60,16 @@
   }
 }
 
-.connexion-footer {
+.inscription-footer {
   text-align: center;
-  margin-top: auto;
-  
   p {
     font-size: $smallerFontSize;
     color: #666;
   }
-
   a {
     color: $SecondaryColor;
     font-weight: 600;
     text-decoration: none;
-    transition: color 0.2s;
-
     &:hover {
       color: $SecondaryColorHover;
     }

@@ -82,7 +82,7 @@
 }
 
 .header--light {
-  background-color: $backgroundColor;
+  background-color: none;
   .header__nav-link { color: #111111; }
   .header__burger span { background-color: #111111; }
 }
@@ -164,7 +164,7 @@
   }
   
   .header--light .header__menu {
-    background-color: #fff;
+    background-color: none;
     .header__nav-link { color: #111; }
     .header__close-btn { color: #111; }
   }
