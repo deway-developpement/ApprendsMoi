@@ -1,0 +1,62 @@
+<section class="inscription-page">
+  <app-header theme="light" simple="true"></app-header>
+  
+  <div class="inscription-card">
+    <header class="inscription-header">
+      <h1>Créer un compte</h1>
+      <p>Rejoignez-nous pour commencer l'aventure</p>
+    </header>
+
+    <form (ngSubmit)="onRegister()" class="inscription-form">
+      
+      <app-text-input
+        label="Nom complet"
+        placeholder="Jean Dupont"
+        type="text"
+        [iconLeft]="'assets/icons/user.svg'"
+        [fullWidth]="true"
+        [(value)]="name">
+      </app-text-input>
+
+      <app-text-input
+        label="Email"
+        placeholder="exemple@email.com"
+        type="email"
+        [iconLeft]="'assets/icons/email 2 1.svg'"
+        [fullWidth]="true"
+        [(value)]="email">
+      </app-text-input>
+
+      <app-text-input
+        label="Mot de passe"
+        placeholder="••••••••"
+        type="password"
+        [iconLeft]="'assets/icons/lock.svg'"
+        [fullWidth]="true"
+        [(value)]="password">
+      </app-text-input>
+
+      <app-text-input
+        label="Confirmer le mot de passe"
+        placeholder="••••••••"
+        type="password"
+        [iconLeft]="'assets/icons/lock.svg'"
+        [fullWidth]="true"
+        [(value)]="confirmPassword">
+      </app-text-input>
+
+      <div class="actions">
+        <app-button 
+          variant="primary" 
+          type="submit"
+          class="submit-btn">
+          S'inscrire
+        </app-button>
+      </div>
+    </form>
+
+    <footer class="inscription-footer">
+      <p>Déjà un compte ? <a href="/login">Se connecter</a></p>
+    </footer>
+  </div>
+</section>
