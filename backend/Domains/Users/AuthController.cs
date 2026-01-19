@@ -19,16 +19,16 @@ public class AuthController(ILogger<AuthController> logger, UserHandler userHand
     [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken ct) {
         if (string.IsNullOrEmpty(request.Credential) || string.IsNullOrEmpty(request.Password)) {
-            return BadRequest(new { error = "Credential and password are required" });
+            return BadRequest(new { error = "Invalid credentials" });
         }
 
         if (request.IsStudent) {
             if (!UsernameRegex.IsMatch(request.Credential)) {
-                return BadRequest(new { error = "Invalid username format" });
+                return BadRequest(new { error = "Invalid credentials" });
             }
         } else {
             if (!EmailRegex.IsMatch(request.Credential)) {
-                return BadRequest(new { error = "Invalid email format" });
+                return BadRequest(new { error = "Invalid credentials" });
             }
         }
 
@@ -37,18 +37,24 @@ public class AuthController(ILogger<AuthController> logger, UserHandler userHand
         if (request.IsStudent) {
             user = await _userHandler.ValidateCredentialsByUsernameAsync(request.Credential, request.Password, ct);
             if (user == null || user.Profile != ProfileType.Student) {
-                return Unauthorized(new { error = "Invalid student credentials" });
+                return Unauthorized(new { error = "Invalid credentials" });
             }
         } else {
-            user = await _userHandler.ValidateCredentialsByEmailAsync(request.Credential, request.Password, ct);
+            user = await _userHandler.ValidateCredentialsByEmailAsync(request.Credential.ToLower(), request.Password, ct);
             if (user == null || user.Profile == ProfileType.Student) {
                 return Unauthorized(new { error = "Invalid credentials" });
             }
         }
 
-        var token = JwtHelper.GenerateToken(user.Id, user.Email, user.Username ?? "", user.Profile);
+        var token = JwtHelper.GenerateToken(user.Id, user.Email, user.Username, user.Profile);
         var refreshToken = JwtHelper.GenerateRefreshToken();
-        var refreshTokenExpiry = DateTime.UtcNow.AddHours(4);
+        
+        var refreshExpiresStr = Environment.GetEnvironmentVariable("JWT__REFRESH_EXPIRES_IN_HOURS");
+        if (string.IsNullOrEmpty(refreshExpiresStr) || !int.TryParse(refreshExpiresStr, out var refreshExpiresInHours)) {
+            return StatusCode(500, new { error = "Server configuration error: JWT__REFRESH_EXPIRES_IN_HOURS not configured" });
+        }
+        
+        var refreshTokenExpiry = DateTime.UtcNow.AddHours(refreshExpiresInHours);
 
         await _userHandler.UpdateRefreshTokenAsync(user.Id, refreshToken, refreshTokenExpiry, ct);
 
@@ -68,41 +74,47 @@ public class AuthController(ILogger<AuthController> logger, UserHandler userHand
     [AllowAnonymous]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken ct) {
         if (request.Profile == null) {
-            return BadRequest(new { error = "Profile type is required" });
+            return BadRequest(new { error = "Registration failed" });
         }
         
         if (string.IsNullOrEmpty(request.Password) || request.Password.Length < 6) {
-            return BadRequest(new { error = "Password is incorrect" });
+            return BadRequest(new { error = "Registration failed" });
         }
 
-        var userProfileType = request.Profile ?? ProfileType.Student;
+        var userProfileType = request.Profile.Value;
         
         if (userProfileType == ProfileType.Student) {
-            if (string.IsNullOrEmpty(request.Username) || !UsernameRegex.IsMatch(request.Username) || request.Username.Length < 3) {
-                return BadRequest(new { error = "Username is incorrect" });
+            if (string.IsNullOrEmpty(request.Username) || !UsernameRegex.IsMatch(request.Username)) {
+                return BadRequest(new { error = "Registration failed" });
             }
             
             var existingStudent = await _userHandler.GetByUsernameAsync(request.Username, ct);
             if (existingStudent != null) {
-                return Conflict(new { error = "Username already exists" });
+                return Conflict(new { error = "Registration failed" });
             }
         } else {
-            if (string.IsNullOrEmpty(request.Email) || !EmailRegex.IsMatch(request.Email) || request.Email.Length < 5) {
-                return BadRequest(new { error = "Email is incorrect" });
+            if (string.IsNullOrEmpty(request.Email) || !EmailRegex.IsMatch(request.Email)) {
+                return BadRequest(new { error = "Registration failed" });
             }
             
             var existingUser = await _userHandler.GetByEmailAsync(request.Email, ct);
             if (existingUser != null) {
-                return Conflict(new { error = "Email already exists" });
+                return Conflict(new { error = "Registration failed" });
             }
         }
 
         var username = userProfileType == ProfileType.Student
             ? request.Username!
             : null;
-        var email = userProfileType != ProfileType.Student
-            ? request.Email?.ToLower()!
-            : null;
+        string? email = null;
+        if (userProfileType != ProfileType.Student) {
+            var emailValue = request.Email;
+            if (emailValue == null) {
+                return BadRequest(new { error = "Registration failed" });
+            }
+            
+            email = emailValue.ToLower();
+        }
         var user = await _userHandler.CreateUserAsync(
             username,
             email,
@@ -157,7 +169,13 @@ public class AuthController(ILogger<AuthController> logger, UserHandler userHand
 
         var newAccessToken = JwtHelper.GenerateToken(user.Id, user.Email, user.Username ?? "", user.Profile);
         var newRefreshToken = JwtHelper.GenerateRefreshToken();
-        var refreshTokenExpiry = DateTime.UtcNow.AddHours(4);
+        
+        var refreshExpiresStr = Environment.GetEnvironmentVariable("JWT__REFRESH_EXPIRES_IN_HOURS");
+        if (string.IsNullOrEmpty(refreshExpiresStr) || !int.TryParse(refreshExpiresStr, out var refreshExpiresInHours)) {
+            return StatusCode(500, new { error = "Server configuration error: JWT__REFRESH_EXPIRES_IN_HOURS not configured" });
+        }
+        
+        var refreshTokenExpiry = DateTime.UtcNow.AddHours(refreshExpiresInHours);
 
         await _userHandler.UpdateRefreshTokenAsync(user.Id, newRefreshToken, refreshTokenExpiry, ct);
 
