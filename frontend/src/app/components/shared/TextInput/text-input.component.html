@@ -4,10 +4,10 @@
   </label>
 
   <div class="text-input__wrapper" [class.text-input__wrapper--error]="error">
-    <!-- Icône à gauche (optionnelle, via classe CSS) -->
-    <span *ngIf="iconLeft" class="text-input__icon text-input__icon--left">
-      <i class="material-icons">{{ iconLeft }}</i>
-    </span>
+    
+    <div *ngIf="iconLeft" class="icon">
+      <img [src]="iconLeft" alt="icon" class="icon__img" />
+    </div>
 
     <input
       class="text-input__field"

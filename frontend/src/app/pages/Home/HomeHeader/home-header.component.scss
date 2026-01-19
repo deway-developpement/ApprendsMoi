@@ -20,7 +20,7 @@
   left: -35vw;
   width: 130vw;
   height: 65vh;
-  background: #ffffff;
+  background: $backgroundColor;
   transform: rotate(-30deg);
   z-index: 1;
 }
@@ -58,7 +58,7 @@
 }
 
 .header-white-curve path {
-  fill: #ffffff;
+  fill: $backgroundColor;
 }
 
 @media (max-width: 1250px) {

@@ -10,6 +10,7 @@
     class="header__burger" 
     (click)="toggleMenu()" 
     [class.is-active]="isMenuOpen"
+    [ngClass]="'header__burger__simple--' + simple"
     aria-label="Toggle menu">
     <span></span>
     <span></span>
@@ -22,7 +23,7 @@
     (click)="closeMenu()">
   </div>
 
-  <div class="header__menu" [class.is-open]="isMenuOpen">
+  <div class="header__menu" [ngClass]="'header__menu__simple--' + simple" [class.is-open]="isMenuOpen">
     
     <nav class="header__nav">
       <ul class="header__nav-list">
@@ -36,7 +37,7 @@
           <a href="#" class="header__nav-link" (click)="closeMenu()">Témoignages</a>
         </li>
         <li class="header__nav-item">
-          <a href="#" class="header__nav-link" (click)="closeMenu()">Inscriptions</a>
+          <a routerLink="/register" class="header__nav-link" (click)="closeMenu()">Inscriptions</a>
         </li>
         <li class="header__nav-item">
           <a href="#" class="header__nav-link" (click)="closeMenu()">FAQ</a>
@@ -45,8 +46,19 @@
     </nav>
 
     <div class="header__actions">
-      <app-button variant="ghost" (click)="closeMenu()">Connexion</app-button>
-      <app-button variant="primary" (click)="closeMenu()">Inscription</app-button>
+      <app-button 
+        variant="ghost" 
+        routerLink="/login" 
+        (click)="closeMenu()">
+        Connexion
+      </app-button>
+      
+      <app-button 
+        variant="primary" 
+        routerLink="/register" 
+        (click)="closeMenu()">
+        Inscription
+      </app-button>
     </div>
   </div>
 
