@@ -16,17 +16,17 @@ public class UserHandler(AppDbContext db) {
     }
 
     public async Task<User?> ValidateCredentialsByEmailAsync(string email, string password, CancellationToken ct = default) {
-        var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Email == email.ToLower(), ct);
-        if (user == null) return null;
-        
-        bool isValid = BCrypt.Net.BCrypt.Verify(password, user.PasswordHash);
-        return isValid ? user : null;
+        var user = await GetByEmailAsync(email, ct);
+        return ValidatePassword(user, password);
     }
 
     public async Task<User?> ValidateCredentialsByUsernameAsync(string username, string password, CancellationToken ct = default) {
-        var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Username == username, ct);
+        var user = await GetByUsernameAsync(username, ct);
+        return ValidatePassword(user, password);
+    }
+
+    private static User? ValidatePassword(User? user, string password) {
         if (user == null) return null;
-        
         bool isValid = BCrypt.Net.BCrypt.Verify(password, user.PasswordHash);
         return isValid ? user : null;
     }
@@ -36,7 +36,7 @@ public class UserHandler(AppDbContext db) {
         
         var user = new User {
             Username = username,
-            Email = email,
+            Email = email?.ToLower(),
             PasswordHash = passwordHash,
             Profile = profile,
             CreatedAt = DateTime.UtcNow
@@ -63,21 +63,32 @@ public class UserHandler(AppDbContext db) {
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId, ct);
         if (user == null) return false;
 
-        user.RefreshToken = refreshToken;
+        user.RefreshTokenHash = BCrypt.Net.BCrypt.HashPassword(refreshToken);
         user.RefreshTokenExpiry = expiry;
         await _db.SaveChangesAsync(ct);
         return true;
     }
 
     public async Task<User?> GetByRefreshTokenAsync(string refreshToken, CancellationToken ct = default) {
-        return await _db.Users.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken && u.RefreshTokenExpiry > DateTime.UtcNow, ct);
+        // Find all users with non-expired tokens, then verify hash
+        var users = await _db.Users
+            .Where(u => u.RefreshTokenHash != null && u.RefreshTokenExpiry > DateTime.UtcNow)
+            .ToListAsync(ct);
+        
+        foreach (var user in users) {
+            if (BCrypt.Net.BCrypt.Verify(refreshToken, user.RefreshTokenHash)) {
+                return user;
+            }
+        }
+        
+        return null;
     }
 
     public async Task<bool> RevokeRefreshTokenAsync(int userId, CancellationToken ct = default) {
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId, ct);
         if (user == null) return false;
 
-        user.RefreshToken = null;
+        user.RefreshTokenHash = null;
         user.RefreshTokenExpiry = null;
         await _db.SaveChangesAsync(ct);
         return true;

@@ -9,8 +9,8 @@ public class AddUserConstraints : Migration {
             ALTER TABLE users 
             ADD CONSTRAINT chk_user_profile_credentials 
             CHECK (
-                (profile = 1 AND username IS NOT NULL) OR 
-                (profile != 1 AND email IS NOT NULL)
+                (profile = 3 AND username IS NOT NULL) OR 
+                (profile != 3 AND email IS NOT NULL)
             )
         ");
 

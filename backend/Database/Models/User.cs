@@ -7,6 +7,6 @@ public class User {
     public string PasswordHash { get; set; } = string.Empty;
     public ProfileType Profile { get; set; } = ProfileType.Student;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public string? RefreshToken { get; set; }
+    public string? RefreshTokenHash { get; set; }
     public DateTime? RefreshTokenExpiry { get; set; }
 }

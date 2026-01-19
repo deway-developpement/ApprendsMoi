@@ -31,7 +31,7 @@ public class JwtHelper {
 
         var claims = claimsList.ToArray();
 
-        var expiresInHoursEnv = Environment.GetEnvironmentVariable("JWT__EXPIRES_IN_HOURS");
+        var expiresInHoursEnv = Environment.GetEnvironmentVariable("JWT__ACCESS_EXPIRES_IN_HOURS");
         double expiresInHours = 1;
         if (!string.IsNullOrEmpty(expiresInHoursEnv) && double.TryParse(expiresInHoursEnv, out var parsedExpiresInHours)) {
             expiresInHours = parsedExpiresInHours;
@@ -63,5 +63,20 @@ public class JwtHelper {
     public static string GenerateRefreshToken() {
         var bytes = Guid.NewGuid().ToByteArray().Concat(Guid.NewGuid().ToByteArray()).ToArray();
         return Convert.ToBase64String(bytes);
+    }
+
+    public static (string Token, DateTime Expiry) GenerateRefreshTokenWithExpiry() {
+        var refreshToken = GenerateRefreshToken();
+        var expiry = DateTime.UtcNow.AddHours(GetRefreshTokenExpiryHours());
+        return (refreshToken, expiry);
+    }
+
+    public static double GetRefreshTokenExpiryHours() {
+        var refreshExpiresInHoursEnv = Environment.GetEnvironmentVariable("JWT__REFRESH_EXPIRES_IN_HOURS");
+        double refreshExpiresInHours = 4;
+        if (!string.IsNullOrEmpty(refreshExpiresInHoursEnv) && double.TryParse(refreshExpiresInHoursEnv, out var parsedRefreshExpiresInHours)) {
+            refreshExpiresInHours = parsedRefreshExpiresInHours;
+        }
+        return refreshExpiresInHours;
     }
 }
