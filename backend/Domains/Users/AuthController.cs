@@ -15,6 +15,14 @@ public class AuthController(ILogger<AuthController> logger, UserHandler userHand
     private static readonly Regex EmailRegex = new(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", RegexOptions.Compiled);
     private static readonly Regex UsernameRegex = new(@"^[a-zA-Z0-9_-]{3,20}$", RegexOptions.Compiled);
 
+    private static int GetRefreshTokenExpiryHours() {
+        var refreshExpiresStr = Environment.GetEnvironmentVariable("JWT__REFRESH_EXPIRES_IN_HOURS");
+        if (string.IsNullOrEmpty(refreshExpiresStr) || !int.TryParse(refreshExpiresStr, out var hours)) {
+            throw new InvalidOperationException("JWT__REFRESH_EXPIRES_IN_HOURS environment variable is not configured or invalid.");
+        }
+        return hours;
+    }
+
     [HttpPost("login")]
     [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken ct) {
@@ -47,16 +55,7 @@ public class AuthController(ILogger<AuthController> logger, UserHandler userHand
         }
 
         var token = JwtHelper.GenerateToken(user.Id, user.Email, user.Username, user.Profile);
-        var refreshToken = JwtHelper.GenerateRefreshToken();
-        
-        var refreshExpiresStr = Environment.GetEnvironmentVariable("JWT__REFRESH_EXPIRES_IN_HOURS");
-        if (string.IsNullOrEmpty(refreshExpiresStr) || !int.TryParse(refreshExpiresStr, out var refreshExpiresInHours)) {
-            return StatusCode(500, new { error = "Server configuration error: JWT__REFRESH_EXPIRES_IN_HOURS not configured" });
-        }
-        
-        var refreshTokenExpiry = DateTime.UtcNow.AddHours(refreshExpiresInHours);
-
-        await _userHandler.UpdateRefreshTokenAsync(user.Id, refreshToken, refreshTokenExpiry, ct);
+        var refreshToken = await GenerateAndStoreRefreshTokenAsync(user.Id, ct);
 
         return Ok(new LoginResponse(
             token,
@@ -106,15 +105,10 @@ public class AuthController(ILogger<AuthController> logger, UserHandler userHand
         var username = userProfileType == ProfileType.Student
             ? request.Username!
             : null;
-        string? email = null;
-        if (userProfileType != ProfileType.Student) {
-            var emailValue = request.Email;
-            if (emailValue == null) {
-                return BadRequest(new { error = "Registration failed" });
-            }
-            
-            email = emailValue.ToLower();
-        }
+        var email = userProfileType != ProfileType.Student
+            ? request.Email
+            : null;
+        
         var user = await _userHandler.CreateUserAsync(
             username,
             email,
@@ -167,17 +161,8 @@ public class AuthController(ILogger<AuthController> logger, UserHandler userHand
             return Unauthorized(new { error = "Invalid or expired refresh token" });
         }
 
-        var newAccessToken = JwtHelper.GenerateToken(user.Id, user.Email, user.Username ?? "", user.Profile);
-        var newRefreshToken = JwtHelper.GenerateRefreshToken();
-        
-        var refreshExpiresStr = Environment.GetEnvironmentVariable("JWT__REFRESH_EXPIRES_IN_HOURS");
-        if (string.IsNullOrEmpty(refreshExpiresStr) || !int.TryParse(refreshExpiresStr, out var refreshExpiresInHours)) {
-            return StatusCode(500, new { error = "Server configuration error: JWT__REFRESH_EXPIRES_IN_HOURS not configured" });
-        }
-        
-        var refreshTokenExpiry = DateTime.UtcNow.AddHours(refreshExpiresInHours);
-
-        await _userHandler.UpdateRefreshTokenAsync(user.Id, newRefreshToken, refreshTokenExpiry, ct);
+        var newAccessToken = JwtHelper.GenerateToken(user.Id, user.Email, user.Username, user.Profile);
+        var newRefreshToken = await GenerateAndStoreRefreshTokenAsync(user.Id, ct);
 
         return Ok(new LoginResponse(
             newAccessToken,
@@ -189,6 +174,12 @@ public class AuthController(ILogger<AuthController> logger, UserHandler userHand
                 Profile = user.Profile
             }
         ));
+    }
+
+    private async Task<string> GenerateAndStoreRefreshTokenAsync(int userId, CancellationToken ct = default) {
+        var (refreshToken, expiry) = JwtHelper.GenerateRefreshTokenWithExpiry();
+        await _userHandler.UpdateRefreshTokenAsync(userId, refreshToken, expiry, ct);
+        return refreshToken;
     }
 }
 

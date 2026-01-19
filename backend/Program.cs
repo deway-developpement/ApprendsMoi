@@ -19,13 +19,17 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Authentication services
+var jwtSecret = Environment.GetEnvironmentVariable("JWT__SECRET")
+    ?? throw new InvalidOperationException("JWT__SECRET environment variable is not configured");
+if (Encoding.UTF8.GetByteCount(jwtSecret) < 32) {
+    throw new InvalidOperationException("JWT__SECRET must be at least 32 bytes (256 bits) long for HMAC-SHA256.");
+}
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options => {
         options.TokenValidationParameters = new TokenValidationParameters {
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT__SECRET") 
-                    ?? throw new InvalidOperationException("JWT__SECRET environment variable is not configured"))
+                Encoding.UTF8.GetBytes(jwtSecret)
             ),
             ValidateIssuer = true,
             ValidateAudience = true,
@@ -40,7 +44,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // Authorization services
 builder.Services.AddAuthorization();
 
+
 // CORS configuration
+
 var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND__URL");
 if (string.IsNullOrEmpty(frontendUrl)) {
     throw new InvalidOperationException("FRONTEND__URL environment variable is not configured");

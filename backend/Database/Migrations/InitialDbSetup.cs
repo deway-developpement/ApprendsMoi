@@ -9,7 +9,7 @@ public class InitialDbSetup : Migration {
         Create.Table("users")
             .WithColumn("id").AsInt32().PrimaryKey().Identity()
             .WithColumn("username").AsString(100).Nullable()
-            .WithColumn("email").AsString(255).Nullable()
+            .WithColumn("email").AsString(255).Nullable().Unique()
             .WithColumn("password_hash").AsString(255).NotNullable()
             .WithColumn("profile").AsInt16().NotNullable().WithDefaultValue((int)ProfileType.Student)
             .WithColumn("created_at").AsDateTime().WithDefault(SystemMethods.CurrentUTCDateTime);
