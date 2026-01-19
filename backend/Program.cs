@@ -27,8 +27,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT__SECRET") 
                     ?? throw new InvalidOperationException("JWT__SECRET environment variable is not configured"))
             ),
-            ValidateIssuer = false,
-            ValidateAudience = false,
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidIssuer = Environment.GetEnvironmentVariable("JWT__ISSUER")
+                ?? throw new InvalidOperationException("JWT__ISSUER environment variable is not configured"),
+            ValidAudience = Environment.GetEnvironmentVariable("JWT__AUDIENCE")
+                ?? throw new InvalidOperationException("JWT__AUDIENCE environment variable is not configured"),
             ClockSkew = TimeSpan.Zero
         };
     });
@@ -36,9 +40,26 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // Authorization services
 builder.Services.AddAuthorization();
 
+// CORS configuration
+var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND__URL");
+if (string.IsNullOrEmpty(frontendUrl)) {
+    throw new InvalidOperationException("FRONTEND__URL environment variable is not configured");
+}
+builder.Services.AddCors(options => {
+    options.AddPolicy("AllowFrontend", policy => {
+        policy.WithOrigins(frontendUrl)
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
+
 
 // Database services
 var defaultCo = Environment.GetEnvironmentVariable("POSTGRES__CONNECTION_STRING");
+if (string.IsNullOrEmpty(defaultCo)) {
+    throw new InvalidOperationException("POSTGRES__CONNECTION_STRING environment variable is not configured");
+}
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(defaultCo)
 );
@@ -102,6 +123,9 @@ if (app.Environment.IsDevelopment()) {
 
 app.UseHttpsRedirection();
 
+// CORS middleware
+app.UseCors("AllowFrontend");
+
 // Authentication middleware
 app.UseAuthentication();
 
@@ -109,18 +133,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-// Handle 404 - Not Found
-app.Use(async (context, next) => {
-    await next();
-    if (context.Response.StatusCode == 404 && !context.Response.HasStarted) {
-        context.Response.ContentType = "application/json";
-        await context.Response.WriteAsJsonAsync(new {
-            error = "Not Found",
-            message = $"The requested resource '{context.Request.Path}' was not found",
-            statusCode = 404
-        });
-    }
-});
 
 app.Run();

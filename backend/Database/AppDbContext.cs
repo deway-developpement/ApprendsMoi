@@ -18,6 +18,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             b.Property(e => e.PasswordHash).HasColumnName("password_hash");
             b.Property(e => e.Profile).HasColumnName("profile");
             b.Property(e => e.CreatedAt).HasColumnName("created_at");
+            b.Property(e => e.RefreshToken).HasColumnName("refresh_token");
+            b.Property(e => e.RefreshTokenExpiry).HasColumnName("refresh_token_expiry");
         });
     }
 }

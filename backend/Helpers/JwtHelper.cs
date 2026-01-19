@@ -31,9 +31,17 @@ public class JwtHelper {
 
         var claims = claimsList.ToArray();
 
+        var expiresInHoursEnv = Environment.GetEnvironmentVariable("JWT__EXPIRES_IN_HOURS");
+        double expiresInHours = 1;
+        if (!string.IsNullOrEmpty(expiresInHoursEnv) && double.TryParse(expiresInHoursEnv, out var parsedExpiresInHours)) {
+            expiresInHours = parsedExpiresInHours;
+        }
+
         var token = new JwtSecurityToken(
+            issuer: Environment.GetEnvironmentVariable("JWT__ISSUER"),
+            audience: Environment.GetEnvironmentVariable("JWT__AUDIENCE"),
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(1),
+            expires: DateTime.UtcNow.AddHours(expiresInHours),
             signingCredentials: credentials
         );
 

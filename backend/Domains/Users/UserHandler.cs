@@ -8,15 +8,15 @@ public class UserHandler(AppDbContext db) {
     private readonly AppDbContext _db = db;
 
     public async Task<User?> GetByEmailAsync(string email, CancellationToken ct = default) {
-        return await _db.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Email == email, ct);
+        return await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Email == email.ToLower(), ct);
     }
 
     public async Task<User?> GetByUsernameAsync(string username, CancellationToken ct = default) {
-        return await _db.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Username == username, ct);
+        return await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Username == username, ct);
     }
 
     public async Task<User?> ValidateCredentialsByEmailAsync(string email, string password, CancellationToken ct = default) {
-        var user = await _db.Users.FirstOrDefaultAsync(x => x.Email == email, ct);
+        var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Email == email.ToLower(), ct);
         if (user == null) return null;
         
         bool isValid = BCrypt.Net.BCrypt.Verify(password, user.PasswordHash);
@@ -24,7 +24,7 @@ public class UserHandler(AppDbContext db) {
     }
 
     public async Task<User?> ValidateCredentialsByUsernameAsync(string username, string password, CancellationToken ct = default) {
-        var user = await _db.Users.FirstOrDefaultAsync(x => x.Username == username, ct);
+        var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Username == username, ct);
         if (user == null) return null;
         
         bool isValid = BCrypt.Net.BCrypt.Verify(password, user.PasswordHash);
@@ -54,7 +54,7 @@ public class UserHandler(AppDbContext db) {
     }
 
     public async Task<UserDto?> GetUserByIdAsync(int id, CancellationToken ct = default) {
-        var u = await _db.Users.AsNoTracking().FirstOrDefaultAsync(user => user.Id == id, ct);
+        var u = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id, ct);
         if (u == null) return null;
         return new UserDto { Id = u.Id, Email = u.Email, Username = u.Username, Profile = u.Profile };
     }
@@ -70,11 +70,11 @@ public class UserHandler(AppDbContext db) {
     }
 
     public async Task<User?> GetByRefreshTokenAsync(string refreshToken, CancellationToken ct = default) {
-        return await _db.Users.FirstOrDefaultAsync(user => user.RefreshToken == refreshToken && user.RefreshTokenExpiry > DateTime.UtcNow, ct);
+        return await _db.Users.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken && u.RefreshTokenExpiry > DateTime.UtcNow, ct);
     }
 
     public async Task<bool> RevokeRefreshTokenAsync(int userId, CancellationToken ct = default) {
-        var user = await _db.Users.FirstOrDefaultAsync(user => user.Id == userId, ct);
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId, ct);
         if (user == null) return false;
 
         user.RefreshToken = null;
