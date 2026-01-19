@@ -1,0 +1,148 @@
+@import "variables";
+
+// Permet aux ancres de ne pas être cachées par un header fixe éventuel
+:target {
+  scroll-margin-top: 100px;
+}
+
+.home-body {
+  background-color: $backgroundColor;
+
+  .container {
+    max-width: $maxContentWidth;
+    margin: 0 auto;
+    padding: $paddingLarge;
+  }
+
+  h2 {
+    font-size: $titleFontSize;
+    color: $PrimaryColor;
+    text-align: center;
+    margin-bottom: $marginLarge * 2;
+  }
+
+  .advantages-section, .testimonials-section, .faq-section {
+    padding: 60px 0;
+  }
+
+  .bg-dark {
+    background-color: $heroIntroBackground;
+    .text-white { color: white; }
+  }
+
+  // Styles Témoignages
+  .testimonials-section {
+    background-color: white;
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: $marginLarge;
+    }
+
+    .testimonial-card {
+      padding: $paddingLarge;
+      text-align: center;
+      background: $backgroundColor;
+      border-radius: $borderRadiusLarge;
+      box-shadow: $boxShadow;
+
+      .avatar-container {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto $marginMedium;
+        
+        .avatar {
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          object-fit: cover;
+          border: 3px solid $SecondaryColor;
+        }
+      }
+
+      .stars {
+        margin-bottom: $marginSmall;
+        font-size: 1.2rem;
+      }
+
+      .quote {
+        font-style: italic;
+        font-size: $regularFontSize;
+        color: #555;
+        margin-bottom: $marginMedium;
+      }
+
+      .author {
+        color: $PrimaryColor;
+        margin-bottom: 0;
+      }
+
+      .role {
+        font-size: $smallerFontSize;
+        color: $SecondaryColor;
+      }
+    }
+  }
+
+  // Réutilisation des grid existantes
+  .advantages-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: $marginLarge;
+    margin-bottom: $marginLarge;
+
+    .advantage-card {
+      background: white;
+      padding: $paddingMedium;
+      border-radius: $borderRadius;
+      box-shadow: $boxShadow;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      transition: transform $transitionFast;
+
+      &:hover { transform: translateY(-5px); }
+      
+      app-small-icon { margin-bottom: $marginMedium; }
+      p { font-size: $regularFontSize; color: #444; }
+      strong { display: block; color: $PrimaryColor; margin-bottom: 5px; }
+    }
+
+    &.professors .advantage-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      p { color: #ccc; }
+      strong { color: $SecondaryColor; }
+    }
+  }
+
+  .cta-center {
+    display: flex;
+    justify-content: center;
+    margin-top: $marginLarge;
+  }
+
+  .faq-accordion {
+    max-width: 800px;
+    margin: 0 auto;
+    
+    .faq-item {
+      margin-bottom: $marginLarge;
+      padding-bottom: $paddingMedium;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+
+      .faq-question {
+        font-size: $biggerFontSize;
+        color: $PrimaryColor;
+        margin-bottom: $marginSmall;
+      }
+      .faq-answer {
+        font-size: $smallerFontSize;
+        line-height: 1.6;
+        color: #555;
+      }
+    }
+  }
+}

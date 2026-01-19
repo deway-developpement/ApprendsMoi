@@ -1,3 +1,83 @@
 <app-home-header></app-home-header>
 
-<p>Here is some text below the header.</p>
+<main class="home-body">
+  <section id="parents" class="advantages-section parents">
+    <div class="container">
+      <h2>Pourquoi choisir ApprendsMoi pour vos enfants ?</h2>
+      <div class="advantages-grid">
+        <div class="advantage-card">
+          <app-small-icon icon="assets/icons/verified-user.svg" [size]="30"></app-small-icon>
+          <p><strong>Professeurs vérifiés :</strong> Profils examinés manuellement avec justificatifs de diplômes.</p>
+        </div>
+        <div class="advantage-card">
+          <app-small-icon icon="assets/icons/account-balance.svg" [size]="30"></app-small-icon>
+          <p><strong>Réduction fiscale :</strong> 50% de crédit d'impôt sur vos cours à domicile.</p> 
+        </div>
+        <div class="advantage-card">
+          <app-small-icon icon="assets/icons/security.svg" [size]="30"></app-small-icon>
+          <p><strong>Paiement sécurisé :</strong> Les fonds sont versés au professeur une fois le cours effectué.</p>
+        </div>
+      </div>
+      <div class="cta-center">
+        <app-button variant="primary">Découvrir nos professeurs</app-button>
+      </div>
+    </div>
+  </section>
+
+  <section id="temoignages" class="testimonials-section">
+    <div class="container">
+      <h2>Ils nous font confiance</h2>
+      <div class="testimonials-grid">
+        <div *ngFor="let t of testimonials" class="testimonial-card">
+          <div class="avatar-container">
+            <img [src]="t.img" [alt]="t.name" class="avatar">
+          </div>
+          <div class="stars">
+            <span *ngFor="let s of [1,2,3,4,5]" [style.color]="s <= t.stars ? '#fbbf24' : '#ccc'">★</span>
+          </div>
+          <p class="quote">{{ t.content }}</p>
+          <p class="author"><strong>{{ t.name }}</strong></p>
+          <p class="role">{{ t.role }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="professeurs" class="advantages-section professors bg-dark">
+    <div class="container">
+      <h2 class="text-white">Partagez vos connaissances et enseignez librement</h2>
+      <div class="advantages-grid">
+        <div class="advantage-card text-white">
+          <app-small-icon icon="assets/icons/schedule.svg" [size]="30"></app-small-icon>
+          <p><strong>Flexibilité totale :</strong> Gérez vos propres disponibilités et vos tarifs horaires.</p>
+        </div>
+        <div class="advantage-card text-white">
+          <app-small-icon icon="assets/icons/trending-up.svg" [size]="30"></app-small-icon>
+          <p><strong>Visibilité accrue :</strong> Accédez à des options Premium pour booster votre profil.</p>
+        </div>
+        <div class="advantage-card text-white">
+          <app-small-icon icon="assets/icons/payments.svg" [size]="30"></app-small-icon>
+          <p><strong>Paiements garantis :</strong> Finis les impayés, la plateforme encadre chaque transaction.</p>
+        </div>
+      </div>
+      <div class="cta-center">
+        <app-button variant="primary">Devenir Professeur</app-button>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" class="faq-section">
+    <div class="container">
+      <h2>Questions fréquentes</h2>
+      <div class="faq-accordion">
+        <div *ngFor="let item of faqItems" class="faq-item">
+          <h3 class="faq-question">{{ item.question }}</h3>
+          <p class="faq-answer">{{ item.answer }}</p>
+        </div>
+      </div>
+      <div class="cta-center">
+        <app-button variant="ghost">Nous contacter</app-button> 
+      </div>
+    </div>
+  </section>
+</main>

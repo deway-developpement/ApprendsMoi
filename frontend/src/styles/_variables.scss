@@ -5,8 +5,35 @@ $green: #4EE381;
 $heroIntroBackground: #0b0c10;
 $backgroundColor: #FFFEFC;
 
+$PrimaryColor: #1a365d; // Dark Blue/Navy from the logo
+$PrimaryColorHover: #2a4365;
+$PrimaryActive: #1e3a8a;
+
+$colorPremium: #fbbf24; // Gold for the Premium Star [cite: 1791]
+$colorVerified: #4EE381; // Green for Verified/Shield [cite: 1791]
+$colorTopProf: #8b5cf6; // Purple for Top Prof Ribbon [cite: 1791]
+
+$statusConfirmed: $green; // Green 
+$statusPending: $SecondaryColor; // Orange 
+$statusCanceled: #ef4444; // Red for Annulé/Litige 
+$statusInfo: #3b82f6; // Blue for messages/notifications
+
 $titleFontSize: clamp(1.5rem, 2vw, 2rem);
 $biggerFontSize: clamp(0.85rem, 1.4vw, 1rem);
 $regularFontSize: clamp(0.9rem, 1.3vw, 0.9rem);
 $smallerFontSize: clamp(0.8rem, 1.2vw, 0.85rem);
 $tinierFontSize: clamp(0.75rem, 1.1vw, 0.80rem);
+
+$borderRadius: 0.5rem;
+$borderRadiusLarge: 1rem;
+$boxShadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+$transitionFast: 0.2s ease-in-out;
+$transitionMedium: 0.4s ease-in-out;
+$transitionSlow: 0.6s ease-in-out;
+$marginSmall: 0.5rem;
+$marginMedium: 1rem;
+$marginLarge: 2rem;
+$paddingSmall: 0.5rem;
+$paddingMedium: 1rem;
+$paddingLarge: 2rem;
+$maxContentWidth: 1200px;
