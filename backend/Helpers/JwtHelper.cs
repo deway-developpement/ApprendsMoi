@@ -1,0 +1,82 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using backend.Database.Models;
+using Microsoft.IdentityModel.Tokens;
+
+namespace backend.Helpers;
+
+public class JwtHelper {
+    public static string GenerateToken(int userId, string? email, string? username, ProfileType profile) {
+        var jwtSecret = Environment.GetEnvironmentVariable("JWT__SECRET");
+        if (string.IsNullOrEmpty(jwtSecret)) {
+            throw new InvalidOperationException("JWT secret is not configured.");
+        }
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var claimsList = new List<Claim> {
+            new(ClaimTypes.NameIdentifier, userId.ToString()),
+            new(ClaimTypes.Role, profile.ToString()),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        };
+        
+        if (!string.IsNullOrEmpty(email)) {
+            claimsList.Add(new Claim(ClaimTypes.Email, email));
+        }
+        if (!string.IsNullOrEmpty(username)) {
+            claimsList.Add(new Claim(ClaimTypes.Name, username));
+        }
+
+        var claims = claimsList.ToArray();
+
+        var expiresInHoursEnv = Environment.GetEnvironmentVariable("JWT__ACCESS_EXPIRES_IN_HOURS");
+        double expiresInHours = 1;
+        if (!string.IsNullOrEmpty(expiresInHoursEnv) && double.TryParse(expiresInHoursEnv, out var parsedExpiresInHours)) {
+            expiresInHours = parsedExpiresInHours;
+        }
+
+        var token = new JwtSecurityToken(
+            issuer: Environment.GetEnvironmentVariable("JWT__ISSUER"),
+            audience: Environment.GetEnvironmentVariable("JWT__AUDIENCE"),
+            claims: claims,
+            expires: DateTime.UtcNow.AddHours(expiresInHours),
+            signingCredentials: credentials
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    public static int? GetUserIdFromClaims(ClaimsPrincipal user) {
+        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim != null && int.TryParse(userIdClaim.Value, out var userId)) {
+            return userId;
+        }
+        return null;
+    }
+
+    public static string? GetUserEmailFromClaims(ClaimsPrincipal user) {
+        return user.FindFirst(ClaimTypes.Email)?.Value;
+    }
+
+    public static string GenerateRefreshToken() {
+        var bytes = Guid.NewGuid().ToByteArray().Concat(Guid.NewGuid().ToByteArray()).ToArray();
+        return Convert.ToBase64String(bytes);
+    }
+
+    public static (string Token, DateTime Expiry) GenerateRefreshTokenWithExpiry() {
+        var refreshToken = GenerateRefreshToken();
+        var expiry = DateTime.UtcNow.AddHours(GetRefreshTokenExpiryHours());
+        return (refreshToken, expiry);
+    }
+
+    public static double GetRefreshTokenExpiryHours() {
+        var refreshExpiresInHoursEnv = Environment.GetEnvironmentVariable("JWT__REFRESH_EXPIRES_IN_HOURS");
+        double refreshExpiresInHours = 4;
+        if (!string.IsNullOrEmpty(refreshExpiresInHoursEnv) && double.TryParse(refreshExpiresInHoursEnv, out var parsedRefreshExpiresInHours)) {
+            refreshExpiresInHours = parsedRefreshExpiresInHours;
+        }
+        return refreshExpiresInHours;
+    }
+}

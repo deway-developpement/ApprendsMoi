@@ -2,7 +2,7 @@ using FluentMigrator;
 
 namespace backend.Database.Migrations;
 
-[Migration(20241223002)]
+[Migration(202401010003)]
 public class AddUserToMeeting : Migration
 {
     public override void Up()
@@ -13,7 +13,6 @@ public class AddUserToMeeting : Migration
 
     public override void Down()
     {
-        Delete.ForeignKey("FK_meetings_user_id_users_id").OnTable("meetings");
-        Delete.Column("user_id").FromTable("meetings");
+        Execute.Sql("ALTER TABLE meetings DROP COLUMN IF EXISTS user_id CASCADE");
     }
 }

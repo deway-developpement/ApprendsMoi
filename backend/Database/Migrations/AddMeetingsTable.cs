@@ -2,7 +2,7 @@ using FluentMigrator;
 
 namespace backend.Database.Migrations;
 
-[Migration(20241223001)]
+[Migration(202401010002)]
 public class AddMeetingsTable : Migration
 {
     public override void Up()

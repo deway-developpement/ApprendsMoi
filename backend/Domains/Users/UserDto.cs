@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 public class UserDto {
     public int Id { get; set; }
+    public string? Email { get; set; }
     public string? Username { get; set; }
     public ProfileType Profile { get; set; }
 }

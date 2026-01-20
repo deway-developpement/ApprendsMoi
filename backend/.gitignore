@@ -46,6 +46,9 @@ project.lock.json
 project.fragment.lock.json
 artifacts/
 
+# PostgreSQL data
+pgdata/
+
 # VS Code
 .vscode/
 

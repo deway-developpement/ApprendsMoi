@@ -15,7 +15,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasColumnName("id")
                 .ValueGeneratedOnAdd();
             b.Property(e => e.Username).HasColumnName("username");
+            b.Property(e => e.Email).HasColumnName("email");
+            b.Property(e => e.PasswordHash).HasColumnName("password_hash");
             b.Property(e => e.Profile).HasColumnName("profile");
+            b.Property(e => e.CreatedAt).HasColumnName("created_at");
+            b.Property(e => e.RefreshTokenHash).HasColumnName("refresh_token_hash");
+            b.Property(e => e.RefreshTokenExpiry).HasColumnName("refresh_token_expiry");
         });
 
         modelBuilder.Entity<Meeting>(b => {
