@@ -24,11 +24,11 @@
     </header>
 
     <div class="zoom-container" #zoomContainer>
-      <div *ngIf="isLoadingMeeting" class="zoom-status">Chargement de la reunion...</div>
+      <div *ngIf="isLoadingMeeting" class="zoom-status">Chargement de la réunion...</div>
       <div *ngIf="!sdkReady && !isInitializingSdk && !isLoadingMeeting && !sdkError" class="zoom-placeholder">
         <p>Initialisation de la visioconference...</p>
       </div>
-      <div *ngIf="isInitializingSdk" class="zoom-status">Chargement de la reunion...</div>
+      <div *ngIf="isInitializingSdk" class="zoom-status">Chargement de la réunion...</div>
       <div *ngIf="sdkError" class="zoom-error">
         <p>{{ sdkError }}</p>
         <button (click)="loadMeetingAndInit()" class="retry-button">Réessayer</button>
