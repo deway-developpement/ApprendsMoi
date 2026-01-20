@@ -17,21 +17,17 @@ builder.Services.AddOpenApi();
 
 // Swagger services
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options => {
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme {
+builder.Services.AddSwaggerGen(options =>
+{
+    var bearerSecurityScheme = new OpenApiSecurityScheme
+    {
         Type = SecuritySchemeType.Http,
         Scheme = "bearer",
         BearerFormat = "JWT",
-        In = ParameterLocation.Header,
         Description = "Enter your JWT token"
-    });
+    };
     
-    options.AddSecurityRequirement(doc => {
-        var scheme = new OpenApiSecuritySchemeReference("Bearer", doc);
-        var requirement = new OpenApiSecurityRequirement();
-        requirement.Add(scheme, new List<string>());
-        return requirement;
-    });
+    options.AddSecurityDefinition("Bearer", bearerSecurityScheme);
 });
 
 // Authentication services
