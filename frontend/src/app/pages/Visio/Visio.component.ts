@@ -170,7 +170,7 @@ export class Visio implements OnInit, OnDestroy {
 
   private tryInitZoomSdk(): void {
     if (!this.zoomContainer?.nativeElement) {
-      this.sdkError = 'Container Zoom non trouve';
+      this.sdkError = 'Container Zoom non trouvé';
       return;
     }
 
