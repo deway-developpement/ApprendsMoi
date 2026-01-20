@@ -177,7 +177,7 @@ export class Visio implements OnInit, OnDestroy {
     if (this.sdkReady) return;
 
     if (typeof ZoomMtgEmbedded === 'undefined') {
-      this.sdkError = 'SDK Zoom non charge.';
+      this.sdkError = 'SDK Zoom non chargé.';
       return;
     }
 
