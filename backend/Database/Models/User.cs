@@ -4,4 +4,7 @@ public class User {
     public int Id { get; set; }
     public string? Username { get; set; }
     public ProfileType Profile { get; set; } = ProfileType.Student;
+    
+    public ICollection<Meeting> Meetings { get; set; } = new List<Meeting>();
 }
+

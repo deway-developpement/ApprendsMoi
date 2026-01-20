@@ -32,6 +32,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             b.Property(e => e.CreatedAt).HasColumnName("created_at");
             b.Property(e => e.ScheduledStartTime).HasColumnName("scheduled_start_time");
             b.Property(e => e.Duration).HasColumnName("duration");
+            b.Property(e => e.UserId).HasColumnName("user_id");
+
+            b.HasOne(m => m.User)
+                .WithMany(u => u.Meetings)
+                .HasForeignKey(m => m.UserId);
         });
     }
 }

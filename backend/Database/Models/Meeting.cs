@@ -11,4 +11,8 @@ public class Meeting
     public DateTime CreatedAt { get; set; }
     public DateTime? ScheduledStartTime { get; set; }
     public int Duration { get; set; } // in minutes
+    
+    // Foreign key for User
+    public int? UserId { get; set; }
+    public User? User { get; set; }
 }

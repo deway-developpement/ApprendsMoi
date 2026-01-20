@@ -2,8 +2,9 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Linq;
+using backend.Database;
+using backend.Database.Models;
+using backend.Domains.Zoom.Models;
 
 namespace backend.Domains.Zoom;
 
@@ -15,10 +16,11 @@ public class ZoomService
     private readonly string? _sdkKey;
     private readonly string? _sdkSecret;
     private readonly HttpClient _httpClient;
+    private readonly AppDbContext _dbContext;
     private string? _cachedAccessToken;
     private DateTime _tokenExpiry = DateTime.MinValue;
 
-    public ZoomService(IConfiguration config, HttpClient httpClient)
+    public ZoomService(IConfiguration config, HttpClient httpClient, AppDbContext dbContext)
     {
         _accountId = Environment.GetEnvironmentVariable("ZOOM_ACCOUNT_ID") ?? config["Zoom:AccountId"];
         _clientId = Environment.GetEnvironmentVariable("ZOOM_CLIENT_ID") ?? config["Zoom:ClientId"];
@@ -27,6 +29,7 @@ public class ZoomService
         _sdkSecret = Environment.GetEnvironmentVariable("ZOOM_SDK_SECRET") ?? config["Zoom:SdkSecret"];
         _httpClient = httpClient;
         _httpClient.BaseAddress = new Uri("https://api.zoom.us/v2/");
+        _dbContext = dbContext;
     }
 
     public async Task<string> GetAccessTokenAsync()
@@ -38,7 +41,7 @@ public class ZoomService
 
         if (string.IsNullOrWhiteSpace(_accountId) || string.IsNullOrWhiteSpace(_clientId) || string.IsNullOrWhiteSpace(_clientSecret))
         {
-            throw new InvalidOperationException("Configuration Zoom manquante (Account ID, Client ID, Client Secret)");
+            throw new InvalidOperationException("Missing Zoom configuration (Account ID, Client ID, Client Secret)");
         }
 
         var authValue = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{_clientId}:{_clientSecret}"));
@@ -54,7 +57,7 @@ public class ZoomService
 
         if (tokenResponse == null || string.IsNullOrEmpty(tokenResponse.AccessToken))
         {
-            throw new InvalidOperationException("Impossible d'obtenir le token d'accès Zoom");
+            throw new InvalidOperationException("Unable to obtain Zoom access token");
         }
 
         _cachedAccessToken = tokenResponse.AccessToken;
@@ -63,10 +66,10 @@ public class ZoomService
         return _cachedAccessToken;
     }
 
-    public async Task<ZoomMeeting> CreateInstantMeetingAsync(string topic = "ApprendsMoi - Session")
+    public async Task<Meeting> CreateInstantMeetingAsync(string topic = "ApprendsMoi - Session")
     {
         var token = await GetAccessTokenAsync();
-
+        
         // Use scheduled meeting with unique start time to allow unlimited concurrent meetings
         // Add random offset (0-30 seconds) to ensure each meeting has a unique start_time
         var random = new Random();
@@ -103,25 +106,40 @@ public class ZoomService
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync();
-            throw new HttpRequestException($"Erreur lors de la création de la réunion Zoom: {error}");
+            throw new HttpRequestException($"Error creating Zoom meeting: {error}");
         }
 
         var content = await response.Content.ReadAsStringAsync();
-        var meeting = JsonSerializer.Deserialize<ZoomMeeting>(content);
+        var zoomMeeting = JsonSerializer.Deserialize<ZoomMeeting>(content);
 
-        if (meeting == null)
+        if (zoomMeeting == null)
         {
-            throw new InvalidOperationException("Impossible de parser la réponse de création de meeting");
+            throw new InvalidOperationException("Unable to parse create meeting response");
         }
+        
+        var newMeeting = new Meeting
+        {
+            ZoomMeetingId = zoomMeeting.Id,
+            Topic = zoomMeeting.Topic,
+            JoinUrl = zoomMeeting.JoinUrl,
+            StartUrl = zoomMeeting.StartUrl,
+            Password = zoomMeeting.Password,
+            CreatedAt = DateTime.UtcNow,
+            ScheduledStartTime = zoomMeeting.StartTime,
+            Duration = zoomMeeting.Duration,
+        };
+        
+        _dbContext.Meetings.Add(newMeeting);
+        await _dbContext.SaveChangesAsync();
 
-        return meeting;
+        return newMeeting;
     }
 
     public string GenerateSignature(string meetingNumber, int role = 0)
     {
         if (string.IsNullOrWhiteSpace(_sdkKey) || string.IsNullOrWhiteSpace(_sdkSecret))
         {
-            throw new InvalidOperationException("SDK Key/Secret manquants");
+            throw new InvalidOperationException("Missing SDK Key/Secret");
         }
 
         var ts = ToUnixTimeSeconds(DateTime.UtcNow) - 30;
@@ -154,7 +172,7 @@ public class ZoomService
     {
         if (string.IsNullOrWhiteSpace(_sdkKey))
         {
-            throw new InvalidOperationException("SDK Key manquant");
+            throw new InvalidOperationException("Missing SDK Key");
         }
         return _sdkKey;
     }
@@ -166,50 +184,3 @@ public class ZoomService
         Convert.ToBase64String(input).TrimEnd('=').Replace('+', '-').Replace('/', '_');
 }
 
-public class ZoomTokenResponse
-{
-    [JsonPropertyName("access_token")]
-    public string AccessToken { get; set; } = string.Empty;
-
-    [JsonPropertyName("token_type")]
-    public string TokenType { get; set; } = string.Empty;
-
-    [JsonPropertyName("expires_in")]
-    public int ExpiresIn { get; set; }
-}
-
-public class ZoomMeeting
-{
-    [JsonPropertyName("id")]
-    public long Id { get; set; }
-
-    [JsonPropertyName("topic")]
-    public string Topic { get; set; } = string.Empty;
-
-    [JsonPropertyName("start_url")]
-    public string StartUrl { get; set; } = string.Empty;
-
-    [JsonPropertyName("join_url")]
-    public string JoinUrl { get; set; } = string.Empty;
-
-    [JsonPropertyName("password")]
-    public string Password { get; set; } = string.Empty;
-
-    [JsonPropertyName("start_time")]
-    public DateTime StartTime { get; set; }
-
-    [JsonPropertyName("duration")]
-    public int Duration { get; set; }
-
-    [JsonPropertyName("settings")]
-    public ZoomMeetingSettings? Settings { get; set; }
-}
-
-public class ZoomMeetingSettings
-{
-    [JsonPropertyName("join_before_host")]
-    public bool JoinBeforeHost { get; set; }
-
-    [JsonPropertyName("waiting_room")]
-    public bool WaitingRoom { get; set; }
-}
