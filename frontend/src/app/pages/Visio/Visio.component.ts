@@ -242,7 +242,7 @@ export class Visio implements OnInit, OnDestroy {
   }
 
   private formatZoomError(err: any): string {
-    let msg = 'Defaut de se joindre a la reunion.';
+    let msg = 'Défaut de se joindre a la reunion.';
     if (err?.reason) msg += ` ${err.reason}`;
     if (err?.errorCode) msg += ` (Code: ${err.errorCode})`;
     return msg;
