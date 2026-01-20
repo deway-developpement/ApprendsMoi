@@ -95,7 +95,7 @@ public class ZoomService
             }
         };
 
-        var request = new HttpRequestMessage(HttpMethod.Post, "users/me/meetings")
+        using var request = new HttpRequestMessage(HttpMethod.Post, "users/me/meetings")
         {
             Content = new StringContent(JsonSerializer.Serialize(meetingData), Encoding.UTF8, "application/json")
         };
