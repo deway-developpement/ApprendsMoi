@@ -46,7 +46,7 @@ public class ZoomService
 
         var authValue = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{_clientId}:{_clientSecret}"));
         
-        var request = new HttpRequestMessage(HttpMethod.Post, $"https://zoom.us/oauth/token?grant_type=account_credentials&account_id={_accountId}");
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"https://zoom.us/oauth/token?grant_type=account_credentials&account_id={_accountId}");
         request.Headers.Authorization = new AuthenticationHeaderValue("Basic", authValue);
 
         var response = await _httpClient.SendAsync(request);
