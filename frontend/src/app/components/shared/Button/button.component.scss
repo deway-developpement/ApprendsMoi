@@ -35,3 +35,25 @@
 .btn--primary:active {
   background-color: $SecondaryColorActive;
 }
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Size variants */
+.btn--small {
+  padding: 0.35rem 1.2rem;
+  font-size: 0.875rem;
+}
+
+.btn--medium {
+  padding: 0.45rem 1.6rem;
+  font-size: $regularFontSize;
+}
+
+.btn--large {
+  padding: 0.55rem 2rem;
+  font-size: 1.125rem;
+}

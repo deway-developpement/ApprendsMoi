@@ -5,6 +5,7 @@ using FluentMigrator.Runner;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.OpenApi;
 
 DotNetEnv.Env.Load();
 
@@ -16,7 +17,18 @@ builder.Services.AddOpenApi();
 
 // Swagger services
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    var bearerSecurityScheme = new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Description = "Enter your JWT token"
+    };
+    
+    options.AddSecurityDefinition("Bearer", bearerSecurityScheme);
+});
 
 // Authentication services
 var jwtSecret = Environment.GetEnvironmentVariable("JWT__SECRET")
@@ -73,6 +85,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Application services
 builder.Services.AddScoped<UserHandler>();
 
+// Zoom services
+builder.Services.AddHttpClient<backend.Domains.Zoom.ZoomService>();
+builder.Services.AddScoped<backend.Domains.Zoom.ZoomService>();
+
 // Register FluentMigrator services
 builder.Services.AddFluentMigratorCore()
     .ConfigureRunner(rb => rb
@@ -88,8 +104,8 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope()) {
     var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
     
-    // Check if --reset-migrations flag is passed
-    if (args.Contains("--reset-migrations")) {
+    // Check if --reset-migrations or --reset-database flag is passed
+    if (args.Contains("--reset-migrations") || args.Contains("--reset-database")) {
         Console.WriteLine("Resetting database: rolling back all migrations...");
         runner.MigrateDown(0);
         Console.WriteLine("Reapplying all migrations...");

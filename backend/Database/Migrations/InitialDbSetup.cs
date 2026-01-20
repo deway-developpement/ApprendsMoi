@@ -3,7 +3,7 @@ using backend.Database.Models;
 
 namespace backend.Database.Migrations;
 
-[Migration(165827112025)]
+[Migration(202401010001)]
 public class InitialDbSetup : Migration {
     public override void Up() {
         Create.Table("users")
@@ -16,6 +16,7 @@ public class InitialDbSetup : Migration {
     }
 
     public override void Down() {
-        Delete.Table("users");
+        Execute.Sql("DROP TABLE IF EXISTS meetings CASCADE");
+        Execute.Sql("DROP TABLE IF EXISTS users CASCADE");
     }
 }

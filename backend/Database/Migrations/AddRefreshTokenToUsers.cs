@@ -2,7 +2,7 @@ using FluentMigrator;
 
 namespace backend.Database.Migrations;
 
-[Migration(202601192026)]
+[Migration(202401010004)]
 public class AddRefreshTokenToUsers : Migration {
     public override void Up() {
         Alter.Table("users")
