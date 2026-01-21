@@ -1,33 +1,37 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { ButtonComponent } from '../shared/Button/button.component';
+import { AuthService } from '../../services/auth.service'; // Adjust path
+import { ButtonComponent } from '../shared/Button/button.component'; // Adjust path
 
 @Component({
   selector: 'app-header',
   standalone: true,
   imports: [CommonModule, RouterModule, ButtonComponent],
   templateUrl: './header.component.html',
-  styleUrls: ['./header.component.scss'],
+  styleUrls: ['./header.component.scss']
 })
 export class HeaderComponent {
+  private authService = inject(AuthService);
+
+  // Observable of the current user (UserDto | null)
+  user$ = this.authService.currentUser$;
+
   @Input() theme: 'light' | 'dark' = 'dark';
   @Input() simple: 'false' | 'true' = 'false';
-  
+
   isMenuOpen = false;
 
   toggleMenu() {
     this.isMenuOpen = !this.isMenuOpen;
-    // Prevent background scrolling when menu is open
-    if (this.isMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'auto';
-    }
   }
 
   closeMenu() {
     this.isMenuOpen = false;
-    document.body.style.overflow = 'auto';
+  }
+
+  onLogout() {
+    this.authService.logout();
+    this.closeMenu();
   }
 }

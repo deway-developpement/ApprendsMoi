@@ -18,11 +18,11 @@ $statusPending: $SecondaryColor; // Orange
 $statusCanceled: #ef4444; // Red for Annulé/Litige 
 $statusInfo: #3b82f6; // Blue for messages/notifications
 
-$titleFontSize: clamp(1.5rem, 2vw, 2rem);
-$biggerFontSize: clamp(0.85rem, 1.4vw, 1rem);
-$regularFontSize: clamp(0.9rem, 1.3vw, 0.9rem);
-$smallerFontSize: clamp(0.8rem, 1.2vw, 0.85rem);
-$tinierFontSize: clamp(0.75rem, 1.1vw, 0.80rem);
+$titleFontSize:   clamp(2.25rem, 3.5vw, 3.25rem);
+$biggerFontSize:  clamp(1.25rem, 2vw, 1.5rem);
+$regularFontSize: clamp(1.1rem, 1.7vw, 1.25rem);
+$smallerFontSize: clamp(1rem, 1.5vw, 1.15rem);
+$tinierFontSize:  clamp(0.9rem, 1.4vw, 1.05rem);
 
 $borderRadius: 0.5rem;
 $borderRadiusLarge: 1rem;

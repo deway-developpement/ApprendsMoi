@@ -1,5 +1,6 @@
 <section class="connexion-page">
   <app-header theme="light" simple="true"></app-header>
+  
   <div class="connexion-card">
     
     <header class="connexion-header">
@@ -9,13 +10,22 @@
 
     <form (ngSubmit)="onSubmit()" class="connexion-form">
       
+      <div style="margin-bottom: 1rem;">
+        <app-select
+          label="Vous êtes ?"
+          [options]="profileOptions"
+          [fullWidth]="true"
+          [(value)]="selectedProfile">
+        </app-select>
+      </div>
+
       <app-text-input
-        label="Email"
-        placeholder="exemple@email.com"
-        type="email"
-        [iconLeft]="'assets/icons/email 2 1.svg'"
+        [label]="isStudent ? 'Nom d\'utilisateur' : 'Adresse Email'"
+        [placeholder]="isStudent ? 'Votre nom d\'utilisateur' : 'exemple@email.com'"
+        [iconLeft]="isStudent ? 'assets/icons/user.svg' : 'assets/icons/email 2 1.svg'"
+        type="text"
         [fullWidth]="true"
-        [(value)]="email">
+        [(value)]="credential">
       </app-text-input>
 
       <div class="password-group">
@@ -37,8 +47,9 @@
         <app-button 
           variant="primary" 
           type="submit"
-          class="submit-btn">
-          Se connecter
+          class="submit-btn"
+          [disabled]="isLoading">
+          {{ isLoading ? 'Connexion...' : 'Se connecter' }}
         </app-button>
       </div>
 

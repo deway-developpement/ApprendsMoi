@@ -1,0 +1,14 @@
+<div class="toast-wrapper">
+  <div 
+    class="toast-card" 
+    *ngFor="let toast of toasts$ | async"
+    [@toastAnimation]
+    [ngClass]="toast.type">
+    
+    <span class="toast-message">{{ toast.message }}</span>
+    
+    <button class="close-btn" (click)="close(toast.id)">
+      &times;
+    </button>
+  </div>
+</div>
