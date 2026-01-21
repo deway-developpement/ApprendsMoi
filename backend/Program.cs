@@ -45,10 +45,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ),
             ValidateIssuer = true,
             ValidateAudience = true,
-            ValidIssuer = Environment.GetEnvironmentVariable("JWT__ISSUER")
-                ?? throw new InvalidOperationException("JWT__ISSUER environment variable is not configured"),
-            ValidAudience = Environment.GetEnvironmentVariable("JWT__AUDIENCE")
-                ?? throw new InvalidOperationException("JWT__AUDIENCE environment variable is not configured"),
+            ValidIssuer = Environment.GetEnvironmentVariable("BACKEND__URL")
+                ?? throw new InvalidOperationException("BACKEND__URL environment variable is not configured"),
+            ValidAudience = Environment.GetEnvironmentVariable("FRONTEND__URL")
+                ?? throw new InvalidOperationException("FRONTEND__URL environment variable is not configured"),
             ClockSkew = TimeSpan.Zero
         };
     });
