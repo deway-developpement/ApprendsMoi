@@ -13,16 +13,11 @@ $text-input-shadow-focus: 0 0 0 1px rgba(59, 130, 246, 0.3) !default;
 $text-input-radius: 999px !default;
 $text-input-transition: 150ms ease-out !default;
 
-$smallerFontSize: clamp(0.8rem, 1.2vw, 0.85rem) !default;
-$regularFontSize: clamp(0.9rem, 1.3vw, 0.9rem) !default;
-$tinierFontSize: clamp(0.75rem, 1.1vw, 0.80rem) !default;
-
 .text-input {
   display: flex;
   flex: 1;
   flex-direction: column;
   gap: 0.25rem;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   padding: 0;
   margin: 0;
 

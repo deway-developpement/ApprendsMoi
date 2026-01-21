@@ -43,19 +43,37 @@
     </nav>
 
     <div class="header__actions">
-      <app-button 
-        variant="ghost" 
-        routerLink="/login" 
-        (click)="closeMenu()">
-        Connexion
-      </app-button>
       
-      <app-button 
-        variant="primary" 
-        routerLink="/register" 
-        (click)="closeMenu()">
-        Inscription
-      </app-button>
+      <ng-container *ngIf="user$ | async as user; else guestActions">
+        
+        <p class="header__welcome-msg">
+          Bonjour, <strong>{{ user.username || user.email || 'Utilisateur' }}</strong>
+        </p>
+        
+        <app-button 
+          variant="ghost" 
+          (click)="onLogout()">
+          Déconnexion
+        </app-button>
+        
+        </ng-container>
+
+      <ng-template #guestActions>
+        <app-button 
+          variant="ghost" 
+          routerLink="/login" 
+          (click)="closeMenu()">
+          Connexion
+        </app-button>
+        
+        <app-button 
+          variant="primary" 
+          routerLink="/register" 
+          (click)="closeMenu()">
+          Inscription
+        </app-button>
+      </ng-template>
+
     </div>
   </div>
 
