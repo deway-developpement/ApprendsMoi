@@ -48,6 +48,7 @@ artifacts/
 
 # PostgreSQL data
 pgdata/
+Database/DatabaseSeeder.cs
 
 # VS Code
 .vscode/

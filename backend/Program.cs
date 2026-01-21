@@ -103,14 +103,21 @@ var app = builder.Build();
 // Apply database migrations at startup
 using (var scope = app.Services.CreateScope()) {
     var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
-    
-    // Check if --reset-migrations or --reset-database flag is passed
+
     if (args.Contains("--reset-migrations") || args.Contains("--reset-database")) {
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
         Console.WriteLine("Resetting database: rolling back all migrations...");
         runner.MigrateDown(0);
         Console.WriteLine("Reapplying all migrations...");
         runner.MigrateUp();
         Console.WriteLine("Database reset complete!");
+        
+        // Seed database as requested
+        var shouldPopulate = args.Contains("--populate");
+        Console.WriteLine($"Seeding database (populate={shouldPopulate})...");
+        await DatabaseSeeder.SeedAsync(dbContext, shouldPopulate);
+        Console.WriteLine("Database seeding complete!");
     } else {
         runner.MigrateUp();
     }
