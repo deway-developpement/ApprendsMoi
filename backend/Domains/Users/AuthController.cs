@@ -76,6 +76,11 @@ public class AuthController(ILogger<AuthController> logger, UserHandler userHand
             return BadRequest(new { error = "Registration failed" });
         }
         
+        // Prevent registration of Admin accounts
+        if (request.Profile.Value == ProfileType.Admin) {
+            return BadRequest(new { error = "Registration failed" });
+        }
+        
         if (string.IsNullOrEmpty(request.Password) || request.Password.Length < 6) {
             return BadRequest(new { error = "Registration failed" });
         }
