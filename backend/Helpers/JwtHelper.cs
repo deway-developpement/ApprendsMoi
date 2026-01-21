@@ -38,8 +38,8 @@ public class JwtHelper {
         }
 
         var token = new JwtSecurityToken(
-            issuer: Environment.GetEnvironmentVariable("JWT__ISSUER"),
-            audience: Environment.GetEnvironmentVariable("JWT__AUDIENCE"),
+            issuer: Environment.GetEnvironmentVariable("BACKEND__URL"),
+            audience: Environment.GetEnvironmentVariable("FRONTEND__URL"),
             claims: claims,
             expires: DateTime.UtcNow.AddHours(expiresInHours),
             signingCredentials: credentials
