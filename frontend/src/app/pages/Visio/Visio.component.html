@@ -1,0 +1,62 @@
+<app-header theme="light"></app-header>
+
+<section class="visio-hero">
+  <div class="visio-hero__content">
+    <p class="visio-hero__eyebrow">ApprendsMoi · Visio</p>
+    <h1 class="visio-hero__title">Salle de visio & chat</h1>
+    <p class="visio-hero__subtitle">
+      Lancez la session Zoom et gardez le chat de classe juste à côté.
+    </p>
+  </div>
+</section>
+
+<main class="visio-layout">
+  <section class="visio-card visio-card--meeting">
+    <header class="visio-card__header">
+      <div class="visio-card__title-group">
+        <h2 class="visio-card__title">Classe en direct</h2>
+        <span class="visio-badge">Live</span>
+      </div>
+      <div class="visio-card__actions">
+        <app-button variant="primary" (click)="initZoomSdk()">Lancer SDK</app-button>
+        <app-button variant="ghost" (click)="openZoomInNewTab()">Nouvel onglet</app-button>
+      </div>
+    </header>
+
+    <div class="zoom-container" #zoomContainer>
+      <div *ngIf="isLoadingMeeting" class="zoom-status">Chargement de la réunion...</div>
+      <div *ngIf="!sdkReady && !isInitializingSdk && !isLoadingMeeting && !sdkError" class="zoom-placeholder">
+        <p>Initialisation de la visioconference...</p>
+      </div>
+      <div *ngIf="isInitializingSdk" class="zoom-status">Chargement de la réunion...</div>
+      <div *ngIf="sdkError" class="zoom-error">
+        <p>{{ sdkError }}</p>
+        <button (click)="loadMeetingAndInit()" class="retry-button">Réessayer</button>
+      </div>
+    </div>
+  </section>
+
+  <aside class="visio-card visio-card--chat">
+    <header class="visio-card__header">
+      <h2 class="visio-card__title">Chat de classe</h2>
+    </header>
+    <div class="chat-window">
+      <div class="chat-message chat-message--teacher">
+        <span class="chat-author">Professeur</span>
+        <p class="chat-text">Bienvenue ! Faites un test micro/caméra avant de commencer.</p>
+      </div>
+      <div class="chat-message">
+        <span class="chat-author">Élève</span>
+        <p class="chat-text">C'est bon pour moi.</p>
+      </div>
+      <div class="chat-message chat-message--helper">
+        <span class="chat-author">Assistant</span>
+        <p class="chat-text">Vous pouvez partager vos documents ici pendant la session.</p>
+      </div>
+    </div>
+    <div class="chat-input">
+      <input type="text" placeholder="Écrivez un message..." aria-label="Nouveau message" />
+      <app-button variant="primary">Envoyer</app-button>
+    </div>
+  </aside>
+</main>

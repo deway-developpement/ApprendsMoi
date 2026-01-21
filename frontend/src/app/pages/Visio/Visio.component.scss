@@ -1,0 +1,332 @@
+@import "variables";
+
+:host {
+  display: block;
+  min-height: 100vh;
+  background: $heroIntroBackground;
+  color: #0f172a;
+}
+
+.visio-hero {
+  padding: clamp(4rem, 10vh, 8rem) clamp(1.5rem, 5vw, 4rem) 3rem;
+  color: #f8fafc;
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 2rem 6rem auto auto;
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle at 30% 30%, rgba(249, 115, 22, 0.28), transparent 60%);
+    filter: blur(1px);
+    z-index: 1;
+    
+    @media (max-width: 768px) {
+      width: 200px;
+      height: 200px;
+      inset: 1rem 2rem auto auto;
+    }
+  }
+}
+
+.visio-hero__content {
+  position: relative;
+  z-index: 2;
+  max-width: 780px;
+}
+
+.visio-hero__eyebrow {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(248, 250, 252, 0.75);
+  font-size: $tinierFontSize;
+  margin: 0 0 0.5rem;
+}
+
+.visio-hero__title {
+  margin: 0;
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  font-weight: 700;
+}
+
+.visio-hero__subtitle {
+  margin: 0.75rem 0 0;
+  color: rgba(248, 250, 252, 0.82);
+  font-size: clamp($smallerFontSize, 2vw, $regularFontSize);
+  line-height: 1.6;
+}
+
+.visio-layout {
+  display: grid;
+  grid-template-columns: 1.75fr 1fr;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  padding: 0 clamp(1.5rem, 5vw, 4rem) 3.5rem;
+  margin-top: -3rem;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: 1fr;
+    margin-top: 0;
+  }
+}
+
+.visio-card {
+  background: #ffffff;
+  border: 2px solid #0f172a;
+  border-radius: 14px;
+  box-shadow: 0 18px 35px rgba(0, 0, 0, 0.08);
+  padding: clamp(1rem, 2vw, 1.5rem);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.visio-card--meeting {
+  min-height: 70vh;
+
+  @media (max-width: 1100px) {
+    min-height: 60vh;
+  }
+}
+
+.visio-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: clamp(0.75rem, 2vw, 1rem);
+  flex-wrap: wrap;
+}
+
+.visio-card__title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.visio-card__title {
+  margin: 0;
+  font-size: clamp(1.1rem, 2vw, 1.3rem);
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.visio-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    
+    app-button {
+      flex: 1;
+    }
+  }
+}
+
+.visio-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(249, 115, 22, 0.12);
+  color: $SecondaryColor;
+  border: 1px solid rgba(249, 115, 22, 0.4);
+  border-radius: 999px;
+  padding: 0.3rem 0.75rem;
+  font-weight: 600;
+  font-size: $smallerFontSize;
+}
+
+.zoom-container {
+  flex: 1;
+  min-height: 500px;
+  border: 2px solid #0f172a;
+  border-radius: 10px;
+  background: #0b0c10;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @media (max-width: 768px) {
+    min-height: 400px;
+  }
+
+  :deep(> *:not(.zoom-placeholder):not(.zoom-status):not(.zoom-error)) {
+    width: 100% !important;
+    height: 100% !important;
+    position: absolute !important;
+    inset: 0 !important;
+  }
+}
+
+.zoom-placeholder {
+  text-align: center;
+  color: #94a3b8;
+  font-size: $smallerFontSize;
+  padding: 2rem;
+}
+
+.zoom-status {
+  text-align: center;
+  color: #f8fafc;
+  font-size: $regularFontSize;
+  padding: 2rem;
+  
+  &::after {
+    content: '';
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-left: 0.5rem;
+    border-radius: 50%;
+    background: $SecondaryColor;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+}
+
+.zoom-error {
+  text-align: center;
+  color: #fca5a5;
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  margin: 2rem;
+  font-size: $smallerFontSize;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+
+  p {
+    margin: 0;
+  }
+}
+
+.retry-button {
+  background: $SecondaryColor;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.2rem;
+  font-size: $smallerFontSize;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.visio-card--chat {
+  min-height: 60vh;
+
+  @media (max-width: 1100px) {
+    min-height: 50vh;
+  }
+}
+
+.chat-window {
+  flex: 1;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: clamp(0.75rem, 2vw, 1rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  overflow-y: auto;
+  max-height: 50vh;
+}
+
+.chat-message {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.05);
+}
+
+.chat-message--teacher {
+  border-color: rgba(249, 115, 22, 0.45);
+  box-shadow: 0 10px 20px rgba(249, 115, 22, 0.08);
+}
+
+.chat-message--helper {
+  border-color: rgba(78, 227, 129, 0.4);
+}
+
+.chat-author {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: $tinierFontSize;
+  font-weight: 600;
+  color: #0f172a;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.chat-text {
+  margin: 0.3rem 0 0;
+  color: #1e293b;
+  font-size: $smallerFontSize;
+}
+
+.chat-input {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1rem;
+  align-items: center;
+}
+
+.chat-input input {
+  flex: 1;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  font-size: $smallerFontSize;
+  font-family: 'Poppins', sans-serif;
+  background: #fff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chat-input input:focus {
+  outline: none;
+  border-color: $SecondaryColor;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+}
+
+@media (max-width: 768px) {
+  .chat-input {
+    flex-direction: column;
+    align-items: stretch;
+    
+    app-button {
+      width: 100%;
+    }
+  }
+
+  .chat-input app-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
