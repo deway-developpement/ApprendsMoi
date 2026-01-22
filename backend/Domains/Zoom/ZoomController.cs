@@ -36,9 +36,25 @@ public class ZoomController : ControllerBase
     {
         try
         {
-            var topic = request?.Topic ?? "ApprendsMoi - Session";
+            if (request == null)
+            {
+                return BadRequest(new { error = "Request body is required" });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            var user = await _dbContext.Users.FindAsync(request.UserId);
+            if (user == null)
+            {
+                return BadRequest(new { error = "User not found" });
+            }
+
+            var topic = request.Topic ?? "ApprendsMoi - Session";
             
-            var meeting = await _zoomService.CreateInstantMeetingAsync(topic);
+            var meeting = await _zoomService.CreateInstantMeetingAsync(request.UserId, topic);
             var participantSignature = _zoomService.GenerateSignature(meeting.ZoomMeetingId.ToString(), 0);
 
             return Ok(new CreateMeetingResponse

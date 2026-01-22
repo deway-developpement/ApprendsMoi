@@ -66,7 +66,7 @@ public class ZoomService
         return _cachedAccessToken;
     }
 
-    public async Task<Meeting> CreateInstantMeetingAsync(string topic = "ApprendsMoi - Session")
+    public async Task<Meeting> CreateInstantMeetingAsync(int userId, string topic = "ApprendsMoi - Session")
     {
         var token = await GetAccessTokenAsync();
         
@@ -127,6 +127,7 @@ public class ZoomService
             CreatedAt = DateTime.UtcNow,
             ScheduledStartTime = zoomMeeting.StartTime,
             Duration = zoomMeeting.Duration,
+            UserId = userId
         };
         
         _dbContext.Meetings.Add(newMeeting);
