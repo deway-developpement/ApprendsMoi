@@ -11,6 +11,7 @@ public class InitialDbSetup : Migration {
             .WithColumn("id").AsGuid().PrimaryKey()
             .WithColumn("first_name").AsString(100).NotNullable()
             .WithColumn("last_name").AsString(100).NotNullable()
+            .WithColumn("email").AsString(255).Nullable()
             .WithColumn("profile_picture").AsString(500).Nullable()
             .WithColumn("password_hash").AsString(255).NotNullable()
             .WithColumn("role").AsInt16().NotNullable()
@@ -21,6 +22,22 @@ public class InitialDbSetup : Migration {
             .WithColumn("deleted_at").AsDateTime().Nullable()
             .WithColumn("refresh_token_hash").AsString(500).Nullable()
             .WithColumn("refresh_token_expiry").AsDateTime().Nullable();
+
+        // Create unique index on email for uniqueness enforcement
+        Create.Index("IX_users_email")
+            .OnTable("users")
+            .OnColumn("email")
+            .Ascending()
+            .WithOptions()
+            .Unique();
+
+        // Create index on refresh_token_hash for O(1) lookup during token refresh
+        Create.Index("IX_users_refresh_token_hash")
+            .OnTable("users")
+            .OnColumn("refresh_token_hash")
+            .Ascending()
+            .WithOptions()
+            .NonClustered();
 
         // Create administrators table
         Create.Table("administrators")

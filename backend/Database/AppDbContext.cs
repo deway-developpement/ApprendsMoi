@@ -38,8 +38,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             b.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
             b.Property(e => e.FirstName).HasColumnName("first_name").IsRequired();
             b.Property(e => e.LastName).HasColumnName("last_name").IsRequired();
+            b.Property(e => e.Email).HasColumnName("email");
             b.Property(e => e.ProfilePicture).HasColumnName("profile_picture");
             b.Property(e => e.PasswordHash).HasColumnName("password_hash").IsRequired();
+            b.HasIndex(e => e.Email).IsUnique();
             b.Property(e => e.Profile).HasColumnName("role").IsRequired();
             b.Property(e => e.IsVerified).HasColumnName("is_verified").HasDefaultValue(false);
             b.Property(e => e.IsActive).HasColumnName("is_active").HasDefaultValue(true);

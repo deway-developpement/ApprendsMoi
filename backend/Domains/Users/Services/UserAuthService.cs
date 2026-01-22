@@ -1,23 +1,25 @@
 using backend.Database.Models;
 using backend.Database;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace backend.Domains.Users;
 
 public class UserAuthService(AppDbContext db) {
     private readonly AppDbContext _db = db;
 
+    private static string HashRefreshToken(string refreshToken) {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(refreshToken));
+        return Convert.ToBase64String(bytes);
+    }
+
     public async Task<string?> GetByEmailAsync(string email, CancellationToken ct = default) {
-        var admin = await _db.Administrators.AsNoTracking().FirstOrDefaultAsync(a => a.Email == email.ToLower(), ct);
-        if (admin != null) return email;
-        
-        var teacher = await _db.Teachers.AsNoTracking().FirstOrDefaultAsync(t => t.Email == email.ToLower(), ct);
-        if (teacher != null) return email;
-        
-        var parent = await _db.Parents.AsNoTracking().FirstOrDefaultAsync(p => p.Email == email.ToLower(), ct);
-        if (parent != null) return email;
-        
-        return null;
+        var normalizedEmail = email.ToLower();
+        var exists = await _db.Users
+            .AsNoTracking()
+            .AnyAsync(u => u.Email == normalizedEmail, ct);
+        return exists ? email : null;
     }
 
     public async Task<string?> GetByUsernameAsync(string username, CancellationToken ct = default) {
@@ -26,16 +28,11 @@ public class UserAuthService(AppDbContext db) {
     }
 
     public async Task<User?> ValidateCredentialsByEmailAsync(string email, string password, CancellationToken ct = default) {
-        var admin = await _db.Administrators.Include(a => a.User).FirstOrDefaultAsync(a => a.Email == email.ToLower(), ct);
-        if (admin != null) return ValidatePassword(admin.User, password);
+        var normalizedEmail = email.ToLower();
+        var user = await _db.Users
+            .FirstOrDefaultAsync(u => u.Email == normalizedEmail, ct);
         
-        var teacher = await _db.Teachers.Include(t => t.User).FirstOrDefaultAsync(t => t.Email == email.ToLower(), ct);
-        if (teacher != null) return ValidatePassword(teacher.User, password);
-        
-        var parent = await _db.Parents.Include(p => p.User).FirstOrDefaultAsync(p => p.Email == email.ToLower(), ct);
-        if (parent != null) return ValidatePassword(parent.User, password);
-        
-        return null;
+        return ValidatePassword(user, password);
     }
 
     public async Task<User?> ValidateCredentialsByUsernameAsync(string username, string password, CancellationToken ct = default) {
@@ -53,24 +50,20 @@ public class UserAuthService(AppDbContext db) {
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId, ct);
         if (user == null) return false;
 
-        user.RefreshTokenHash = BCrypt.Net.BCrypt.HashPassword(refreshToken);
+        user.RefreshTokenHash = HashRefreshToken(refreshToken);
         user.RefreshTokenExpiry = expiry;
         await _db.SaveChangesAsync(ct);
         return true;
     }
 
     public async Task<User?> GetByRefreshTokenAsync(string refreshToken, CancellationToken ct = default) {
-        var users = await _db.Users
-            .Where(u => u.RefreshTokenHash != null && u.RefreshTokenExpiry > DateTime.UtcNow)
-            .ToListAsync(ct);
+        var tokenHash = HashRefreshToken(refreshToken);
         
-        foreach (var user in users) {
-            if (BCrypt.Net.BCrypt.Verify(refreshToken, user.RefreshTokenHash)) {
-                return user;
-            }
-        }
-        
-        return null;
+        return await _db.Users
+            .FirstOrDefaultAsync(
+                u => u.RefreshTokenHash == tokenHash && u.RefreshTokenExpiry > DateTime.UtcNow,
+                ct
+            );
     }
 
     public async Task<bool> RevokeRefreshTokenAsync(Guid userId, CancellationToken ct = default) {
@@ -84,24 +77,15 @@ public class UserAuthService(AppDbContext db) {
     }
 
     public async Task<(string? Email, string? Username)> GetUserCredentialsAsync(Guid userId, ProfileType role, CancellationToken ct = default) {
-        string? email = null;
-        string? username = null;
+        var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId, ct);
+        if (user == null) return (null, null);
 
-        if (role == ProfileType.Admin) {
-            var admin = await _db.Administrators.AsNoTracking().FirstOrDefaultAsync(a => a.UserId == userId, ct);
-            email = admin?.Email;
-        } else if (role == ProfileType.Teacher) {
-            var teacher = await _db.Teachers.AsNoTracking().FirstOrDefaultAsync(t => t.UserId == userId, ct);
-            email = teacher?.Email;
-        } else if (role == ProfileType.Parent) {
-            var parent = await _db.Parents.AsNoTracking().FirstOrDefaultAsync(p => p.UserId == userId, ct);
-            email = parent?.Email;
-        } else if (role == ProfileType.Student) {
+        if (role == ProfileType.Student) {
             var student = await _db.Students.AsNoTracking().FirstOrDefaultAsync(s => s.UserId == userId, ct);
-            username = student?.Username;
+            return (null, student?.Username);
         }
-
-        return (email, username);
+        
+        return (user.Email, null);
     }
 
     public async Task<bool> UpdateLastLoginAsync(Guid userId, CancellationToken ct = default) {

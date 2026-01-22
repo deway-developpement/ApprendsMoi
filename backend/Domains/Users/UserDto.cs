@@ -17,9 +17,7 @@ public class UserDto {
     public DateTime? LastLoginAt { get; set; }
 }
 
-public class AdminDto : UserDto {
-    // Admin-specific fields can be added here if needed
-}
+public class AdminDto : UserDto { }
 
 public class TeacherDto : UserDto {
     public string? Bio { get; set; }
@@ -36,6 +34,8 @@ public class ParentDto : UserDto {
 }
 
 public class StudentDto : UserDto {
+    public new string? Email { get => null; set { } }
+    
     public GradeLevel? GradeLevel { get; set; }
     public DateOnly? BirthDate { get; set; }
     public Guid ParentId { get; set; }

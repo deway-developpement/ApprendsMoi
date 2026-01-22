@@ -16,37 +16,51 @@ public class UserManagementService(AppDbContext db) {
         string? phoneNumber,
         CancellationToken ct = default) {
         
+        var normalizedEmail = email.ToLower();
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
         
-        var user = new User {
-            FirstName = firstName,
-            LastName = lastName,
-            PasswordHash = passwordHash,
-            Profile = profile,
-            IsVerified = false,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        _db.Users.Add(user);
-
-        if (profile == ProfileType.Teacher) {
-            var teacher = new Teacher {
-                User = user,
-                Email = email.ToLower(),
-                PhoneNumber = phoneNumber
+        using var transaction = await _db.Database.BeginTransactionAsync(ct);
+        
+        try {
+            var user = new User {
+                FirstName = firstName,
+                LastName = lastName,
+                Email = normalizedEmail,
+                PasswordHash = passwordHash,
+                Profile = profile,
+                IsVerified = false,
+                CreatedAt = DateTime.UtcNow
             };
-            _db.Teachers.Add(teacher);
-        } else if (profile == ProfileType.Parent) {
-            var parent = new Parent {
-                User = user,
-                Email = email.ToLower(),
-                PhoneNumber = phoneNumber
-            };
-            _db.Parents.Add(parent);
+
+            _db.Users.Add(user);
+
+            if (profile == ProfileType.Teacher) {
+                var teacher = new Teacher {
+                    User = user,
+                    Email = normalizedEmail,
+                    PhoneNumber = phoneNumber
+                };
+                _db.Teachers.Add(teacher);
+            } else if (profile == ProfileType.Parent) {
+                var parent = new Parent {
+                    User = user,
+                    Email = normalizedEmail,
+                    PhoneNumber = phoneNumber
+                };
+                _db.Parents.Add(parent);
+            }
+
+            await _db.SaveChangesAsync(ct);
+            await transaction.CommitAsync(ct);
+            
+            return user;
+        } catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("IX_users_email") == true) {
+            await transaction.RollbackAsync(ct);
+            throw new InvalidOperationException("Email is already registered.", ex);
+        } catch {
+            await transaction.RollbackAsync(ct);
+            throw;
         }
-
-        await _db.SaveChangesAsync(ct);
-        return user;
     }
 
     public async Task<User> CreateStudentAsync(
@@ -64,6 +78,7 @@ public class UserManagementService(AppDbContext db) {
         var user = new User {
             FirstName = firstName,
             LastName = lastName,
+            Email = null,
             PasswordHash = passwordHash,
             Profile = ProfileType.Student,
             IsVerified = true,

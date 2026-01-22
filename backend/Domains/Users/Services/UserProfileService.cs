@@ -196,7 +196,6 @@ public class UserProfileService(AppDbContext db) {
             },
             ProfileType.Student when user.Student != null => new StudentDto {
                 Id = user.Id,
-                Email = email,
                 Username = username,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
