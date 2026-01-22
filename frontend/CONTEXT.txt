@@ -148,3 +148,23 @@ exemple d'import de components :
 import { ButtonComponent } from '../../components/shared/Button/button.component';
 import { IconComponent } from '../../components/shared/Icon/icon.component';
 import { SmallIconComponent } from '../../components/shared/SmallIcon/small-icon.component';
+
+
+in auth.service.ts : 
+
+export enum ProfileType {
+  Admin = 0,
+  Teacher = 1,
+  Parent = 2,
+  Student = 3
+}
+
+private currentUserSubject = new BehaviorSubject<UserDto | null>(null);
+  currentUser$ = this.currentUserSubject.asObservable();
+
+  export interface UserDto {
+  id: number;
+  email: string;
+  username: string;
+  profile: ProfileType;
+}

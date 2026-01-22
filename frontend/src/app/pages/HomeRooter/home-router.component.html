@@ -1,0 +1,29 @@
+<div class="home-container">
+  
+  <ng-container *ngIf="currentUser$ | async as user; else publicHome">
+    
+    <ng-container [ngSwitch]="user.profile">
+
+      <app-home-teacher *ngSwitchCase="ProfileType.Teacher">
+      </app-home-teacher>
+
+      <app-home-student *ngSwitchCase="ProfileType.Student">
+      </app-home-student>
+
+      <app-home-admin *ngSwitchCase="ProfileType.Admin">
+      </app-home-admin>
+
+      <app-home-parent *ngSwitchCase="ProfileType.Parent">
+      </app-home-parent>
+
+      <app-home *ngSwitchDefault></app-home>
+
+    </ng-container>
+
+  </ng-container>
+
+  <ng-template #publicHome>
+    <app-home></app-home>
+  </ng-template>
+
+</div>

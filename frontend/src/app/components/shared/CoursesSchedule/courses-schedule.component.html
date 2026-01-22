@@ -1,0 +1,67 @@
+<section class="courses-section">
+  <div class="section-header-row">
+    <h2>📅 Emploi du temps</h2>
+    <div class="tabs">
+      <button 
+        [class.active]="currentTab === 'upcoming'" 
+        (click)="toggleTab('upcoming')">
+        À venir
+      </button>
+      <button 
+        [class.active]="currentTab === 'history'" 
+        (click)="toggleTab('history')">
+        Passés
+      </button>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table class="courses-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Professeur</th>
+          <th>Enfant</th>
+          <th>Statut</th>
+          <th class="align-right">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let course of (currentTab === 'upcoming' ? upcomingCourses : historyCourses)">
+          <td>
+            <div class="date-block">
+              <span class="day">{{ course.date | date:'dd' }}</span>
+              <span class="month">{{ course.date | date:'MMM' }}</span>
+              <span class="time">{{ course.date | date:'HH:mm' }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="prof-info">
+              <span class="prof-name">{{ course.tutorName }}</span>
+              <span class="subject-tag">{{ course.subject }}</span>
+              <span class="mode-badge" [class.visio]="course.mode === 'Visio'">
+                {{ course.mode }}
+              </span>
+            </div>
+          </td>
+          <td><span class="child-tag">{{ course.childName }}</span></td>
+          <td>
+            <span class="status-dot" 
+              [class.confirmed]="course.status === 'Confirmé'"
+              [class.pending]="course.status === 'En attente'"
+              [class.canceled]="course.status === 'Annulé'"
+              [class.finished]="course.status === 'Terminé'">
+            </span>
+            {{ course.status }}
+          </td>
+          <td class="align-right">
+             <app-icon-button icon="/assets/icons/chevron_right.svg" [size]="24"></app-icon-button>
+          </td>
+        </tr>
+        <tr *ngIf="(currentTab === 'upcoming' ? upcomingCourses : historyCourses).length === 0">
+          <td colspan="5" class="empty-table">Aucun cours à afficher.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
