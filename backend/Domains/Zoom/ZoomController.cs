@@ -61,18 +61,18 @@ public class ZoomController : ControllerBase
 
             // Teachers can only create meetings where they are the teacher
             // Admins can create any meeting
-            if (userRole == ProfileType.Teacher && request.TeacherId != currentUserId)
+            if (userRole == ProfileType.Teacher && request.TeacherId!.Value != currentUserId)
             {
                 return Forbid();
             }
 
-            var teacher = await _dbContext.Users.FindAsync(request.TeacherId);
+            var teacher = await _dbContext.Users.FindAsync(request.TeacherId!.Value);
             if (teacher == null)
             {
                 return BadRequest(new { error = "Teacher not found" });
             }
 
-            var student = await _dbContext.Users.FindAsync(request.StudentId);
+            var student = await _dbContext.Users.FindAsync(request.StudentId!.Value);
             if (student == null)
             {
                 return BadRequest(new { error = "Student not found" });
@@ -80,7 +80,7 @@ public class ZoomController : ControllerBase
 
             var topic = request.Topic ?? "ApprendsMoi - Session";
             
-            var meeting = await _zoomService.CreateInstantMeetingAsync(request.TeacherId, request.StudentId, topic);
+            var meeting = await _zoomService.CreateInstantMeetingAsync(request.TeacherId!.Value, request.StudentId!.Value, topic);
             var participantSignature = _zoomService.GenerateSignature(meeting.ZoomMeetingId.ToString(), 0);
 
             return Ok(new CreateMeetingResponse

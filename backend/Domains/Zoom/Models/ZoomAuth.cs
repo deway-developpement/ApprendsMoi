@@ -6,11 +6,11 @@ public class CreateMeetingRequest
 {
     public string? Topic { get; set; }
 
-    [Required]
-    public Guid TeacherId { get; set; }
+    [Required(ErrorMessage = "TeacherId is required")]
+    public Guid? TeacherId { get; set; }
 
-    [Required]
-    public Guid StudentId { get; set; }
+    [Required(ErrorMessage = "StudentId is required")]
+    public Guid? StudentId { get; set; }
 }
 
 public class ZoomSignatureRequest
