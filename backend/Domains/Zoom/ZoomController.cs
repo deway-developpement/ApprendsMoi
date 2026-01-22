@@ -119,7 +119,7 @@ public class ZoomController : ControllerBase
     }
 
     /// <summary>
-    /// Gets all meetings from the database
+    /// Gets all meetings (filtered by user role and ownership)
     /// </summary>
     [HttpGet("meetings")]
     [Produces("application/json")]
@@ -130,13 +130,32 @@ public class ZoomController : ControllerBase
     {
         try
         {
+            var currentUserId = JwtHelper.GetUserIdFromClaims(User);
+            if (currentUserId == null)
+            {
+                return Unauthorized(new { error = "Invalid token" });
+            }
+
             var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-            if (userRole != ProfileType.Admin.ToString())
+            if (userRole == ProfileType.Parent.ToString())
             {
                 return Forbid();
             }
 
-            var meetings = await _dbContext.Meetings
+            IQueryable<Meeting> query = _dbContext.Meetings;
+
+            // Filter based on role
+            if (userRole == ProfileType.Teacher.ToString())
+            {
+                query = query.Where(m => m.TeacherId == currentUserId);
+            }
+            else if (userRole == ProfileType.Student.ToString())
+            {
+                query = query.Where(m => m.StudentId == currentUserId);
+            }
+            // Admin can see all meetings (no filter)
+
+            var meetings = await query
                 .OrderByDescending(m => m.CreatedAt)
                 .Select(m => new MeetingResponse
                 {
