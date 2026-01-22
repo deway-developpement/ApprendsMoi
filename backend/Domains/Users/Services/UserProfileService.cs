@@ -90,7 +90,7 @@ public class UserProfileService(AppDbContext db) {
             FirstName = s.User.FirstName,
             LastName = s.User.LastName,
             ProfilePicture = s.User.ProfilePicture,
-            Profile = s.User.Role,
+            Profile = s.User.Profile,
             IsVerified = s.User.IsVerified,
             IsActive = s.User.IsActive,
             CreatedAt = s.User.CreatedAt,
@@ -110,7 +110,7 @@ public class UserProfileService(AppDbContext db) {
         else if (user.Parent != null) email = user.Parent.Email;
         else if (user.Student != null) username = user.Student.Username;
 
-        return user.Role switch {
+        return user.Profile switch {
             ProfileType.Teacher when user.Teacher != null => new TeacherDto {
                 Id = user.Id,
                 Email = email,
@@ -118,7 +118,7 @@ public class UserProfileService(AppDbContext db) {
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 ProfilePicture = user.ProfilePicture,
-                Profile = user.Role,
+                Profile = user.Profile,
                 IsVerified = user.IsVerified,
                 IsActive = user.IsActive,
                 CreatedAt = user.CreatedAt,
@@ -137,7 +137,7 @@ public class UserProfileService(AppDbContext db) {
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 ProfilePicture = user.ProfilePicture,
-                Profile = user.Role,
+                Profile = user.Profile,
                 IsVerified = user.IsVerified,
                 IsActive = user.IsActive,
                 CreatedAt = user.CreatedAt,
@@ -152,7 +152,7 @@ public class UserProfileService(AppDbContext db) {
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 ProfilePicture = user.ProfilePicture,
-                Profile = user.Role,
+                Profile = user.Profile,
                 IsVerified = user.IsVerified,
                 IsActive = user.IsActive,
                 CreatedAt = user.CreatedAt,
@@ -168,7 +168,7 @@ public class UserProfileService(AppDbContext db) {
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 ProfilePicture = user.ProfilePicture,
-                Profile = user.Role,
+                Profile = user.Profile,
                 IsVerified = user.IsVerified,
                 IsActive = user.IsActive,
                 CreatedAt = user.CreatedAt,
@@ -181,7 +181,7 @@ public class UserProfileService(AppDbContext db) {
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 ProfilePicture = user.ProfilePicture,
-                Profile = user.Role,
+                Profile = user.Profile,
                 IsVerified = user.IsVerified,
                 IsActive = user.IsActive,
                 CreatedAt = user.CreatedAt,

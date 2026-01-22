@@ -65,7 +65,7 @@ export class PlanningComponent implements OnInit {
       const response = await fetch(`${this.apiBaseUrl}/meeting`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic: 'ApprendsMoi - Session de classe' })
+        body: JSON.stringify({ topic: 'ApprendsMoi - Session de classe', teacherId: 2, studentId: 3})
       });
 
       if (!response.ok) {

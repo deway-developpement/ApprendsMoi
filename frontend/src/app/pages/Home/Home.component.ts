@@ -1,19 +1,17 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '../../components/shared/Button/button.component';
-import { IconComponent } from '../../components/shared/Icon/icon.component';
 import { SmallIconComponent } from '../../components/shared/SmallIcon/small-icon.component';
 import { HomeHeaderComponent } from './HomeHeader/home-header.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, IconComponent, SmallIconComponent, HomeHeaderComponent],
+  imports: [CommonModule, ButtonComponent, SmallIconComponent, HomeHeaderComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent {
-  // Données pour la section FAQ [cite: 206-216]
   faqItems = [
   // --- Catégorie : Cours et Fonctionnement ---
   {

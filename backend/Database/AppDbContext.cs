@@ -40,7 +40,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             b.Property(e => e.LastName).HasColumnName("last_name").IsRequired();
             b.Property(e => e.ProfilePicture).HasColumnName("profile_picture");
             b.Property(e => e.PasswordHash).HasColumnName("password_hash").IsRequired();
-            b.Property(e => e.Role).HasColumnName("role").IsRequired();
+            b.Property(e => e.Profile).HasColumnName("role").IsRequired();
             b.Property(e => e.IsVerified).HasColumnName("is_verified").HasDefaultValue(false);
             b.Property(e => e.IsActive).HasColumnName("is_active").HasDefaultValue(true);
             b.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
@@ -238,7 +238,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     }
 
     private void ConfigureMeetings(ModelBuilder modelBuilder) {
-        // Ancien modèle - à conserver temporairement pour migration
         modelBuilder.Entity<Meeting>(b => {
             b.ToTable("meetings");
             b.HasKey(e => e.Id);
@@ -251,7 +250,18 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             b.Property(e => e.CreatedAt).HasColumnName("created_at");
             b.Property(e => e.ScheduledStartTime).HasColumnName("scheduled_start_time");
             b.Property(e => e.Duration).HasColumnName("duration");
-            b.Property(e => e.UserId).HasColumnName("user_id");
+            b.Property(e => e.TeacherId).HasColumnName("teacher_id");
+            b.Property(e => e.StudentId).HasColumnName("student_id");
+
+            b.HasOne(m => m.Teacher)
+                .WithMany()
+                .HasForeignKey(m => m.TeacherId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasOne(m => m.Student)
+                .WithMany()
+                .HasForeignKey(m => m.StudentId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

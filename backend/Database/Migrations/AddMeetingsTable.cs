@@ -17,7 +17,18 @@ public class AddMeetingsTable : Migration
             .WithColumn("created_at").AsDateTime().NotNullable()
             .WithColumn("scheduled_start_time").AsDateTime().Nullable()
             .WithColumn("duration").AsInt32().NotNullable()
-            .WithColumn("user_id").AsInt32().Nullable();
+            .WithColumn("teacher_id").AsGuid().NotNullable()
+            .WithColumn("student_id").AsGuid().NotNullable();
+
+        Create.ForeignKey("fk_meetings_teacher_id")
+            .FromTable("meetings").ForeignColumn("teacher_id")
+            .ToTable("users").PrimaryColumn("id")
+            .OnDelete(System.Data.Rule.None);
+
+        Create.ForeignKey("fk_meetings_student_id")
+            .FromTable("meetings").ForeignColumn("student_id")
+            .ToTable("users").PrimaryColumn("id")
+            .OnDelete(System.Data.Rule.None);
     }
 
     public override void Down()

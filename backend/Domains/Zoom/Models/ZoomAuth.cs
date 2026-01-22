@@ -1,9 +1,16 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace backend.Domains.Zoom.Models;
 
 public class CreateMeetingRequest
 {
     public string? Topic { get; set; }
-    public int? UserId { get; set; }
+
+    [Required]
+    public Guid TeacherId { get; set; }
+
+    [Required]
+    public Guid StudentId { get; set; }
 }
 
 public class ZoomSignatureRequest
@@ -14,5 +21,5 @@ public class ZoomSignatureRequest
 
 public class HostSignatureRequest
 {
-    public int UserId { get; set; }
+    public Guid UserId { get; set; }
 }

@@ -1,0 +1,69 @@
+@import "variables";
+
+.toast-wrapper {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999; // Toujours au-dessus
+  display: flex;
+  flex-direction: column;
+  gap: $marginSmall;
+  pointer-events: none; // Permet de cliquer à travers la zone vide
+}
+
+.toast-card {
+  pointer-events: auto; // Réactive les clics sur la carte
+  min-width: 300px;
+  max-width: 400px;
+  background: white;
+  padding: $paddingMedium;
+  border-radius: $borderRadius;
+  box-shadow: $boxShadow;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-left: 5px solid transparent;
+  
+  // Typographie
+  font-size: $smallerFontSize;
+  font-family: inherit;
+  
+  &.success {
+    border-left-color: $green;
+    .toast-icon { color: $green; }
+  }
+  
+  &.error {
+    border-left-color: $statusCanceled; // Rouge
+    .toast-icon { color: $statusCanceled; }
+  }
+  
+  &.info {
+    border-left-color: $statusInfo; // Bleu
+    .toast-icon { color: $statusInfo; }
+  }
+  
+  &.warning {
+    border-left-color: $SecondaryColor; // Orange
+    .toast-icon { color: $SecondaryColor; }
+  }
+
+  .toast-message {
+    flex: 1;
+    margin: 0 $marginSmall;
+    color: $PrimaryColor;
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #999;
+    transition: color $transitionFast;
+    
+    &:hover {
+      color: $PrimaryColor;
+    }
+  }
+}

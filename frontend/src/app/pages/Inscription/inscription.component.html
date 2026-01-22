@@ -8,15 +8,6 @@
     </header>
 
     <form (ngSubmit)="onRegister()" class="inscription-form">
-      
-      <app-text-input
-        label="Nom complet"
-        placeholder="Jean Dupont"
-        type="text"
-        [iconLeft]="'assets/icons/user.svg'"
-        [fullWidth]="true"
-        [(value)]="name">
-      </app-text-input>
 
       <app-text-input
         label="Email"
@@ -26,6 +17,13 @@
         [fullWidth]="true"
         [(value)]="email">
       </app-text-input>
+      
+      <app-select
+        label="Vous souhaitez vous inscrire en tant que ?"
+        [options]="profileOptions"
+        [fullWidth]="true"
+        [(value)]="selectedProfile">
+      </app-select>
 
       <app-text-input
         label="Mot de passe"

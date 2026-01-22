@@ -6,9 +6,9 @@ public class User {
     public string LastName { get; set; } = string.Empty;
     public string? ProfilePicture { get; set; }
     public string PasswordHash { get; set; } = string.Empty;
-    public ProfileType Role { get; set; }
     public bool IsVerified { get; set; } = false;
     public bool IsActive { get; set; } = true;
+    public ProfileType Profile { get; set; } = ProfileType.Student;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? LastLoginAt { get; set; }
     public DateTime? DeletedAt { get; set; }

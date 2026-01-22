@@ -51,22 +51,22 @@ public class AuthController(
         
         if (request.IsStudent) {
             user = await _authService.ValidateCredentialsByUsernameAsync(request.Credential, request.Password, ct);
-            if (user == null || user.Role != ProfileType.Student) {
+            if (user == null || user.Profile != ProfileType.Student) {
                 return Unauthorized(new { error = "Invalid credentials" });
             }
         } else {
             user = await _authService.ValidateCredentialsByEmailAsync(request.Credential.ToLower(), request.Password, ct);
-            if (user == null || user.Role == ProfileType.Student) {
+            if (user == null || user.Profile == ProfileType.Student) {
                 return Unauthorized(new { error = "Invalid credentials" });
             }
         }
 
-        var (email, username) = await _authService.GetUserCredentialsAsync(user.Id, user.Role, ct);
+        var (email, username) = await _authService.GetUserCredentialsAsync(user.Id, user.Profile, ct);
         
         // Update last login timestamp
         await _authService.UpdateLastLoginAsync(user.Id, ct);
         
-        var token = JwtHelper.GenerateToken(user.Id, email, username, user.Role);
+        var token = JwtHelper.GenerateToken(user.Id, email, username, user.Profile);
         var refreshToken = await GenerateAndStoreRefreshTokenAsync(user.Id, ct);
 
         var userDto = await _profileService.GetUserByIdAsync(user.Id, ct);
@@ -204,8 +204,8 @@ public class AuthController(
             return Unauthorized(new { error = "Invalid or expired refresh token" });
         }
 
-        var (email, username) = await _authService.GetUserCredentialsAsync(user.Id, user.Role, ct);
-        var newAccessToken = JwtHelper.GenerateToken(user.Id, email, username, user.Role);
+        var (email, username) = await _authService.GetUserCredentialsAsync(user.Id, user.Profile, ct);
+        var newAccessToken = JwtHelper.GenerateToken(user.Id, email, username, user.Profile);
         var newRefreshToken = await GenerateAndStoreRefreshTokenAsync(user.Id, ct);
 
         var userDto = await _profileService.GetUserByIdAsync(user.Id, ct);
