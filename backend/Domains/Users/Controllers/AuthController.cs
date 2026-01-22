@@ -129,17 +129,11 @@ public class AuthController(
     }
 
     [HttpPost("register/student")]
-    [Authorize]
+    [ParentOrAdmin]
     public async Task<IActionResult> RegisterStudent([FromBody] RegisterStudentRequest request, CancellationToken ct) {
         var userId = JwtHelper.GetUserIdFromClaims(User);
         if (userId == null) {
             return Unauthorized(new { error = "Invalid token" });
-        }
-
-        // Verify the authenticated user is a parent
-        var parentUser = await _profileService.GetUserByIdAsync(userId.Value, ct);
-        if (parentUser == null || parentUser.Profile != ProfileType.Parent) {
-            return Forbid();
         }
 
         if (string.IsNullOrEmpty(request.Username) || !UsernameRegex.IsMatch(request.Username)) {

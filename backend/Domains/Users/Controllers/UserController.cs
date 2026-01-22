@@ -17,7 +17,7 @@ public class UsersController(
     private readonly UserManagementService _managementService = managementService;
 
     [HttpGet]
-    [Authorize]
+    [AdminOnly]
     public async Task<ActionResult<List<UserDto>>> Get(CancellationToken ct) {
         var list = await _profileService.GetAllUsersAsync(ct);
         return Ok(list);
@@ -37,7 +37,8 @@ public class UsersController(
         var userId = JwtHelper.GetUserIdFromClaims(User);
         if (userId == null) return Unauthorized();
 
-        var success = await _profileService.UpdateUserAsync(
+        // Update base user fields (FirstName, LastName, ProfilePicture)
+        var baseUpdateSuccess = await _profileService.UpdateUserAsync(
             userId.Value,
             request.FirstName,
             request.LastName,
@@ -45,60 +46,41 @@ public class UsersController(
             ct
         );
 
-        if (!success) return NotFound(new { error = "User not found" });
+        if (!baseUpdateSuccess) return NotFound(new { error = "User not found" });
+
+        // Update role-specific fields based on the request data
+        if (request.TeacherProfile != null) {
+            var teacherSuccess = await _profileService.UpdateTeacherProfileAsync(
+                userId.Value,
+                request.TeacherProfile.Bio,
+                request.TeacherProfile.PhoneNumber,
+                request.TeacherProfile.City,
+                request.TeacherProfile.TravelRadiusKm,
+                ct
+            );
+            if (!teacherSuccess) return NotFound(new { error = "Teacher profile not found" });
+        }
+
+        if (request.ParentProfile != null) {
+            var parentSuccess = await _profileService.UpdateParentProfileAsync(
+                userId.Value,
+                request.ParentProfile.PhoneNumber,
+                ct
+            );
+            if (!parentSuccess) return NotFound(new { error = "Parent profile not found" });
+        }
+
+        if (request.StudentProfile != null) {
+            var studentSuccess = await _profileService.UpdateStudentProfileAsync(
+                userId.Value,
+                request.StudentProfile.GradeLevel,
+                request.StudentProfile.BirthDate,
+                ct
+            );
+            if (!studentSuccess) return NotFound(new { error = "Student profile not found" });
+        }
+
         return Ok(new { message = "Profile updated successfully" });
-    }
-
-    [HttpPut("profile/teacher")]
-    [Authorize]
-    public async Task<IActionResult> UpdateTeacherProfile([FromBody] UpdateTeacherProfileRequest request, CancellationToken ct) {
-        var userId = JwtHelper.GetUserIdFromClaims(User);
-        if (userId == null) return Unauthorized();
-
-        var success = await _profileService.UpdateTeacherProfileAsync(
-            userId.Value,
-            request.Bio,
-            request.PhoneNumber,
-            request.City,
-            request.TravelRadiusKm,
-            ct
-        );
-
-        if (!success) return NotFound(new { error = "Teacher profile not found" });
-        return Ok(new { message = "Teacher profile updated successfully" });
-    }
-
-    [HttpPut("profile/parent")]
-    [Authorize]
-    public async Task<IActionResult> UpdateParentProfile([FromBody] UpdateParentProfileRequest request, CancellationToken ct) {
-        var userId = JwtHelper.GetUserIdFromClaims(User);
-        if (userId == null) return Unauthorized();
-
-        var success = await _profileService.UpdateParentProfileAsync(
-            userId.Value,
-            request.PhoneNumber,
-            ct
-        );
-
-        if (!success) return NotFound(new { error = "Parent profile not found" });
-        return Ok(new { message = "Parent profile updated successfully" });
-    }
-
-    [HttpPut("profile/student")]
-    [Authorize]
-    public async Task<IActionResult> UpdateStudentProfile([FromBody] UpdateStudentProfileRequest request, CancellationToken ct) {
-        var userId = JwtHelper.GetUserIdFromClaims(User);
-        if (userId == null) return Unauthorized();
-
-        var success = await _profileService.UpdateStudentProfileAsync(
-            userId.Value,
-            request.GradeLevel,
-            request.BirthDate,
-            ct
-        );
-
-        if (!success) return NotFound(new { error = "Student profile not found" });
-        return Ok(new { message = "Student profile updated successfully" });
     }
 
     [HttpPut("password")]
@@ -151,8 +133,16 @@ public class UsersController(
     }
 }
 
-public record UpdateProfileRequest(string? FirstName, string? LastName, string? ProfilePicture);
-public record UpdateTeacherProfileRequest(string? Bio, string? PhoneNumber, string? City, int? TravelRadiusKm);
-public record UpdateParentProfileRequest(string? PhoneNumber);
-public record UpdateStudentProfileRequest(GradeLevel? GradeLevel, DateOnly? BirthDate);
+public record UpdateProfileRequest(
+    string? FirstName, 
+    string? LastName, 
+    string? ProfilePicture,
+    TeacherProfileUpdate? TeacherProfile,
+    ParentProfileUpdate? ParentProfile,
+    StudentProfileUpdate? StudentProfile
+);
+
+public record TeacherProfileUpdate(string? Bio, string? PhoneNumber, string? City, int? TravelRadiusKm);
+public record ParentProfileUpdate(string? PhoneNumber);
+public record StudentProfileUpdate(GradeLevel? GradeLevel, DateOnly? BirthDate);
 public record UpdatePasswordRequest(string CurrentPassword, string NewPassword);
