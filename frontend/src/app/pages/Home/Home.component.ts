@@ -12,7 +12,6 @@ import { HomeHeaderComponent } from './HomeHeader/home-header.component';
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent {
-  // Données pour la section FAQ [cite: 206-216]
   faqItems = [
   // --- Catégorie : Cours et Fonctionnement ---
   {

@@ -28,7 +28,6 @@
   font-size: $smallerFontSize;
   font-family: inherit;
   
-  // Couleurs par type [cite: 1849, 1851, 1852]
   &.success {
     border-left-color: $green;
     .toast-icon { color: $green; }
