@@ -120,9 +120,13 @@ using (var scope = app.Services.CreateScope()) {
         // Seed database after reset
         var shouldPopulate = args.Contains("--populate");
         Console.WriteLine($"🌱 Seeding database (populate={shouldPopulate})...");
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        await DatabaseSeeder.SeedAsync(dbContext, shouldPopulate);
-        Console.WriteLine("✓ Seeding complete!\n");
+        try {
+            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await DatabaseSeeder.SeedAsync(dbContext, shouldPopulate);
+            Console.WriteLine("✓ Seeding complete!\n");
+        } catch (Exception ex) {
+            Console.WriteLine($"⚠ Seeding skipped: {ex.Message}");
+        }
     } else {
         runner.MigrateUp();
         Console.WriteLine("✓ Migrations applied\n");
