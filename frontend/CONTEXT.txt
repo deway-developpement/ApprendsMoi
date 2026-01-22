@@ -14,9 +14,9 @@ $PrimaryColor: #1a365d; // Dark Blue/Navy from the logo
 $PrimaryColorHover: #2a4365;
 $PrimaryActive: #1e3a8a;
 
-$colorPremium: #fbbf24; // Gold for the Premium Star [cite: 1791]
-$colorVerified: #4EE381; // Green for Verified/Shield [cite: 1791]
-$colorTopProf: #8b5cf6; // Purple for Top Prof Ribbon [cite: 1791]
+$colorPremium: #fbbf24; // Gold for the Premium Star
+$colorVerified: #4EE381; // Green for Verified/Shield 
+$colorTopProf: #8b5cf6; // Purple for Top Prof Ribbon 
 
 $statusConfirmed: $green; // Green 
 $statusPending: $SecondaryColor; // Orange 

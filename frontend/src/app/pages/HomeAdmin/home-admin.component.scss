@@ -1,0 +1,295 @@
+@import "variables";
+
+// Palette Admin spécifique
+$adminDark: #1e293b;
+$adminBlue: #3b82f6;
+$adminGreen: #10b981;
+$adminOrange: #f59e0b;
+$adminRed: #ef4444;
+$adminPurple: #8b5cf6;
+
+.dashboard-wrapper {
+  min-height: 100vh;
+  margin-top: 3rem;
+}
+
+// 1. Header spécifique Admin
+.dashboard-header-bg.admin-theme {
+  color: $PrimaryColor;
+  padding: 3rem $paddingMedium 6rem $paddingMedium;
+  
+  .header-content {
+    max-width: $maxContentWidth;
+    margin: 0 auto;
+    
+    .welcome-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .welcome-subtitle { opacity: 0.8; font-weight: 300; }
+  }
+}
+
+.dashboard-container {
+  max-width: $maxContentWidth;
+  margin: 0 auto;
+  padding: 0 $paddingMedium $paddingLarge $paddingMedium;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+// 2. Section KPIs
+.kpi-section {
+  margin-top: -4rem; // Chevauchement
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+}
+
+.kpi-card {
+  background: white;
+  border-radius: $borderRadiusLarge;
+  padding: 1.5rem;
+  box-shadow: $boxShadow;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  border-left: 5px solid transparent;
+
+  // Variantes de couleurs
+  &.blue { border-left-color: $adminBlue; .kpi-icon { color: $adminBlue; background: rgba($adminBlue, 0.1); } }
+  &.green { border-left-color: $adminGreen; .kpi-icon { color: $adminGreen; background: rgba($adminGreen, 0.1); } }
+  &.purple { border-left-color: $adminPurple; .kpi-icon { color: $adminPurple; background: rgba($adminPurple, 0.1); } }
+  &.orange { border-left-color: $adminOrange; .kpi-icon { color: $adminOrange; background: rgba($adminOrange, 0.1); } }
+
+  .kpi-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .kpi-info {
+    display: flex;
+    flex-direction: column;
+    
+    .kpi-value { font-size: 1.8rem; font-weight: 800; color: #1e293b; line-height: 1; }
+    .kpi-label { font-size: 0.9rem; color: #64748b; margin-top: 4px; }
+    .kpi-trend {
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-top: 4px;
+      &.positive { color: $adminGreen; }
+      &.negative { color: $adminRed; }
+    }
+  }
+}
+
+// 3. Split View (Action & Activity)
+.content-split {
+  display: grid;
+  grid-template-columns: 2fr 1fr; // Gauche plus large pour les actions
+  gap: 2rem;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+
+  h2 { font-size: 1.25rem; font-weight: 700; color: $adminDark; margin: 0; }
+  .badge-count {
+    background: $adminRed;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+}
+
+// Liste des Actions (Cartes)
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.action-card {
+  background: white;
+  border-radius: $borderRadius;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: transform 0.2s;
+  position: relative;
+  overflow: hidden;
+
+  &:hover { transform: translateX(4px); }
+
+  // Indicateur d'urgence
+  &.urgent {
+    border: 1px solid rgba($adminRed, 0.3);
+    background: #fef2f2;
+    .status-indicator { background-color: $adminRed; }
+  }
+  
+  .status-indicator {
+    width: 4px;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-color: $adminOrange; // Default medium priority
+  }
+
+  .action-icon {
+    width: 40px;
+    height: 40px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+  }
+
+  .action-content {
+    flex: 1;
+    h3 { margin: 0; font-size: 1rem; font-weight: 600; color: $adminDark; }
+    p { margin: 2px 0 0 0; font-size: 0.9rem; color: #64748b; }
+    .date { font-size: 0.75rem; color: #94a3b8; display: block; margin-top: 4px;}
+  }
+}
+
+// Liste d'activité (Timeline simple)
+.activity-section {
+  .activity-list {
+    background: white;
+    border-radius: $borderRadiusLarge;
+    padding: 1.5rem;
+    box-shadow: $boxShadow;
+  }
+
+  .activity-item {
+    display: flex;
+    gap: 1rem;
+    padding-bottom: 1.5rem;
+    border-left: 2px solid #e2e8f0;
+    padding-left: 1.5rem;
+    position: relative;
+
+    &:last-child { padding-bottom: 0; border-left-color: transparent; }
+
+    .timeline-dot {
+      width: 10px;
+      height: 10px;
+      background: $adminBlue;
+      border-radius: 50%;
+      position: absolute;
+      left: -6px;
+      top: 6px;
+      border: 2px solid white;
+    }
+
+    .activity-content {
+      .activity-text { margin: 0; font-size: 0.9rem; color: #334155; line-height: 1.4; }
+      .activity-time { font-size: 0.75rem; color: #94a3b8; margin-top: 4px; display: block; }
+    }
+  }
+}
+
+// 4. Raccourcis
+.shortcuts-section {
+  h3 { font-size: 1.1rem; color: #64748b; margin-bottom: 1rem; }
+  
+  .shortcuts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+
+  .shortcut-btn {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: $borderRadius;
+    padding: 1rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: $adminDark;
+
+    app-icon { color: $adminBlue; }
+    span { font-weight: 600; font-size: 0.95rem; }
+
+    &:hover {
+      background: white;
+      border-color: $adminBlue;
+      box-shadow: 0 4px 6px rgba(59, 130, 246, 0.1);
+      transform: translateY(-2px);
+    }
+  }
+}
+
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: auto; // Pousse la pagination vers le bas si la section a une hauteur min
+
+  .page-info {
+    font-size: 0.9rem;
+    color: #64748b;
+    font-weight: 500;
+  }
+
+  .nav-btn {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: $adminDark;
+
+    &:hover:not(:disabled) {
+      background: $adminBlue;
+      border-color: $adminBlue;
+      color: white;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: #f1f5f9;
+    }
+  }
+}
+
+// Assurer une hauteur minimale pour éviter le "saut" quand on change de page
+.card-list {
+  min-height: 230px; // Ajuster selon la hauteur de 3 cartes
+}
