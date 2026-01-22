@@ -1,0 +1,140 @@
+@import "variables";
+
+.courses-section {
+  background: white;
+  border-radius: $borderRadiusLarge;
+  padding: 2rem;
+  box-shadow: $boxShadow;
+  height: 100%; // Pour qu'il remplisse bien l'espace s'il est dans une grid
+
+  .section-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    
+    h2 { font-size: 1.5rem; color: $PrimaryColor; margin: 0; }
+  }
+
+  .tabs {
+    background: #f1f5f9;
+    padding: 0.25rem;
+    border-radius: 2rem;
+    display: flex;
+
+    button {
+      background: transparent;
+      border: none;
+      padding: 0.5rem 1.5rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &.active {
+        background: white;
+        color: $PrimaryColor;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      }
+    }
+  }
+
+  .table-container {
+    overflow-x: auto;
+  }
+
+  .courses-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 1rem; // Espacement vertical entre les lignes
+
+    th {
+      text-align: left;
+      color: #94a3b8;
+      font-weight: 600;
+      padding-bottom: 0.5rem;
+      &.align-right { text-align: right; }
+    }
+
+    tbody tr {
+      background: white;
+      transition: transform $transitionFast;
+      
+      &:hover {
+        transform: scale(1.01);
+      }
+    }
+
+    td {
+      padding: 1rem 0;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: middle;
+      color: $PrimaryColor;
+
+      &.align-right { text-align: right; }
+    }
+
+    .date-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #f8fafc;
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      width: fit-content;
+      
+      .day { font-size: 1.2rem; font-weight: 700; color: $PrimaryColor; }
+      .month { font-size: 0.8rem; text-transform: uppercase; color: #64748b; }
+      .time { font-size: 0.8rem; color: $SecondaryColor; font-weight: 600; margin-top: 2px; }
+    }
+
+    .prof-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      
+      .prof-name { font-weight: 600; font-size: 1.1rem; }
+      .subject-tag { font-size: 0.9rem; color: #64748b; }
+    }
+
+    .mode-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: #f1f5f9;
+      color: #64748b;
+      width: fit-content;
+      &.visio { background: #e0f2fe; color: $statusInfo; }
+    }
+
+    .child-tag {
+      background: #fff7ed;
+      color: $SecondaryColorActive;
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+      
+      &.confirmed { background: $statusConfirmed; }
+      &.pending { background: $statusPending; }
+      &.canceled { background: $statusCanceled; }
+      &.finished { background: #cbd5e1; }
+    }
+
+    .empty-table {
+      text-align: center;
+      padding: 3rem;
+      color: #94a3b8;
+    }
+  }
+}

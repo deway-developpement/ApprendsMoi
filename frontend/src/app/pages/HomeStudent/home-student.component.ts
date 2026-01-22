@@ -4,7 +4,7 @@ import { HeaderComponent } from '../../components/Header/header.component';
 @Component({
     selector: 'app-home-student',
     templateUrl: './home-student.component.html',
-    styleUrls: ['./home-student.component.css'],
+    styleUrls: ['./home-student.component.scss'],
     standalone: true,
     imports: [HeaderComponent]
 })
