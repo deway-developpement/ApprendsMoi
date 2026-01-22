@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 namespace backend.Helpers;
 
 public class JwtHelper {
-    public static string GenerateToken(int userId, string? email, string? username, ProfileType profile) {
+    public static string GenerateToken(Guid userId, string? email, string? username, ProfileType profile) {
         var jwtSecret = Environment.GetEnvironmentVariable("JWT__SECRET");
         if (string.IsNullOrEmpty(jwtSecret)) {
             throw new InvalidOperationException("JWT secret is not configured.");
@@ -48,9 +48,9 @@ public class JwtHelper {
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    public static int? GetUserIdFromClaims(ClaimsPrincipal user) {
+    public static Guid? GetUserIdFromClaims(ClaimsPrincipal user) {
         var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
-        if (userIdClaim != null && int.TryParse(userIdClaim.Value, out var userId)) {
+        if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out var userId)) {
             return userId;
         }
         return null;

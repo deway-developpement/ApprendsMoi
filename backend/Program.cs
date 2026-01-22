@@ -83,7 +83,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 );
 
 // Application services
-builder.Services.AddScoped<UserHandler>();
+builder.Services.AddScoped<UserAuthService>();
+builder.Services.AddScoped<UserProfileService>();
+builder.Services.AddScoped<UserManagementService>();
 
 // Zoom services
 builder.Services.AddHttpClient<backend.Domains.Zoom.ZoomService>();
@@ -96,7 +98,7 @@ builder.Services.AddFluentMigratorCore()
         .WithGlobalConnectionString(defaultCo)
         .ScanIn(typeof(backend.Database.Migrations.InitialDbSetup).Assembly).For.All()
     )
-    .AddLogging(lb => lb.AddFluentMigratorConsole());
+    .AddLogging(lb => lb.AddFluentMigratorConsole().SetMinimumLevel(LogLevel.Warning));
 
 var app = builder.Build();
 
@@ -105,21 +107,20 @@ using (var scope = app.Services.CreateScope()) {
     var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
 
     if (args.Contains("--reset-migrations") || args.Contains("--reset-database")) {
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        Console.WriteLine("Resetting database: rolling back all migrations...");
+        Console.WriteLine("🔄 Resetting database...");
         runner.MigrateDown(0);
-        Console.WriteLine("Reapplying all migrations...");
         runner.MigrateUp();
-        Console.WriteLine("Database reset complete!");
+        Console.WriteLine("✓ Database reset complete!\n");
         
-        // Seed database as requested
+        // Seed database after reset
         var shouldPopulate = args.Contains("--populate");
-        Console.WriteLine($"Seeding database (populate={shouldPopulate})...");
+        Console.WriteLine($"🌱 Seeding database (populate={shouldPopulate})...");
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         await DatabaseSeeder.SeedAsync(dbContext, shouldPopulate);
-        Console.WriteLine("Database seeding complete!");
+        Console.WriteLine("✓ Seeding complete!\n");
     } else {
         runner.MigrateUp();
+        Console.WriteLine("✓ Migrations applied\n");
     }
 }
 
