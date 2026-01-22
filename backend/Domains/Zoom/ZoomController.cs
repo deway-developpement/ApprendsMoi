@@ -46,15 +46,21 @@ public class ZoomController : ControllerBase
                 return ValidationProblem(ModelState);
             }
 
-            var user = await _dbContext.Users.FindAsync(request.UserId);
-            if (user == null)
+            var teacher = await _dbContext.Users.FindAsync(request.TeacherId);
+            if (teacher == null)
             {
-                return BadRequest(new { error = "User not found" });
+                return BadRequest(new { error = "Teacher not found" });
+            }
+
+            var student = await _dbContext.Users.FindAsync(request.StudentId);
+            if (student == null)
+            {
+                return BadRequest(new { error = "Student not found" });
             }
 
             var topic = request.Topic ?? "ApprendsMoi - Session";
             
-            var meeting = await _zoomService.CreateInstantMeetingAsync(request.UserId, topic);
+            var meeting = await _zoomService.CreateInstantMeetingAsync(request.TeacherId, request.StudentId, topic);
             var participantSignature = _zoomService.GenerateSignature(meeting.ZoomMeetingId.ToString(), 0);
 
             return Ok(new CreateMeetingResponse
@@ -67,7 +73,9 @@ public class ZoomController : ControllerBase
                 StartUrl = meeting.StartUrl,
                 Password = meeting.Password,
                 ParticipantSignature = participantSignature,
-                SdkKey = _zoomService.GetSdkKey()
+                SdkKey = _zoomService.GetSdkKey(),
+                TeacherId = meeting.TeacherId,
+                StudentId = meeting.StudentId
             });
         }
         catch (InvalidOperationException ex)
@@ -92,7 +100,7 @@ public class ZoomController : ControllerBase
     /// </summary>
     [HttpGet("meetings")]
     [Produces("application/json")]
-    [ProducesResponseType(typeof(IEnumerable<Meeting>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<MeetingResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetMeetings()
     {
@@ -100,6 +108,17 @@ public class ZoomController : ControllerBase
         {
             var meetings = await _dbContext.Meetings
                 .OrderByDescending(m => m.CreatedAt)
+                .Select(m => new MeetingResponse
+                {
+                    Id = m.Id,
+                    MeetingId = m.ZoomMeetingId,
+                    Topic = m.Topic,
+                    CreatedAt = m.CreatedAt,
+                    ScheduledStartTime = m.ScheduledStartTime,
+                    Duration = m.Duration,
+                    TeacherId = m.TeacherId,
+                    StudentId = m.StudentId
+                })
                 .ToListAsync();
 
             return Ok(meetings);
@@ -145,7 +164,9 @@ public class ZoomController : ControllerBase
                 ScheduledStartTime = meeting.ScheduledStartTime,
                 Duration = meeting.Duration,
                 ParticipantSignature = participantSignature,
-                SdkKey = _zoomService.GetSdkKey()
+                SdkKey = _zoomService.GetSdkKey(),
+                TeacherId = meeting.TeacherId,
+                StudentId = meeting.StudentId
             });
         }
         catch (Exception ex)

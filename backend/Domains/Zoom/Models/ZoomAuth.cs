@@ -7,8 +7,12 @@ public class CreateMeetingRequest
     public string? Topic { get; set; }
 
     [Required]
-    [Range(1, int.MaxValue, ErrorMessage = "userId is required")]
-    public int UserId { get; set; }
+    [Range(1, int.MaxValue, ErrorMessage = "teacherId is required")]
+    public int TeacherId { get; set; }
+
+    [Required]
+    [Range(1, int.MaxValue, ErrorMessage = "studentId is required")]
+    public int StudentId { get; set; }
 }
 
 public class ZoomSignatureRequest
