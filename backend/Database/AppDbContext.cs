@@ -37,11 +37,18 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             b.Property(e => e.CreatedAt).HasColumnName("created_at");
             b.Property(e => e.ScheduledStartTime).HasColumnName("scheduled_start_time");
             b.Property(e => e.Duration).HasColumnName("duration");
-            b.Property(e => e.UserId).HasColumnName("user_id");
+            b.Property(e => e.TeacherId).HasColumnName("teacher_id");
+            b.Property(e => e.StudentId).HasColumnName("student_id");
 
-            b.HasOne(m => m.User)
-                .WithMany(u => u.Meetings)
-                .HasForeignKey(m => m.UserId);
+            b.HasOne(m => m.Teacher)
+                .WithMany()
+                .HasForeignKey(m => m.TeacherId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasOne(m => m.Student)
+                .WithMany()
+                .HasForeignKey(m => m.StudentId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }
