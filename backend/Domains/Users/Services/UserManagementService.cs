@@ -22,7 +22,7 @@ public class UserManagementService(AppDbContext db) {
             FirstName = firstName,
             LastName = lastName,
             PasswordHash = passwordHash,
-            Role = profile,
+            Profile = profile,
             IsVerified = false,
             CreatedAt = DateTime.UtcNow
         };
@@ -65,7 +65,7 @@ public class UserManagementService(AppDbContext db) {
             FirstName = firstName,
             LastName = lastName,
             PasswordHash = passwordHash,
-            Role = ProfileType.Student,
+            Profile = ProfileType.Student,
             IsVerified = true,
             CreatedAt = DateTime.UtcNow
         };

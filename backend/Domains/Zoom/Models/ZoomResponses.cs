@@ -23,7 +23,7 @@ public class CreateMeetingResponse
     public string Password { get; set; } = string.Empty;
     public string ParticipantSignature { get; set; } = string.Empty;
     public string SdkKey { get; set; } = string.Empty;
-    public int TeacherId { get; set; }
+    public Guid TeacherId { get; set; }
     public Guid StudentId { get; set; }
 }
 
@@ -41,7 +41,7 @@ public class MeetingDetailsResponse
     public int Duration { get; set; }
     public string ParticipantSignature { get; set; } = string.Empty;
     public string SdkKey { get; set; } = string.Empty;
-    public int TeacherId { get; set; }
+    public Guid TeacherId { get; set; }
     public Guid StudentId { get; set; }
 }
 
