@@ -4,6 +4,11 @@ using backend.Database.Models;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "profile")]
+[JsonDerivedType(typeof(AdminDto), typeDiscriminator: "Admin")]
+[JsonDerivedType(typeof(TeacherDto), typeDiscriminator: "Teacher")]
+[JsonDerivedType(typeof(ParentDto), typeDiscriminator: "Parent")]
+[JsonDerivedType(typeof(StudentDto), typeDiscriminator: "Student")]
 public class UserDto {
     public Guid Id { get; set; }
     public string? Email { get; set; }

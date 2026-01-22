@@ -18,6 +18,8 @@ public class UsersController(
 
     [HttpGet]
     [AdminOnly]
+    [ProducesResponseType(typeof(List<UserDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<List<UserDto>>> Get(CancellationToken ct) {
         var list = await _profileService.GetAllUsersAsync(ct);
         return Ok(list);
@@ -25,6 +27,9 @@ public class UsersController(
 
     [HttpGet("{id:guid}")]
     [Authorize]
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<UserDto>> GetById(Guid id, CancellationToken ct) {
         var user = await _profileService.GetUserByIdAsync(id, ct);
         if (user == null) return NotFound();

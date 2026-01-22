@@ -45,7 +45,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             b.Property(e => e.Profile).HasColumnName("role").IsRequired();
             b.Property(e => e.IsVerified).HasColumnName("is_verified").HasDefaultValue(false);
             b.Property(e => e.IsActive).HasColumnName("is_active").HasDefaultValue(true);
-            b.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            b.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("GETUTCDATE()");
             b.Property(e => e.LastLoginAt).HasColumnName("last_login_at");
             b.Property(e => e.DeletedAt).HasColumnName("deleted_at");
             b.Property(e => e.RefreshTokenHash).HasColumnName("refresh_token_hash");

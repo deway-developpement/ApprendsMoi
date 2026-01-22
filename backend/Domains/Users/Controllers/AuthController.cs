@@ -24,6 +24,9 @@ public class AuthController(
 
     [HttpPost("login")]
     [AllowAnonymous]
+    [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken ct) {
         if (string.IsNullOrEmpty(request.Credential) || string.IsNullOrEmpty(request.Password)) {
             return BadRequest(new { error = "Invalid credentials" });
@@ -203,8 +206,9 @@ public class AuthController(
     }
 
     [HttpPost("refresh")]
-    [AllowAnonymous]
-    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request, CancellationToken ct) {
+    [AllowAnonymous]    [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request, CancellationToken ct) {
         if (string.IsNullOrEmpty(request.RefreshToken)) {
             return BadRequest(new { error = "Refresh token is required" });
         }
