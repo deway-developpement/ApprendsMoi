@@ -1,10 +1,23 @@
-import { Component, ElementRef, ViewChild, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnInit, OnDestroy, AfterViewInit, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { HeaderComponent } from '../../components/Header/header.component';
 import { ButtonComponent } from '../../components/shared/Button/button.component';
+import { environment } from '../../environments/environment';
 
 declare const ZoomMtgEmbedded: any;
+
+interface MeetingDetailsResponse {
+  meetingNumber: string;
+  password: string;
+  participantSignature: string;
+  sdkKey: string;
+  joinUrl: string;
+}
+
+interface CreateMeetingResponse extends MeetingDetailsResponse {}
 
 @Component({
   standalone: true,
@@ -13,10 +26,12 @@ declare const ZoomMtgEmbedded: any;
   styleUrls: ['./Visio.component.scss'],
   imports: [CommonModule, HeaderComponent, ButtonComponent]
 })
-export class Visio implements OnInit, OnDestroy {
+export class Visio implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('zoomContainer', { static: false }) zoomContainer?: ElementRef<HTMLDivElement>;
 
-  private readonly apiBaseUrl = 'http://localhost:5254/api/zoom';
+  private readonly http = inject(HttpClient);
+  private readonly apiBaseUrl = `${environment.apiUrl}/api/zoom`;
+  private viewReady = false;
   
   meetingId: number | null = null;
   zoomMeetingUrl = '';
@@ -63,6 +78,13 @@ export class Visio implements OnInit, OnDestroy {
     });
   }
 
+  ngAfterViewInit(): void {
+    this.viewReady = true;
+    if (this.zoomSdkConfig.meetingNumber && !this.sdkReady) {
+      this.tryInitZoomSdk();
+    }
+  }
+
   ngOnDestroy(): void {
     // Clean up Zoom client when component is destroyed
     if (this.zoomClient) {
@@ -87,19 +109,14 @@ export class Visio implements OnInit, OnDestroy {
       return;
     }
 
+    this.isLoadingMeeting = true;
+    this.sdkError = '';
+
     try {
-      this.isLoadingMeeting = true;
-      this.sdkError = '';
+      const data = await firstValueFrom(
+        this.http.get<MeetingDetailsResponse>(`${this.apiBaseUrl}/meetings/${this.meetingId}`)
+      );
 
-      const response = await fetch(`${this.apiBaseUrl}/meetings/${this.meetingId}`);
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Réunion non trouvée');
-      }
-
-      const data = await response.json();
-      
       // Update config with meeting data
       this.zoomSdkConfig.meetingNumber = data.meetingNumber;
       this.zoomSdkConfig.passWord = data.password || '';
@@ -109,36 +126,33 @@ export class Visio implements OnInit, OnDestroy {
       this.zoomMeetingUrl = data.joinUrl;
       this.hasRetriedAsParticipant = false;
 
-      this.isLoadingMeeting = false;
       this.cdr.detectChanges();
 
       // Auto-initialize SDK
-      this.tryInitZoomSdk();
+      if (this.viewReady) {
+        this.tryInitZoomSdk();
+      }
     } catch (err) {
-      this.isLoadingMeeting = false;
-      this.sdkError = err instanceof Error ? err.message : 'Erreur lors du chargement de la réunion';
+      this.sdkError = this.getErrorMessage(err, 'Erreur lors du chargement de la réunion');
       console.error('Meeting loading error:', err);
+    } finally {
+      this.isLoadingMeeting = false;
     }
   }
 
   async createAndInitMeeting(): Promise<void> {
+    this.isLoadingMeeting = true;
+    this.sdkError = '';
+
     try {
-      this.isLoadingMeeting = true;
-      this.sdkError = '';
+      const data = await firstValueFrom(
+        this.http.post<CreateMeetingResponse>(`${this.apiBaseUrl}/meeting`, {
+          topic: 'ApprendsMoi - Session de classe',
+          teacherId: 2,
+          studentId: 3
+        })
+      );
 
-      const response = await fetch(`${this.apiBaseUrl}/meeting`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic: 'ApprendsMoi - Session de classe', teacherId: 2, studentId: 3 })
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Erreur lors de la création de la réunion');
-      }
-
-      const data = await response.json();
-      
       // Update config with meeting data
       this.zoomSdkConfig.meetingNumber = data.meetingNumber;
       this.zoomSdkConfig.passWord = data.password || '';
@@ -148,15 +162,17 @@ export class Visio implements OnInit, OnDestroy {
       this.zoomMeetingUrl = data.joinUrl;
       this.hasRetriedAsParticipant = false;
 
-      this.isLoadingMeeting = false;
       this.cdr.detectChanges();
 
       // Auto-initialize SDK
-      this.tryInitZoomSdk();
+      if (this.viewReady) {
+        this.tryInitZoomSdk();
+      }
     } catch (err) {
-      this.isLoadingMeeting = false;
-      this.sdkError = err instanceof Error ? err.message : 'Erreur lors de la création de la réunion';
+      this.sdkError = this.getErrorMessage(err, 'Erreur lors de la création de la réunion');
       console.error('Meeting creation error:', err);
+    } finally {
+      this.isLoadingMeeting = false;
     }
   }
 
@@ -170,7 +186,9 @@ export class Visio implements OnInit, OnDestroy {
 
   private tryInitZoomSdk(): void {
     if (!this.zoomContainer?.nativeElement) {
-      this.sdkError = 'Container Zoom non trouvé';
+      if (this.viewReady) {
+        this.sdkError = 'Container Zoom non trouvé';
+      }
       return;
     }
 
@@ -239,6 +257,17 @@ export class Visio implements OnInit, OnDestroy {
         this.sdkError = formattedError;
         this.cdr.detectChanges();
       });
+  }
+
+  private getErrorMessage(err: unknown, fallback: string): string {
+    if (err instanceof HttpErrorResponse) {
+      if (typeof err.error === 'string') return err.error;
+      if (err.error?.error) return err.error.error;
+      return err.message || fallback;
+    }
+
+    if (err instanceof Error) return err.message;
+    return fallback;
   }
 
   private formatZoomError(err: any): string {
