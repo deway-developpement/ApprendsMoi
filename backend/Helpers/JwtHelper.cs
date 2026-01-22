@@ -79,4 +79,14 @@ public class JwtHelper {
         }
         return refreshExpiresInHours;
     }
+
+    public static bool HasPasswordComplexity(string password) {
+        if (password.Length < 6) return false;
+        
+        bool hasUpper = password.Any(char.IsUpper);
+        bool hasLower = password.Any(char.IsLower);
+        bool hasDigit = password.Any(char.IsDigit);
+        
+        return hasUpper && hasLower && hasDigit;
+    }
 }

@@ -92,9 +92,9 @@ public class UsersController(
         if (string.IsNullOrEmpty(request.CurrentPassword) || string.IsNullOrEmpty(request.NewPassword)) {
             return BadRequest(new { error = "Invalid request" });
         }
-
-        if (request.NewPassword.Length < 6) {
-            return BadRequest(new { error = "Password must be at least 6 characters" });
+        
+        if (!JwtHelper.HasPasswordComplexity(request.NewPassword)) {
+            return BadRequest(new { error = "Password must contain uppercase, lowercase, numbers, and be at least 6 characters long" });
         }
 
         var success = await _authService.UpdatePasswordAsync(

@@ -94,8 +94,8 @@ public class AuthController(
             return BadRequest(new { error = "Registration failed" });
         }
         
-        if (string.IsNullOrEmpty(request.Password) || request.Password.Length < 6) {
-            return BadRequest(new { error = "Registration failed" });
+        if (string.IsNullOrEmpty(request.Password) || !JwtHelper.HasPasswordComplexity(request.Password)) {
+            return BadRequest(new { error = "Password must contain uppercase, lowercase, numbers, and be at least 6 characters long" });
         }
 
         if (string.IsNullOrEmpty(request.FirstName) || string.IsNullOrEmpty(request.LastName)) {
@@ -140,8 +140,8 @@ public class AuthController(
             return BadRequest(new { error = "Registration failed" });
         }
 
-        if (string.IsNullOrEmpty(request.Password) || request.Password.Length < 6) {
-            return BadRequest(new { error = "Registration failed" });
+        if (string.IsNullOrEmpty(request.Password) || !JwtHelper.HasPasswordComplexity(request.Password)) {
+            return BadRequest(new { error = "Password must contain uppercase, lowercase, numbers, and be at least 6 characters long" });
         }
 
         if (string.IsNullOrEmpty(request.FirstName) || string.IsNullOrEmpty(request.LastName)) {
