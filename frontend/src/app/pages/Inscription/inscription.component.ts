@@ -46,12 +46,19 @@ export class InscriptionComponent {
 
   isLoading = false;
 
+  private readonly emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
   onRegister() {
     // --- 1. WARNING TOASTS (Validation) ---
 
     // Check for empty fields
     if (!this.email || !this.password || !this.confirmPassword) {
       this.toastService.warning('Veuillez remplir tous les champs obligatoires.');
+      return; // STOP SUBMIT
+    }
+
+    if (!this.emailRegex.test(this.email)) {
+      this.toastService.warning('Le format de l\'adresse email est invalide.');
       return; // STOP SUBMIT
     }
 
