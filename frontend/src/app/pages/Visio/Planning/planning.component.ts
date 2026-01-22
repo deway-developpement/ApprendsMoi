@@ -94,7 +94,6 @@ export class PlanningComponent implements OnInit {
       return dateString;
     }
     return date.toLocaleString('fr-FR', {
-      timeZone: 'UTC',
       year: 'numeric',
       month: 'long',
       day: 'numeric',

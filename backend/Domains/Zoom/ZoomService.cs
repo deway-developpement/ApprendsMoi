@@ -83,6 +83,7 @@ public class ZoomService
             topic,
             type = 2, // Scheduled meeting (type 1 = instant has concurrency limits, type 2 = scheduled allows unlimited)
             start_time = startTimeFormatted,
+            timezone = "UTC",
             duration = 60, // 1 hour duration
             settings = new
             {
@@ -125,7 +126,7 @@ public class ZoomService
             StartUrl = zoomMeeting.StartUrl,
             Password = zoomMeeting.Password,
             CreatedAt = DateTime.UtcNow,
-            ScheduledStartTime = zoomMeeting.StartTime,
+            ScheduledStartTime = NormalizeZoomStartTime(zoomMeeting.StartTime),
             Duration = zoomMeeting.Duration,
             TeacherId = teacherId,
             StudentId = studentId
@@ -184,5 +185,21 @@ public class ZoomService
 
     private static string Base64UrlEncode(byte[] input) =>
         Convert.ToBase64String(input).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+
+    private static DateTime NormalizeZoomStartTime(DateTime value)
+    {
+        if (value.Kind == DateTimeKind.Utc)
+        {
+            return value;
+        }
+
+        if (value.Kind == DateTimeKind.Local)
+        {
+            return value.ToUniversalTime();
+        }
+
+        // Zoom can return start_time without timezone; treat it as local server time.
+        return DateTime.SpecifyKind(value, DateTimeKind.Local).ToUniversalTime();
+    }
 }
 
