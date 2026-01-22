@@ -4,11 +4,15 @@ using backend.Database.Models;
 using Microsoft.EntityFrameworkCore;
 using backend.Domains.Zoom.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
+using backend.Helpers;
+using System.Security.Claims;
 
 namespace backend.Domains.Zoom;
 
 [ApiController]
 [Route("api/zoom")]
+[Authorize]
 public class ZoomController : ControllerBase
 {
     private readonly ZoomService _zoomService;
@@ -36,9 +40,50 @@ public class ZoomController : ControllerBase
     {
         try
         {
-            var topic = request?.Topic ?? "ApprendsMoi - Session";
+            if (request == null)
+            {
+                return BadRequest(new { error = "Request body is required" });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            var currentUserId = JwtHelper.GetUserIdFromClaims(User);
+            if (currentUserId == null)
+            {
+                return Unauthorized(new { error = "Invalid token" });
+            }
+
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            if (userRole == ProfileType.Parent.ToString() || userRole == ProfileType.Student.ToString())
+            {
+                return Forbid();
+            }
+
+            // Teachers can only create meetings where they are the teacher
+            // Admins can create any meeting
+            if (userRole == ProfileType.Teacher.ToString() && request.TeacherId != currentUserId)
+            {
+                return Forbid();
+            }
+
+            var teacher = await _dbContext.Users.FindAsync(request.TeacherId);
+            if (teacher == null)
+            {
+                return BadRequest(new { error = "Teacher not found" });
+            }
+
+            var student = await _dbContext.Users.FindAsync(request.StudentId);
+            if (student == null)
+            {
+                return BadRequest(new { error = "Student not found" });
+            }
+
+            var topic = request.Topic ?? "ApprendsMoi - Session";
             
-            var meeting = await _zoomService.CreateInstantMeetingAsync(topic);
+            var meeting = await _zoomService.CreateInstantMeetingAsync(request.TeacherId, request.StudentId, topic);
             var participantSignature = _zoomService.GenerateSignature(meeting.ZoomMeetingId.ToString(), 0);
 
             return Ok(new CreateMeetingResponse
@@ -51,7 +96,9 @@ public class ZoomController : ControllerBase
                 StartUrl = meeting.StartUrl,
                 Password = meeting.Password,
                 ParticipantSignature = participantSignature,
-                SdkKey = _zoomService.GetSdkKey()
+                SdkKey = _zoomService.GetSdkKey(),
+                TeacherId = meeting.TeacherId,
+                StudentId = meeting.StudentId
             });
         }
         catch (InvalidOperationException ex)
@@ -72,18 +119,55 @@ public class ZoomController : ControllerBase
     }
 
     /// <summary>
-    /// Gets all meetings from the database
+    /// Gets all meetings (filtered by user role and ownership)
     /// </summary>
     [HttpGet("meetings")]
     [Produces("application/json")]
-    [ProducesResponseType(typeof(IEnumerable<Meeting>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<MeetingResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetMeetings()
     {
         try
         {
-            var meetings = await _dbContext.Meetings
+            var currentUserId = JwtHelper.GetUserIdFromClaims(User);
+            if (currentUserId == null)
+            {
+                return Unauthorized(new { error = "Invalid token" });
+            }
+
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            if (userRole == ProfileType.Parent.ToString())
+            {
+                return Forbid();
+            }
+
+            IQueryable<Meeting> query = _dbContext.Meetings;
+
+            // Filter based on role
+            if (userRole == ProfileType.Teacher.ToString())
+            {
+                query = query.Where(m => m.TeacherId == currentUserId);
+            }
+            else if (userRole == ProfileType.Student.ToString())
+            {
+                query = query.Where(m => m.StudentId == currentUserId);
+            }
+            // Admin can see all meetings (no filter)
+
+            var meetings = await query
                 .OrderByDescending(m => m.CreatedAt)
+                .Select(m => new MeetingResponse
+                {
+                    Id = m.Id,
+                    MeetingId = m.ZoomMeetingId,
+                    Topic = m.Topic,
+                    CreatedAt = m.CreatedAt,
+                    ScheduledStartTime = m.ScheduledStartTime,
+                    Duration = m.Duration,
+                    TeacherId = m.TeacherId,
+                    StudentId = m.StudentId
+                })
                 .ToListAsync();
 
             return Ok(meetings);
@@ -102,16 +186,44 @@ public class ZoomController : ControllerBase
     [Produces("application/json")]
     [ProducesResponseType(typeof(MeetingDetailsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetMeeting(int id)
     {
         try
         {
+            var currentUserId = JwtHelper.GetUserIdFromClaims(User);
+            if (currentUserId == null)
+            {
+                return Unauthorized(new { error = "Invalid token" });
+            }
+
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            if (userRole == ProfileType.Parent.ToString())
+            {
+                return Forbid();
+            }
+
             var meeting = await _dbContext.Meetings.FindAsync(id);
             
             if (meeting == null)
             {
                 return NotFound(new { error = "Meeting not found" });
+            }
+
+            // Check access rights
+            if (userRole != ProfileType.Admin.ToString())
+            {
+                // Teachers can only view their meetings
+                if (userRole == ProfileType.Teacher.ToString() && meeting.TeacherId != currentUserId)
+                {
+                    return Forbid();
+                }
+                // Students can only view their meetings
+                if (userRole == ProfileType.Student.ToString() && meeting.StudentId != currentUserId)
+                {
+                    return Forbid();
+                }
             }
 
             var participantSignature = _zoomService.GenerateSignature(meeting.ZoomMeetingId.ToString(), 0);
@@ -129,7 +241,9 @@ public class ZoomController : ControllerBase
                 ScheduledStartTime = meeting.ScheduledStartTime,
                 Duration = meeting.Duration,
                 ParticipantSignature = participantSignature,
-                SdkKey = _zoomService.GetSdkKey()
+                SdkKey = _zoomService.GetSdkKey(),
+                TeacherId = meeting.TeacherId,
+                StudentId = meeting.StudentId
             });
         }
         catch (Exception ex)
