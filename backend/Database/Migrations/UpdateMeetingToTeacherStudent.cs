@@ -9,8 +9,8 @@ public class UpdateMeetingToTeacherStudent : Migration
     {
         // Add new columns
         Alter.Table("meetings")
-            .AddColumn("teacher_id").AsInt32().NotNullable().WithDefaultValue(1)
-            .AddColumn("student_id").AsInt32().NotNullable().WithDefaultValue(1);
+            .AddColumn("teacher_id").AsInt32().NotNullable()
+            .AddColumn("student_id").AsInt32().NotNullable();
 
         // Add foreign keys
         Create.ForeignKey("fk_meetings_teacher_id")
