@@ -60,6 +60,13 @@ public class JwtHelper {
         return user.FindFirst(ClaimTypes.Email)?.Value;
     }
 
+    public static ProfileType? GetUserRoleFromClaims(ClaimsPrincipal user) {
+        var roleClaim = user.FindFirst(ClaimTypes.Role)?.Value;
+        if (string.IsNullOrEmpty(roleClaim)) return null;
+        
+        return Enum.TryParse<ProfileType>(roleClaim, out var role) ? role : null;
+    }
+
     public static string GenerateRefreshToken() {
         var bytes = Guid.NewGuid().ToByteArray().Concat(Guid.NewGuid().ToByteArray()).ToArray();
         return Convert.ToBase64String(bytes);
