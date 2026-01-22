@@ -2,6 +2,7 @@ namespace backend.Domains.Users;
 
 using backend.Database.Models;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 public class UserDto {
     public Guid Id { get; set; }
@@ -34,6 +35,8 @@ public class ParentDto : UserDto {
 }
 
 public class StudentDto : UserDto {
+    // Students use username instead of email - prevent email from appearing in JSON/Swagger
+    [JsonIgnore]
     public new string? Email { get => null; set { } }
     
     public GradeLevel? GradeLevel { get; set; }

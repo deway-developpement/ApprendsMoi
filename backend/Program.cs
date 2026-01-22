@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using backend.Database;
 using backend.Domains.Users;
+using backend.Helpers;
 using FluentMigrator.Runner;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -10,6 +11,9 @@ using Microsoft.OpenApi;
 DotNetEnv.Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Validate all required environment variables at startup
+EnvironmentValidator.ValidateRequiredVariables();
 
 // Add services to the container
 builder.Services.AddControllers();
@@ -36,24 +40,19 @@ builder.Services.AddSwaggerGen(options => {
 });
 
 // Authentication services
-var jwtSecret = Environment.GetEnvironmentVariable("JWT__SECRET")
-    ?? throw new InvalidOperationException("JWT__SECRET environment variable is not configured");
-if (Encoding.UTF8.GetByteCount(jwtSecret) < 32) {
-    throw new InvalidOperationException("JWT__SECRET must be at least 32 bytes (256 bits) long for HMAC-SHA256.");
-}
+var jwtSecret = Environment.GetEnvironmentVariable("JWT__SECRET")!;
+var backendUrl = Environment.GetEnvironmentVariable("BACKEND__URL")!;
+var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND__URL")!;
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options => {
         options.TokenValidationParameters = new TokenValidationParameters {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtSecret)
-            ),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
             ValidateIssuer = true,
             ValidateAudience = true,
-            ValidIssuer = Environment.GetEnvironmentVariable("BACKEND__URL")
-                ?? throw new InvalidOperationException("BACKEND__URL environment variable is not configured"),
-            ValidAudience = Environment.GetEnvironmentVariable("FRONTEND__URL")
-                ?? throw new InvalidOperationException("FRONTEND__URL environment variable is not configured"),
+            ValidIssuer = backendUrl,
+            ValidAudience = frontendUrl,
             ClockSkew = TimeSpan.Zero
         };
     });
@@ -61,13 +60,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // Authorization services
 builder.Services.AddAuthorization();
 
-
 // CORS configuration
-
-var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND__URL");
-if (string.IsNullOrEmpty(frontendUrl)) {
-    throw new InvalidOperationException("FRONTEND__URL environment variable is not configured");
-}
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowFrontend", policy => {
         policy.WithOrigins(frontendUrl)
@@ -77,12 +70,8 @@ builder.Services.AddCors(options => {
     });
 });
 
-
 // Database services
-var defaultCo = Environment.GetEnvironmentVariable("POSTGRES__CONNECTION_STRING");
-if (string.IsNullOrEmpty(defaultCo)) {
-    throw new InvalidOperationException("POSTGRES__CONNECTION_STRING environment variable is not configured");
-}
+var defaultCo = Environment.GetEnvironmentVariable("POSTGRES__CONNECTION_STRING")!;
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(defaultCo)
 );

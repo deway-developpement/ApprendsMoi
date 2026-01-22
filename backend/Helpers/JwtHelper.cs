@@ -31,13 +31,11 @@ public class JwtHelper {
 
         var claims = claimsList.ToArray();
 
-        var expiresInHoursEnv = Environment.GetEnvironmentVariable("JWT__ACCESS_EXPIRES_IN_HOURS");
-        double expiresInHours = 1;
-        if (!string.IsNullOrEmpty(expiresInHoursEnv) && 
-            double.TryParse(expiresInHoursEnv, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var parsedExpiresInHours) &&
-            parsedExpiresInHours > 0) {
-            expiresInHours = parsedExpiresInHours;
-        }
+        var expiresInHours = double.Parse(
+            Environment.GetEnvironmentVariable("JWT__ACCESS_EXPIRES_IN_HOURS")!,
+            System.Globalization.NumberStyles.Float,
+            System.Globalization.CultureInfo.InvariantCulture
+        );
 
         var token = new JwtSecurityToken(
             issuer: Environment.GetEnvironmentVariable("BACKEND__URL"),

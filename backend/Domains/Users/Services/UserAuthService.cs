@@ -14,12 +14,11 @@ public class UserAuthService(AppDbContext db) {
         return Convert.ToBase64String(bytes);
     }
 
-    public async Task<string?> GetByEmailAsync(string email, CancellationToken ct = default) {
+    public async Task<bool> EmailExistsAsync(string email, CancellationToken ct = default) {
         var normalizedEmail = email.ToLower();
-        var exists = await _db.Users
+        return await _db.Users
             .AsNoTracking()
             .AnyAsync(u => u.Email == normalizedEmail, ct);
-        return exists ? email : null;
     }
 
     public async Task<string?> GetByUsernameAsync(string username, CancellationToken ct = default) {

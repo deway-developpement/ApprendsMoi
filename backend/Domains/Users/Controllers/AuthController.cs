@@ -95,8 +95,8 @@ public class AuthController(
         }
 
         // Check if email already exists
-        var existingUser = await _authService.GetByEmailAsync(request.Email, ct);
-        if (existingUser != null) {
+        var emailExists = await _authService.EmailExistsAsync(request.Email, ct);
+        if (emailExists) {
             return Conflict(new { error = "Registration failed" });
         }
 
@@ -110,9 +110,7 @@ public class AuthController(
             ct
         );
 
-        return CreatedAtAction(
-            nameof(GetCurrentUser),
-            new { id = user.Id },
+        return Ok(
             new {
                 id = user.Id,
                 message = "User registered successfully"
@@ -179,9 +177,7 @@ public class AuthController(
             ct
         );
 
-        return CreatedAtAction(
-            nameof(GetCurrentUser),
-            new { id = student.Id },
+        return Ok(
             new {
                 id = student.Id,
                 message = "Student registered successfully"
