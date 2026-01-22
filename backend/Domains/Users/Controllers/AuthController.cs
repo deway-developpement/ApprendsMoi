@@ -22,14 +22,6 @@ public class AuthController(
     private static readonly Regex EmailRegex = new(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", RegexOptions.Compiled);
     private static readonly Regex UsernameRegex = new(@"^[a-zA-Z0-9_-]{3,20}$", RegexOptions.Compiled);
 
-    private static int GetRefreshTokenExpiryHours() {
-        var refreshExpiresStr = Environment.GetEnvironmentVariable("JWT__REFRESH_EXPIRES_IN_HOURS");
-        if (string.IsNullOrEmpty(refreshExpiresStr) || !int.TryParse(refreshExpiresStr, out var hours)) {
-            throw new InvalidOperationException("JWT__REFRESH_EXPIRES_IN_HOURS environment variable is not configured or invalid.");
-        }
-        return hours;
-    }
-
     [HttpPost("login")]
     [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken ct) {
@@ -136,6 +128,29 @@ public class AuthController(
             return Unauthorized(new { error = "Invalid token" });
         }
 
+        var userRole = JwtHelper.GetUserRoleFromClaims(User);
+
+        // Determine the parent ID based on the caller's role
+        Guid parentId;
+        if (userRole == ProfileType.Parent) {
+            parentId = userId.Value;
+        }
+        else if (userRole == ProfileType.Admin) {
+            if (request.ParentId == null) {
+                return BadRequest(new { error = "Parent ID is required for admin registration" });
+            }
+            
+            var parentExists = await _authService.ParentExistsAsync(request.ParentId.Value, ct);
+            if (!parentExists) {
+                return BadRequest(new { error = "Parent not found" });
+            }
+            
+            parentId = request.ParentId.Value;
+        }
+        else {
+            return Forbid();
+        }
+
         if (string.IsNullOrEmpty(request.Username) || !UsernameRegex.IsMatch(request.Username)) {
             return BadRequest(new { error = "Registration failed" });
         }
@@ -148,14 +163,13 @@ public class AuthController(
             return BadRequest(new { error = "Registration failed" });
         }
 
-        // Check if username already exists
         var existingStudent = await _authService.GetByUsernameAsync(request.Username, ct);
         if (existingStudent != null) {
             return Conflict(new { error = "Registration failed" });
         }
 
         var student = await _managementService.CreateStudentAsync(
-            userId.Value,
+            parentId,
             request.Username,
             request.Password,
             request.FirstName,
@@ -225,6 +239,6 @@ public class AuthController(
 
 public record LoginRequest(string Credential, string Password, bool IsStudent);
 public record RegisterRequest(string Email, string Password, string FirstName, string LastName, ProfileType? Profile, string? PhoneNumber);
-public record RegisterStudentRequest(string Username, string Password, string FirstName, string LastName, GradeLevel? GradeLevel, DateOnly? BirthDate);
+public record RegisterStudentRequest(string Username, string Password, string FirstName, string LastName, GradeLevel? GradeLevel, DateOnly? BirthDate, Guid? ParentId);
 public record LoginResponse(string Token, string RefreshToken, UserDto User);
 public record RefreshTokenRequest(string RefreshToken);

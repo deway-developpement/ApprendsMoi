@@ -80,11 +80,10 @@ public class JwtHelper {
 
     public static double GetRefreshTokenExpiryHours() {
         var refreshExpiresInHoursEnv = Environment.GetEnvironmentVariable("JWT__REFRESH_EXPIRES_IN_HOURS");
-        double refreshExpiresInHours = 4;
         if (!string.IsNullOrEmpty(refreshExpiresInHoursEnv) && double.TryParse(refreshExpiresInHoursEnv, out var parsedRefreshExpiresInHours)) {
-            refreshExpiresInHours = parsedRefreshExpiresInHours;
+            return parsedRefreshExpiresInHours;
         }
-        return refreshExpiresInHours;
+        throw new InvalidOperationException("JWT__REFRESH_EXPIRES_IN_HOURS environment variable is not configured or invalid.");
     }
 
     public static bool HasPasswordComplexity(string password) {

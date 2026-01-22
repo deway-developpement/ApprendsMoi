@@ -30,6 +30,7 @@ public class ZoomController : ControllerBase
     /// Creates a new instant Zoom meeting and saves it to the database
     /// </summary>
     [HttpPost("meeting")]
+    [RequireRole(ProfileType.Admin, ProfileType.Teacher)]
     [Consumes("application/json")]
     [Produces("application/json")]
     [ProducesResponseType(typeof(CreateMeetingResponse), StatusCodes.Status200OK)]
@@ -57,10 +58,6 @@ public class ZoomController : ControllerBase
             }
 
             var userRole = JwtHelper.GetUserRoleFromClaims(User);
-            if (userRole == ProfileType.Parent || userRole == ProfileType.Student)
-            {
-                return Forbid();
-            }
 
             // Teachers can only create meetings where they are the teacher
             // Admins can create any meeting
@@ -122,6 +119,7 @@ public class ZoomController : ControllerBase
     /// Gets all meetings (filtered by user role and ownership)
     /// </summary>
     [HttpGet("meetings")]
+    [RequireRole(ProfileType.Admin, ProfileType.Teacher, ProfileType.Student)]
     [Produces("application/json")]
     [ProducesResponseType(typeof(IEnumerable<MeetingResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -137,10 +135,6 @@ public class ZoomController : ControllerBase
             }
 
             var userRole = JwtHelper.GetUserRoleFromClaims(User);
-            if (userRole == ProfileType.Parent)
-            {
-                return Forbid();
-            }
 
             IQueryable<Meeting> query = _dbContext.Meetings;
 
@@ -183,6 +177,7 @@ public class ZoomController : ControllerBase
     /// Gets a specific meeting by ID
     /// </summary>
     [HttpGet("meetings/{id}")]
+    [RequireRole(ProfileType.Admin, ProfileType.Teacher, ProfileType.Student)]
     [Produces("application/json")]
     [ProducesResponseType(typeof(MeetingDetailsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -199,10 +194,6 @@ public class ZoomController : ControllerBase
             }
 
             var userRole = JwtHelper.GetUserRoleFromClaims(User);
-            if (userRole == ProfileType.Parent)
-            {
-                return Forbid();
-            }
 
             var meeting = await _dbContext.Meetings.FindAsync(id);
             

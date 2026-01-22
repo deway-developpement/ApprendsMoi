@@ -125,4 +125,8 @@ public class UserAuthService(AppDbContext db) {
         await _db.SaveChangesAsync(ct);
         return true;
     }
+
+    public async Task<bool> ParentExistsAsync(Guid parentId, CancellationToken ct = default) {
+        return await _db.Parents.AnyAsync(p => p.UserId == parentId, ct);
+    }
 }
