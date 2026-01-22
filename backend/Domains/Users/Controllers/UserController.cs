@@ -109,13 +109,25 @@ public class UsersController(
     }
 
     [HttpGet("students")]
-    [Authorize]
+    [RequireRole(ProfileType.Admin, ProfileType.Teacher, ProfileType.Parent)]
     public async Task<ActionResult<List<StudentDto>>> GetMyStudents(CancellationToken ct) {
         var userId = JwtHelper.GetUserIdFromClaims(User);
         if (userId == null) return Unauthorized();
 
-        var students = await _profileService.GetStudentsByParentIdAsync(userId.Value, ct);
-        return Ok(students);
+        var userRole = JwtHelper.GetUserRoleFromClaims(User);
+        
+        if (userRole == ProfileType.Parent) {
+            var students = await _profileService.GetStudentsByParentIdAsync(userId.Value, ct);
+            return Ok(students);
+        }
+        else if (userRole == ProfileType.Teacher) {
+            var students = await _profileService.GetStudentsByTeacherIdAsync(userId.Value, ct);
+            return Ok(students);
+        }
+        else {
+            var students = await _profileService.GetAllStudentsAsync(ct);
+            return Ok(students);
+        }
     }
 
     [HttpDelete("{id:guid}")]

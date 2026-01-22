@@ -101,6 +101,55 @@ public class UserProfileService(AppDbContext db) {
         }).ToList();
     }
 
+    public async Task<List<StudentDto>> GetStudentsByTeacherIdAsync(Guid teacherId, CancellationToken ct = default) {
+        var students = await _db.Courses
+            .AsNoTracking()
+            .Where(c => c.TeacherId == teacherId)
+            .Select(c => c.Student)
+            .Distinct()
+            .Include(s => s.User)
+            .ToListAsync(ct);
+
+        return students.Select(s => new StudentDto {
+            Id = s.User.Id,
+            Username = s.Username,
+            FirstName = s.User.FirstName,
+            LastName = s.User.LastName,
+            ProfilePicture = s.User.ProfilePicture,
+            Profile = s.User.Profile,
+            IsVerified = s.User.IsVerified,
+            IsActive = s.User.IsActive,
+            CreatedAt = s.User.CreatedAt,
+            LastLoginAt = s.User.LastLoginAt,
+            GradeLevel = s.GradeLevel,
+            BirthDate = s.BirthDate,
+            ParentId = s.ParentId
+        }).ToList();
+    }
+
+    public async Task<List<StudentDto>> GetAllStudentsAsync(CancellationToken ct = default) {
+        var students = await _db.Students
+            .AsNoTracking()
+            .Include(s => s.User)
+            .ToListAsync(ct);
+
+        return students.Select(s => new StudentDto {
+            Id = s.User.Id,
+            Username = s.Username,
+            FirstName = s.User.FirstName,
+            LastName = s.User.LastName,
+            ProfilePicture = s.User.ProfilePicture,
+            Profile = s.User.Profile,
+            IsVerified = s.User.IsVerified,
+            IsActive = s.User.IsActive,
+            CreatedAt = s.User.CreatedAt,
+            LastLoginAt = s.User.LastLoginAt,
+            GradeLevel = s.GradeLevel,
+            BirthDate = s.BirthDate,
+            ParentId = s.ParentId
+        }).ToList();
+    }
+
     private static UserDto MapToDto(User user) {
         string? email = null;
         string? username = null;
