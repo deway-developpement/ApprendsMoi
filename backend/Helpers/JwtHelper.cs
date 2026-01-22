@@ -33,7 +33,9 @@ public class JwtHelper {
 
         var expiresInHoursEnv = Environment.GetEnvironmentVariable("JWT__ACCESS_EXPIRES_IN_HOURS");
         double expiresInHours = 1;
-        if (!string.IsNullOrEmpty(expiresInHoursEnv) && double.TryParse(expiresInHoursEnv, out var parsedExpiresInHours)) {
+        if (!string.IsNullOrEmpty(expiresInHoursEnv) && 
+            double.TryParse(expiresInHoursEnv, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var parsedExpiresInHours) &&
+            parsedExpiresInHours > 0) {
             expiresInHours = parsedExpiresInHours;
         }
 
@@ -80,10 +82,20 @@ public class JwtHelper {
 
     public static double GetRefreshTokenExpiryHours() {
         var refreshExpiresInHoursEnv = Environment.GetEnvironmentVariable("JWT__REFRESH_EXPIRES_IN_HOURS");
-        if (!string.IsNullOrEmpty(refreshExpiresInHoursEnv) && double.TryParse(refreshExpiresInHoursEnv, out var parsedRefreshExpiresInHours)) {
-            return parsedRefreshExpiresInHours;
+        
+        if (string.IsNullOrEmpty(refreshExpiresInHoursEnv)) {
+            throw new InvalidOperationException("JWT__REFRESH_EXPIRES_IN_HOURS environment variable is not configured.");
         }
-        throw new InvalidOperationException("JWT__REFRESH_EXPIRES_IN_HOURS environment variable is not configured or invalid.");
+        
+        if (!double.TryParse(refreshExpiresInHoursEnv, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var parsedRefreshExpiresInHours)) {
+            throw new InvalidOperationException($"JWT__REFRESH_EXPIRES_IN_HOURS has invalid value: '{refreshExpiresInHoursEnv}'. Must be a valid number.");
+        }
+        
+        if (parsedRefreshExpiresInHours <= 0) {
+            throw new InvalidOperationException($"JWT__REFRESH_EXPIRES_IN_HOURS must be greater than 0. Got: {parsedRefreshExpiresInHours}");
+        }
+        
+        return parsedRefreshExpiresInHours;
     }
 
     public static bool HasPasswordComplexity(string password) {
