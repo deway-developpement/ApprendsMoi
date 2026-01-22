@@ -1,0 +1,145 @@
+@import "variables";
+
+// Layout Wrapper
+.dashboard-wrapper {
+  min-height: 100vh;
+  margin-top: 3rem; // Account for fixed header if needed
+}
+
+// 1. Hero Background
+.dashboard-header-bg {
+  color: $PrimaryColor;
+  padding: 3rem $paddingMedium 6rem $paddingMedium; // Bottom padding allows widgets to overlap
+  
+  .header-content {
+    max-width: $maxContentWidth;
+    margin: 0 auto;
+    
+    .welcome-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: $marginSmall;
+    }
+    
+    .welcome-subtitle {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      font-weight: 300;
+    }
+  }
+}
+
+.dashboard-container {
+  max-width: $maxContentWidth;
+  margin: 0 auto;
+  padding: 0 $paddingMedium $paddingLarge $paddingMedium;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+// 2. Floating Widgets
+.widgets-section {
+  margin-top: -4rem; // Negative margin for overlap effect
+}
+
+.widgets-grid {
+  display: grid;
+  // Two columns max for student view
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); 
+  gap: $marginLarge;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.widget-card {
+  background: white;
+  border-radius: $borderRadiusLarge;
+  padding: 2rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 200px;
+  position: relative;
+  overflow: hidden;
+  border-top: 4px solid transparent;
+
+  // Color Accents
+  &.accent-blue { border-top-color: $statusInfo; }
+  &.accent-orange { border-top-color: $SecondaryColor; }
+
+  .widget-top {
+    display: flex;
+    align-items: center;
+    gap: $marginMedium;
+    margin-bottom: $marginMedium;
+
+    .icon-circle {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      &.blue { background: #e0f2fe; color: $statusInfo; }
+      &.orange { background: #ffedd5; color: $SecondaryColor; }
+    }
+
+    h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: $PrimaryColor;
+      margin: 0;
+    }
+  }
+
+  .widget-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    .main-info {
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+
+      .big-date {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: $PrimaryColor;
+      }
+      .time {
+        font-size: 1.1rem;
+        color: #64748b;
+      }
+    }
+
+    .message-preview {
+      font-size: 1.1rem;
+      font-style: italic;
+      color: #334155;
+      margin-bottom: 0.5rem;
+      line-height: 1.5;
+    }
+
+    .subtext {
+      font-size: 1rem;
+      color: #64748b;
+      margin-bottom: auto;
+    }
+
+    .widget-action {
+      margin-top: 1.5rem;
+    }
+  }
+  
+  .empty-state {
+    color: #94a3b8;
+    font-style: italic;
+  }
+}

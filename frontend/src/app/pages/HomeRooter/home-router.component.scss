@@ -1,0 +1,30 @@
+@import "variables";
+
+// Container for the loading state (centers the spinner)
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+  background-color: $backgroundColor;
+}
+
+// Simple CSS Spinner
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba($SecondaryColor, 0.2); // Light orange track
+  border-left-color: $SecondaryColor; // Bright orange spinner
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
