@@ -80,7 +80,6 @@ public class AuthController(
         }
         
         // Only Teachers and Parents can register via this endpoint
-        // Admins are seeded, Students are created by parents via /register/student
         if (request.Profile.Value != ProfileType.Teacher && request.Profile.Value != ProfileType.Parent) {
             return BadRequest(new { error = "Registration failed" });
         }
@@ -138,18 +137,19 @@ public class AuthController(
         }
         else if (userRole == ProfileType.Admin) {
             if (request.ParentId == null) {
-                return BadRequest(new { error = "Parent ID is required for admin registration" });
-            }
-            
-            var parentExists = await _authService.ParentExistsAsync(request.ParentId.Value, ct);
-            if (!parentExists) {
-                return BadRequest(new { error = "Parent not found" });
+                return BadRequest(new { error = "Parent ID is required." });
             }
             
             parentId = request.ParentId.Value;
         }
         else {
             return Forbid();
+        }
+        
+            
+        var parentExists = await _authService.ParentExistsAsync(parentId, ct);
+        if (!parentExists) {
+            return BadRequest(new { error = "Parent not found" });
         }
 
         if (string.IsNullOrEmpty(request.Username) || !UsernameRegex.IsMatch(request.Username)) {

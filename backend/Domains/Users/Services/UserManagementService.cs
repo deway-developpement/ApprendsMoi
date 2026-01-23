@@ -28,7 +28,6 @@ public class UserManagementService(AppDbContext db) {
                 Email = normalizedEmail,
                 PasswordHash = passwordHash,
                 Profile = profile,
-                IsVerified = false,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -81,7 +80,6 @@ public class UserManagementService(AppDbContext db) {
             Email = null,
             PasswordHash = passwordHash,
             Profile = ProfileType.Student,
-            IsVerified = true,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -116,15 +114,6 @@ public class UserManagementService(AppDbContext db) {
 
         user.IsActive = true;
         user.DeletedAt = null;
-        await _db.SaveChangesAsync(ct);
-        return true;
-    }
-
-    public async Task<bool> VerifyUserAsync(Guid userId, CancellationToken ct = default) {
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId, ct);
-        if (user == null) return false;
-
-        user.IsVerified = true;
         await _db.SaveChangesAsync(ct);
         return true;
     }

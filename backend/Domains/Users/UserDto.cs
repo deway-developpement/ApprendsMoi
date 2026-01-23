@@ -17,7 +17,6 @@ public class UserDto {
     public string LastName { get; set; } = string.Empty;
     public string? ProfilePicture { get; set; }
     public ProfileType Profile { get; set; }
-    public bool IsVerified { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? LastLoginAt { get; set; }
@@ -40,7 +39,6 @@ public class ParentDto : UserDto {
 }
 
 public class StudentDto : UserDto {
-    // Students use username instead of email - prevent email from appearing in JSON/Swagger
     [JsonIgnore]
     public new string? Email { get => null; set { } }
     

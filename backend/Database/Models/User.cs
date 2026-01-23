@@ -7,7 +7,6 @@ public class User {
     public string? Email { get; set; }
     public string? ProfilePicture { get; set; }
     public string PasswordHash { get; set; } = string.Empty;
-    public bool IsVerified { get; set; } = false;
     public bool IsActive { get; set; } = true;
     public ProfileType Profile { get; set; } = ProfileType.Student;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

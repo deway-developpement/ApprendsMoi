@@ -91,7 +91,7 @@ public class UserProfileService(AppDbContext db) {
             LastName = s.User.LastName,
             ProfilePicture = s.User.ProfilePicture,
             Profile = s.User.Profile,
-            IsVerified = s.User.IsVerified,
+            
             IsActive = s.User.IsActive,
             CreatedAt = s.User.CreatedAt,
             LastLoginAt = s.User.LastLoginAt,
@@ -117,7 +117,7 @@ public class UserProfileService(AppDbContext db) {
             LastName = s.User.LastName,
             ProfilePicture = s.User.ProfilePicture,
             Profile = s.User.Profile,
-            IsVerified = s.User.IsVerified,
+            
             IsActive = s.User.IsActive,
             CreatedAt = s.User.CreatedAt,
             LastLoginAt = s.User.LastLoginAt,
@@ -140,7 +140,7 @@ public class UserProfileService(AppDbContext db) {
             LastName = s.User.LastName,
             ProfilePicture = s.User.ProfilePicture,
             Profile = s.User.Profile,
-            IsVerified = s.User.IsVerified,
+            
             IsActive = s.User.IsActive,
             CreatedAt = s.User.CreatedAt,
             LastLoginAt = s.User.LastLoginAt,
@@ -168,7 +168,7 @@ public class UserProfileService(AppDbContext db) {
                 LastName = user.LastName,
                 ProfilePicture = user.ProfilePicture,
                 Profile = user.Profile,
-                IsVerified = user.IsVerified,
+                
                 IsActive = user.IsActive,
                 CreatedAt = user.CreatedAt,
                 LastLoginAt = user.LastLoginAt,
@@ -187,7 +187,7 @@ public class UserProfileService(AppDbContext db) {
                 LastName = user.LastName,
                 ProfilePicture = user.ProfilePicture,
                 Profile = user.Profile,
-                IsVerified = user.IsVerified,
+                
                 IsActive = user.IsActive,
                 CreatedAt = user.CreatedAt,
                 LastLoginAt = user.LastLoginAt,
@@ -201,7 +201,7 @@ public class UserProfileService(AppDbContext db) {
                 LastName = user.LastName,
                 ProfilePicture = user.ProfilePicture,
                 Profile = user.Profile,
-                IsVerified = user.IsVerified,
+                
                 IsActive = user.IsActive,
                 CreatedAt = user.CreatedAt,
                 LastLoginAt = user.LastLoginAt,
@@ -217,7 +217,7 @@ public class UserProfileService(AppDbContext db) {
                 LastName = user.LastName,
                 ProfilePicture = user.ProfilePicture,
                 Profile = user.Profile,
-                IsVerified = user.IsVerified,
+                
                 IsActive = user.IsActive,
                 CreatedAt = user.CreatedAt,
                 LastLoginAt = user.LastLoginAt
@@ -230,7 +230,7 @@ public class UserProfileService(AppDbContext db) {
                 LastName = user.LastName,
                 ProfilePicture = user.ProfilePicture,
                 Profile = user.Profile,
-                IsVerified = user.IsVerified,
+                
                 IsActive = user.IsActive,
                 CreatedAt = user.CreatedAt,
                 LastLoginAt = user.LastLoginAt

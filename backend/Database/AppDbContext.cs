@@ -43,7 +43,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             b.Property(e => e.PasswordHash).HasColumnName("password_hash").IsRequired();
             b.HasIndex(e => e.Email).IsUnique();
             b.Property(e => e.Profile).HasColumnName("role").IsRequired();
-            b.Property(e => e.IsVerified).HasColumnName("is_verified").HasDefaultValue(false);
             b.Property(e => e.IsActive).HasColumnName("is_active").HasDefaultValue(true);
             b.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("GETUTCDATE()");
             b.Property(e => e.LastLoginAt).HasColumnName("last_login_at");

@@ -15,7 +15,6 @@ public class InitialDbSetup : Migration {
             .WithColumn("profile_picture").AsString(500).Nullable()
             .WithColumn("password_hash").AsString(255).NotNullable()
             .WithColumn("role").AsInt16().NotNullable()
-            .WithColumn("is_verified").AsBoolean().NotNullable().WithDefaultValue(false)
             .WithColumn("is_active").AsBoolean().NotNullable().WithDefaultValue(true)
             .WithColumn("created_at").AsDateTime().NotNullable().WithDefault(SystemMethods.CurrentUTCDateTime)
             .WithColumn("last_login_at").AsDateTime().Nullable()
