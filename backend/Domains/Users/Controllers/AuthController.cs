@@ -128,14 +128,14 @@ public class AuthController(
             return Unauthorized(new { error = "Invalid token" });
         }
 
-        var userRole = JwtHelper.GetUserRoleFromClaims(User);
+        var userProfile = JwtHelper.GetUserProfileFromClaims(User);
 
         // Determine the parent ID based on the caller's role
         Guid parentId;
-        if (userRole == ProfileType.Parent) {
+        if (userProfile == ProfileType.Parent) {
             parentId = userId.Value;
         }
-        else if (userRole == ProfileType.Admin) {
+        else if (userProfile == ProfileType.Admin) {
             if (request.ParentId == null) {
                 return BadRequest(new { error = "Parent ID is required." });
             }

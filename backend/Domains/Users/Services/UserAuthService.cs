@@ -75,11 +75,11 @@ public class UserAuthService(AppDbContext db) {
         return true;
     }
 
-    public async Task<(string? Email, string? Username)> GetUserCredentialsAsync(Guid userId, ProfileType role, CancellationToken ct = default) {
+    public async Task<(string? Email, string? Username)> GetUserCredentialsAsync(Guid userId, ProfileType profile, CancellationToken ct = default) {
         var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId, ct);
         if (user == null) return (null, null);
 
-        if (role == ProfileType.Student) {
+        if (profile == ProfileType.Student) {
             var student = await _db.Students.AsNoTracking().FirstOrDefaultAsync(s => s.UserId == userId, ct);
             return (null, student?.Username);
         }

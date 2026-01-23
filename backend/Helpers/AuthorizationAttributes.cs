@@ -25,23 +25,23 @@ public class RequireRoleAttribute : Attribute, IAuthorizationFilter
         }
 
         // Get user role from claims
-        var roleClaim = context.HttpContext.User.FindFirst(ClaimTypes.Role)?.Value;
+        var profileClaim = JwtHelper.GetUserProfileFromClaims(context.HttpContext.User)?.ToString();
         
-        if (string.IsNullOrEmpty(roleClaim))
+        if (string.IsNullOrEmpty(profileClaim))
         {
             context.Result = new ForbidResult();
             return;
         }
 
         // Parse the role
-        if (!Enum.TryParse<ProfileType>(roleClaim, out var userRole))
+        if (!Enum.TryParse<ProfileType>(profileClaim, out var userProfile))
         {
             context.Result = new ForbidResult();
             return;
         }
 
         // Check if user has one of the allowed roles
-        if (!_allowedRoles.Contains(userRole))
+        if (!_allowedRoles.Contains(userProfile))
         {
             context.Result = new ForbidResult();
             return;

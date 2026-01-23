@@ -57,11 +57,11 @@ public class ZoomController : ControllerBase
                 return Unauthorized(new { error = "Invalid token" });
             }
 
-            var userRole = JwtHelper.GetUserRoleFromClaims(User);
+            var userProfile = JwtHelper.GetUserProfileFromClaims(User);
 
             // Teachers can only create meetings where they are the teacher
             // Admins can create any meeting
-            if (userRole == ProfileType.Teacher && request.TeacherId!.Value != currentUserId)
+            if (userProfile == ProfileType.Teacher && request.TeacherId!.Value != currentUserId)
             {
                 return Forbid();
             }
@@ -81,7 +81,7 @@ public class ZoomController : ControllerBase
             var topic = request.Topic ?? "ApprendsMoi - Session";
             
             var meeting = await _zoomService.CreateInstantMeetingAsync(request.TeacherId!.Value, request.StudentId!.Value, topic);
-            var participantSignature = _zoomService.GenerateSignature(meeting.ZoomMeetingId.ToString(), 0);
+            var participantSignature = _zoomService.GenerateSignature(meeting.ZoomMeetingId.ToString());
 
             return Ok(new CreateMeetingResponse
             {
@@ -134,16 +134,16 @@ public class ZoomController : ControllerBase
                 return Unauthorized(new { error = "Invalid token" });
             }
 
-            var userRole = JwtHelper.GetUserRoleFromClaims(User);
+            var userProfile = JwtHelper.GetUserProfileFromClaims(User);
 
             IQueryable<Meeting> query = _dbContext.Meetings;
 
             // Filter based on role
-            if (userRole == ProfileType.Teacher)
+            if (userProfile == ProfileType.Teacher)
             {
                 query = query.Where(m => m.TeacherId == currentUserId);
             }
-            else if (userRole == ProfileType.Student)
+            else if (userProfile == ProfileType.Student)
             {
                 query = query.Where(m => m.StudentId == currentUserId);
             }
@@ -193,7 +193,7 @@ public class ZoomController : ControllerBase
                 return Unauthorized(new { error = "Invalid token" });
             }
 
-            var userRole = JwtHelper.GetUserRoleFromClaims(User);
+            var userProfile = JwtHelper.GetUserProfileFromClaims(User);
 
             var meeting = await _dbContext.Meetings.FindAsync(id);
             
@@ -203,21 +203,21 @@ public class ZoomController : ControllerBase
             }
 
             // Check access rights
-            if (userRole != ProfileType.Admin)
+            if (userProfile != ProfileType.Admin)
             {
                 // Teachers can only view their meetings
-                if (userRole == ProfileType.Teacher && meeting.TeacherId != currentUserId)
+                if (userProfile == ProfileType.Teacher && meeting.TeacherId != currentUserId)
                 {
                     return Forbid();
                 }
                 // Students can only view their meetings
-                if (userRole == ProfileType.Student && meeting.StudentId != currentUserId)
+                if (userProfile == ProfileType.Student && meeting.StudentId != currentUserId)
                 {
                     return Forbid();
                 }
             }
 
-            var participantSignature = _zoomService.GenerateSignature(meeting.ZoomMeetingId.ToString(), 0);
+            var participantSignature = _zoomService.GenerateSignature(meeting.ZoomMeetingId.ToString());
 
             return Ok(new MeetingDetailsResponse
             {

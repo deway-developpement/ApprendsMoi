@@ -119,13 +119,13 @@ public class UsersController(
         var userId = JwtHelper.GetUserIdFromClaims(User);
         if (userId == null) return Unauthorized();
 
-        var userRole = JwtHelper.GetUserRoleFromClaims(User);
+        var userProfile = JwtHelper.GetUserProfileFromClaims(User);
         
-        if (userRole == ProfileType.Parent) {
+        if (userProfile == ProfileType.Parent) {
             var students = await _profileService.GetStudentsByParentIdAsync(userId.Value, ct);
             return Ok(students);
         }
-        else if (userRole == ProfileType.Teacher) {
+        else if (userProfile == ProfileType.Teacher) {
             var students = await _profileService.GetStudentsByTeacherIdAsync(userId.Value, ct);
             return Ok(students);
         }
