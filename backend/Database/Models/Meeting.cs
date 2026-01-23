@@ -13,9 +13,9 @@ public class Meeting
     public int Duration { get; set; } // in minutes
     
     // Foreign keys for Teacher and Student
-    public int TeacherId { get; set; }
+    public Guid TeacherId { get; set; }
     public User Teacher { get; set; } = null!;
     
-    public int StudentId { get; set; }
+    public Guid StudentId { get; set; }
     public User Student { get; set; } = null!;
 }

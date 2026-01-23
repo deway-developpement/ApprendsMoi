@@ -8,8 +8,8 @@ public class MeetingResponse
     public DateTime CreatedAt { get; set; }
     public DateTime? ScheduledStartTime { get; set; }
     public int Duration { get; set; }
-    public int TeacherId { get; set; }
-    public int StudentId { get; set; }
+    public Guid TeacherId { get; set; }
+    public Guid StudentId { get; set; }
 }
 
 public class CreateMeetingResponse
@@ -23,8 +23,8 @@ public class CreateMeetingResponse
     public string Password { get; set; } = string.Empty;
     public string ParticipantSignature { get; set; } = string.Empty;
     public string SdkKey { get; set; } = string.Empty;
-    public int TeacherId { get; set; }
-    public int StudentId { get; set; }
+    public Guid TeacherId { get; set; }
+    public Guid StudentId { get; set; }
 }
 
 public class MeetingDetailsResponse
@@ -41,8 +41,8 @@ public class MeetingDetailsResponse
     public int Duration { get; set; }
     public string ParticipantSignature { get; set; } = string.Empty;
     public string SdkKey { get; set; } = string.Empty;
-    public int TeacherId { get; set; }
-    public int StudentId { get; set; }
+    public Guid TeacherId { get; set; }
+    public Guid StudentId { get; set; }
 }
 
 public class SignatureResponse

@@ -66,7 +66,7 @@ public class ZoomService
         return _cachedAccessToken;
     }
 
-    public async Task<Meeting> CreateInstantMeetingAsync(int teacherId, int studentId, string topic = "ApprendsMoi - Session")
+    public async Task<Meeting> CreateInstantMeetingAsync(Guid teacherId, Guid studentId, string topic = "ApprendsMoi - Session")
     {
         var token = await GetAccessTokenAsync();
         

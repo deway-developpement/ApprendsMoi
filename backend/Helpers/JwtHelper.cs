@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 namespace backend.Helpers;
 
 public class JwtHelper {
-    public static string GenerateToken(int userId, string? email, string? username, ProfileType profile) {
+    public static string GenerateToken(Guid userId, string? email, string? username, ProfileType profile) {
         var jwtSecret = Environment.GetEnvironmentVariable("JWT__SECRET");
         if (string.IsNullOrEmpty(jwtSecret)) {
             throw new InvalidOperationException("JWT secret is not configured.");
@@ -31,11 +31,11 @@ public class JwtHelper {
 
         var claims = claimsList.ToArray();
 
-        var expiresInHoursEnv = Environment.GetEnvironmentVariable("JWT__ACCESS_EXPIRES_IN_HOURS");
-        double expiresInHours = 1;
-        if (!string.IsNullOrEmpty(expiresInHoursEnv) && double.TryParse(expiresInHoursEnv, out var parsedExpiresInHours)) {
-            expiresInHours = parsedExpiresInHours;
-        }
+        var expiresInHours = double.Parse(
+            Environment.GetEnvironmentVariable("JWT__ACCESS_EXPIRES_IN_HOURS")!,
+            System.Globalization.NumberStyles.Float,
+            System.Globalization.CultureInfo.InvariantCulture
+        );
 
         var token = new JwtSecurityToken(
             issuer: Environment.GetEnvironmentVariable("BACKEND__URL"),
@@ -48,9 +48,9 @@ public class JwtHelper {
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    public static int? GetUserIdFromClaims(ClaimsPrincipal user) {
+    public static Guid? GetUserIdFromClaims(ClaimsPrincipal user) {
         var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
-        if (userIdClaim != null && int.TryParse(userIdClaim.Value, out var userId)) {
+        if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out var userId)) {
             return userId;
         }
         return null;
@@ -58,6 +58,13 @@ public class JwtHelper {
 
     public static string? GetUserEmailFromClaims(ClaimsPrincipal user) {
         return user.FindFirst(ClaimTypes.Email)?.Value;
+    }
+
+    public static ProfileType? GetUserProfileFromClaims(ClaimsPrincipal user) {
+        var profileClaim = user.FindFirst(ClaimTypes.Role)?.Value;
+        if (string.IsNullOrEmpty(profileClaim)) return null;
+        
+        return Enum.TryParse<ProfileType>(profileClaim, out var profile) ? profile : null;
     }
 
     public static string GenerateRefreshToken() {
@@ -73,10 +80,29 @@ public class JwtHelper {
 
     public static double GetRefreshTokenExpiryHours() {
         var refreshExpiresInHoursEnv = Environment.GetEnvironmentVariable("JWT__REFRESH_EXPIRES_IN_HOURS");
-        double refreshExpiresInHours = 4;
-        if (!string.IsNullOrEmpty(refreshExpiresInHoursEnv) && double.TryParse(refreshExpiresInHoursEnv, out var parsedRefreshExpiresInHours)) {
-            refreshExpiresInHours = parsedRefreshExpiresInHours;
+        
+        if (string.IsNullOrEmpty(refreshExpiresInHoursEnv)) {
+            throw new InvalidOperationException("JWT__REFRESH_EXPIRES_IN_HOURS environment variable is not configured.");
         }
-        return refreshExpiresInHours;
+        
+        if (!double.TryParse(refreshExpiresInHoursEnv, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var parsedRefreshExpiresInHours)) {
+            throw new InvalidOperationException($"JWT__REFRESH_EXPIRES_IN_HOURS has invalid value: '{refreshExpiresInHoursEnv}'. Must be a valid number.");
+        }
+        
+        if (parsedRefreshExpiresInHours <= 0) {
+            throw new InvalidOperationException($"JWT__REFRESH_EXPIRES_IN_HOURS must be greater than 0. Got: {parsedRefreshExpiresInHours}");
+        }
+        
+        return parsedRefreshExpiresInHours;
+    }
+
+    public static bool HasPasswordComplexity(string password) {
+        if (password.Length < 6) return false;
+        
+        bool hasUpper = password.Any(char.IsUpper);
+        bool hasLower = password.Any(char.IsLower);
+        bool hasDigit = password.Any(char.IsDigit);
+        
+        return hasUpper && hasLower && hasDigit;
     }
 }

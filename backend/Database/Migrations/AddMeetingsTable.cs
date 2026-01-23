@@ -2,7 +2,7 @@ using FluentMigrator;
 
 namespace backend.Database.Migrations;
 
-[Migration(202401010002)]
+[Migration(202401010003)]
 public class AddMeetingsTable : Migration
 {
     public override void Up()
@@ -13,10 +13,22 @@ public class AddMeetingsTable : Migration
             .WithColumn("topic").AsString(255).NotNullable()
             .WithColumn("join_url").AsString(500).NotNullable()
             .WithColumn("start_url").AsString(500).NotNullable()
-            .WithColumn("password").AsString(50).NotNullable()
+            .WithColumn("password").AsString(100).NotNullable()
             .WithColumn("created_at").AsDateTime().NotNullable()
             .WithColumn("scheduled_start_time").AsDateTime().Nullable()
-            .WithColumn("duration").AsInt32().NotNullable();
+            .WithColumn("duration").AsInt32().NotNullable()
+            .WithColumn("teacher_id").AsGuid().NotNullable()
+            .WithColumn("student_id").AsGuid().NotNullable();
+
+        Create.ForeignKey("fk_meetings_teacher_id")
+            .FromTable("meetings").ForeignColumn("teacher_id")
+            .ToTable("users").PrimaryColumn("id")
+            .OnDelete(System.Data.Rule.None);
+
+        Create.ForeignKey("fk_meetings_student_id")
+            .FromTable("meetings").ForeignColumn("student_id")
+            .ToTable("users").PrimaryColumn("id")
+            .OnDelete(System.Data.Rule.None);
     }
 
     public override void Down()
