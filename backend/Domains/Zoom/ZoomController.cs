@@ -151,20 +151,21 @@ public class ZoomController : ControllerBase
 
             var meetings = await query
                 .OrderByDescending(m => m.CreatedAt)
-                .Select(m => new MeetingResponse
-                {
-                    Id = m.Id,
-                    MeetingId = m.ZoomMeetingId,
-                    Topic = m.Topic,
-                    CreatedAt = m.CreatedAt,
-                    ScheduledStartTime = m.ScheduledStartTime,
-                    Duration = m.Duration,
-                    TeacherId = m.TeacherId,
-                    StudentId = m.StudentId
-                })
                 .ToListAsync();
 
-            return Ok(meetings);
+            var response = meetings.Select(m => new MeetingResponse
+            {
+                Id = m.Id,
+                MeetingId = m.ZoomMeetingId,
+                Topic = m.Topic,
+                CreatedAt = NormalizeToUtc(m.CreatedAt),
+                ScheduledStartTime = NormalizeToUtc(m.ScheduledStartTime),
+                Duration = m.Duration,
+                TeacherId = m.TeacherId,
+                StudentId = m.StudentId
+            }).ToList();
+
+            return Ok(response);
         }
         catch (Exception ex)
         {
@@ -228,8 +229,8 @@ public class ZoomController : ControllerBase
                 JoinUrl = meeting.JoinUrl,
                 StartUrl = meeting.StartUrl,
                 Password = meeting.Password,
-                CreatedAt = meeting.CreatedAt,
-                ScheduledStartTime = meeting.ScheduledStartTime,
+                CreatedAt = NormalizeToUtc(meeting.CreatedAt),
+                ScheduledStartTime = NormalizeToUtc(meeting.ScheduledStartTime),
                 Duration = meeting.Duration,
                 ParticipantSignature = participantSignature,
                 SdkKey = _zoomService.GetSdkKey(),
@@ -279,5 +280,26 @@ public class ZoomController : ControllerBase
             _logger.LogError(ex, "An unexpected error occurred while generating signature.");
             return StatusCode(500, new { error = "An unexpected error occurred." });
         }
+    }
+
+    private static DateTime NormalizeToUtc(DateTime value)
+    {
+        if (value.Kind == DateTimeKind.Utc)
+        {
+            return value;
+        }
+
+        if (value.Kind == DateTimeKind.Local)
+        {
+            return value.ToUniversalTime();
+        }
+
+        // Treat database timestamps as UTC when kind is unspecified.
+        return DateTime.SpecifyKind(value, DateTimeKind.Utc);
+    }
+
+    private static DateTime? NormalizeToUtc(DateTime? value)
+    {
+        return value.HasValue ? NormalizeToUtc(value.Value) : null;
     }
 }
