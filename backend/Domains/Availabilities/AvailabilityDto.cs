@@ -17,6 +17,20 @@ public class CreateAvailabilityRequest
     public bool IsRecurring { get; set; } = true;
 }
 
+public class BlockAvailabilityRequest
+{
+    [Required(ErrorMessage = "BlockedDate is required")]
+    public DateTime? BlockedDate { get; set; }
+
+    [Required(ErrorMessage = "BlockedStartTime is required")]
+    public string? BlockedStartTime { get; set; }
+
+    [Required(ErrorMessage = "BlockedEndTime is required")]
+    public string? BlockedEndTime { get; set; }
+
+    public string? Reason { get; set; }
+}
+
 public class AvailabilityResponse
 {
     public Guid Id { get; set; }
@@ -26,4 +40,15 @@ public class AvailabilityResponse
     public TimeOnly StartTime { get; set; }
     public TimeOnly EndTime { get; set; }
     public bool IsRecurring { get; set; }
+}
+
+public class UnavailableSlotResponse
+{
+    public Guid Id { get; set; }
+    public Guid TeacherId { get; set; }
+    public DateTime BlockedDate { get; set; }
+    public TimeOnly BlockedStartTime { get; set; }
+    public TimeOnly BlockedEndTime { get; set; }
+    public string? Reason { get; set; }
+    public DateTime CreatedAt { get; set; }
 }
