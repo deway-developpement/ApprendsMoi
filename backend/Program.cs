@@ -86,9 +86,14 @@ builder.Services.AddScoped<UserManagementService>();
 // Zoom services
 builder.Services.AddHttpClient<ZoomService>();
 builder.Services.AddScoped<ZoomService>();
+builder.Services.AddHttpClient<ZoomTokenProvider>();
+builder.Services.AddScoped<ZoomTokenProvider>();
+builder.Services.AddScoped<ZoomSignatureService>();
 
 // Availability services
 builder.Services.AddScoped<AvailabilityService>();
+builder.Services.AddScoped<AvailabilityQueryService>();
+builder.Services.AddScoped<UnavailableSlotService>();
 
 // Register FluentMigrator services
 builder.Services.AddFluentMigratorCore()
