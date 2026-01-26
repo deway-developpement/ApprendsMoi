@@ -65,7 +65,7 @@ export interface UserDto {
   firstName?: string;
   lastName?: string;
   profilePicture?: string;
-  profile: ProfileType;
+  profileType: ProfileType;
   isActive: boolean;
   lastLoginAt?: string;
 }
@@ -132,7 +132,7 @@ export class AuthService {
       // switchMap(() => this.fetchMe()), 
       // Mais ici on renvoie l'utilisateur directement s'il est présent
       switchMap((res) => res.user ? of(res.user) : this.fetchMe()),
-      tap(user => this.redirectUser(user.profile))
+      tap(user => this.redirectUser(user.profileType))
     );
   }
 

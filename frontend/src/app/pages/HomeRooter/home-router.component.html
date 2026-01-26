@@ -2,7 +2,7 @@
   
   <ng-container *ngIf="currentUser$ | async as user; else publicHome">
     
-    <ng-container [ngSwitch]="user.profile">
+    <ng-container [ngSwitch]="user.profileType">
 
       <app-home-teacher *ngSwitchCase="ProfileType.Teacher">
       </app-home-teacher>
