@@ -136,21 +136,10 @@ public class AvailabilityService
         return true;
     }
 
-    public async Task<List<UnavailableSlot>> GetTeacherUnavailableSlotsAsync(Guid teacherId, DateTime? fromDate = null, DateTime? toDate = null)
+    public async Task<List<UnavailableSlot>> GetTeacherUnavailableSlotsAsync(Guid teacherId)
     {
-        var query = _dbContext.UnavailableSlots.Where(u => u.TeacherId == teacherId);
-
-        if (fromDate.HasValue)
-        {
-            query = query.Where(u => u.BlockedDate >= fromDate.Value.Date);
-        }
-
-        if (toDate.HasValue)
-        {
-            query = query.Where(u => u.BlockedDate <= toDate.Value.Date);
-        }
-
-        return await query
+        return await _dbContext.UnavailableSlots
+            .Where(u => u.TeacherId == teacherId)
             .OrderBy(u => u.BlockedDate)
             .ThenBy(u => u.BlockedStartTime)
             .ToListAsync();

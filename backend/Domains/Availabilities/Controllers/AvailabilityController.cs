@@ -289,24 +289,17 @@ public class AvailabilityController : ControllerBase
     }
 
     /// <summary>
-    /// Gets all blocked time slots for the current teacher
+    /// Gets blocked time slots for a specific teacher (mirrors availability endpoint behavior)
     /// </summary>
-    [HttpGet("block")]
-    [RequireRole(ProfileType.Teacher)]
+    [HttpGet("block/teacher/{teacherId}")]
     [Produces("application/json")]
     [ProducesResponseType(typeof(IEnumerable<UnavailableSlotResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetBlockedTimes([FromQuery] DateTime? fromDate = null, [FromQuery] DateTime? toDate = null)
+    public async Task<IActionResult> GetTeacherBlockedTimes(Guid teacherId)
     {
         try
         {
-            var currentUserId = JwtHelper.GetUserIdFromClaims(User);
-            if (currentUserId == null)
-            {
-                return Unauthorized(new { error = "Invalid token" });
-            }
-
-            var blocks = await _availabilityService.GetTeacherUnavailableSlotsAsync(currentUserId.Value, fromDate, toDate);
+            var blocks = await _availabilityService.GetTeacherUnavailableSlotsAsync(teacherId);
 
             var response = blocks.Select(u => new UnavailableSlotResponse
             {
@@ -323,7 +316,7 @@ public class AvailabilityController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An unexpected error occurred while getting blocked times.");
+            _logger.LogError(ex, "An unexpected error occurred while getting blocked times for teacher.");
             return StatusCode(500, new { error = "An unexpected error occurred." });
         }
     }
