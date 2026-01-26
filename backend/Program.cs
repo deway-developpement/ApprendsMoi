@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using backend.Database;
 using backend.Domains.Users;
+using backend.Domains.Zoom;
+using backend.Domains.Availabilities;
 using backend.Helpers;
 using FluentMigrator.Runner;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -82,11 +84,11 @@ builder.Services.AddScoped<UserProfileService>();
 builder.Services.AddScoped<UserManagementService>();
 
 // Zoom services
-builder.Services.AddHttpClient<backend.Domains.Zoom.ZoomService>();
-builder.Services.AddScoped<backend.Domains.Zoom.ZoomService>();
+builder.Services.AddHttpClient<ZoomService>();
+builder.Services.AddScoped<ZoomService>();
 
 // Availability services
-builder.Services.AddScoped<backend.Domains.Availabilities.Services.AvailabilityService>();
+builder.Services.AddScoped<AvailabilityService>();
 
 // Register FluentMigrator services
 builder.Services.AddFluentMigratorCore()

@@ -2,7 +2,7 @@ using backend.Database;
 using backend.Database.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace backend.Domains.Availabilities.Services;
+namespace backend.Domains.Availabilities;
 
 public class AvailabilityService
 {
