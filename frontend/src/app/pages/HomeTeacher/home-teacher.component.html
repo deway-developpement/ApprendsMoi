@@ -1,3 +1,87 @@
-<app-header></app-header>
+<app-header theme="light"></app-header>
 
-hello teacher works!
+<div class="dashboard-wrapper">
+  
+  <div class="dashboard-header-bg">
+    <div class="header-content">
+      <h1 class="welcome-title">Bonjour {{ teacherName }} 👋</h1>
+      <p class="welcome-subtitle">Voici le résumé de votre activité pour ce mois.</p>
+    </div>
+  </div>
+
+  <main class="dashboard-container">
+    
+    <section class="widgets-section">
+      <div class="widgets-grid three-columns"> <div class="widget-card accent-blue">
+          <div class="widget-top">
+            <div class="icon-circle blue">
+              <app-small-icon icon="/assets/icons/schedule.svg" [size]="30"></app-small-icon>
+            </div>
+            <h3>Prochain cours</h3>
+          </div>
+          <div class="widget-content" *ngIf="nextCourse; else noCourse">
+            <div class="main-info">
+              <span class="big-date">{{ nextCourse.date | date:'dd MMM' }}</span>
+              <span class="time">{{ nextCourse.date | date:'HH:mm' }}</span>
+            </div>
+            <p class="subtext">Avec {{ nextCourse.childName }} ({{ nextCourse.mode }})</p>
+            <div class="widget-action">
+              <app-button variant="ghost">Voir le détail</app-button>
+            </div>
+          </div>
+          <ng-template #noCourse>
+            <p class="empty-state">Aucun cours prévu aujourd'hui.</p>
+          </ng-template>
+        </div>
+
+        <div class="widget-card accent-orange">
+          <div class="widget-top">
+            <div class="icon-circle orange">
+               <app-small-icon icon="/assets/icons/notification.svg" [size]="30"></app-small-icon>
+            </div>
+            <h3>Demandes ({{ pendingRequests.length }})</h3>
+          </div>
+          
+          <div class="widget-content" *ngIf="pendingRequests.length > 0; else noRequests">
+            <div class="request-item">
+              <p class="request-title"><strong>{{ pendingRequests[0].parentName }}</strong></p>
+              <p class="subtext">{{ pendingRequests[0].subject }} • {{ pendingRequests[0].date | date:'dd/MM HH:mm' }}</p>
+            </div>
+            <div class="widget-action-row">
+              <app-button variant="primary" class="small-btn">Accepter</app-button>
+              <app-button variant="ghost" class="small-btn">Refuser</app-button>
+            </div>
+          </div>
+          <ng-template #noRequests>
+            <div class="widget-content">
+                <p class="empty-state">Vous êtes à jour !</p>
+                <p class="subtext">Aucune nouvelle demande.</p>
+            </div>
+          </ng-template>
+        </div>
+
+        <div class="widget-card accent-green">
+          <div class="widget-top">
+            <div class="icon-circle green">
+               <app-small-icon icon="/assets/icons/wallet.svg" [size]="30"></app-small-icon>
+            </div>
+            <h3>Revenus (Oct.)</h3>
+          </div>
+          <div class="widget-content">
+            <div class="main-info">
+              <span class="big-amount">{{ currentMonthRevenue }} €</span>
+            </div>
+            <p class="subtext">+{{ pendingRevenue }} € en attente</p>
+            <div class="widget-action">
+              <app-button variant="ghost">Voir mes paiements</app-button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <app-courses-schedule [courses]="courses"></app-courses-schedule>
+
+  </main>
+</div>
