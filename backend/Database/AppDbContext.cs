@@ -186,6 +186,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             b.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
             b.Property(e => e.TeacherId).HasColumnName("teacher_id").IsRequired();
             b.Property(e => e.DayOfWeek).HasColumnName("day_of_week").IsRequired();
+            b.Property(e => e.AvailabilityDate).HasColumnName("availability_date").IsRequired(false);
             b.Property(e => e.StartTime).HasColumnName("start_time").IsRequired();
             b.Property(e => e.EndTime).HasColumnName("end_time").IsRequired();
             b.Property(e => e.IsRecurring).HasColumnName("is_recurring").HasDefaultValue(true);
