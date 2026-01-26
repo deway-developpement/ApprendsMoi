@@ -4,9 +4,9 @@ using backend.Database.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using backend.Helpers;
-using backend.Domains.Availabilities.Services;
+using backend.Domains.Availabilities;
 
-namespace backend.Domains.Availabilities.Controllers;
+namespace backend.Domains.Availabilities;
 
 [ApiController]
 [Route("api/availabilities")]

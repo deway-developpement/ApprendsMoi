@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace backend.Domains.Zoom.Models;
+namespace backend.Database.Models;
 
 public class ZoomTokenResponse
 {

@@ -4,7 +4,6 @@ using System.Text;
 using System.Text.Json;
 using backend.Database;
 using backend.Database.Models;
-using backend.Domains.Zoom.Models;
 
 namespace backend.Domains.Zoom;
 
@@ -202,4 +201,3 @@ public class ZoomService
         return DateTime.SpecifyKind(value, DateTimeKind.Local).ToUniversalTime();
     }
 }
-

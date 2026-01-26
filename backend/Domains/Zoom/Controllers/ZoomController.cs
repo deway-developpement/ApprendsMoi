@@ -2,11 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using backend.Database;
 using backend.Database.Models;
 using Microsoft.EntityFrameworkCore;
-using backend.Domains.Zoom.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authorization;
 using backend.Helpers;
-using System.Security.Claims;
 
 namespace backend.Domains.Zoom;
 
