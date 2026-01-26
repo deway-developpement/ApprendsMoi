@@ -84,19 +84,32 @@ public class AvailabilityController : ControllerBase
                 return BadRequest(new { error = "Invalid EndTime format. Use HH:mm:ss or ISO 8601 format." });
             }
 
-            DateOnly? availabilityDate = null;
-            if (request.AvailabilityDate.HasValue)
+            // Determine DayOfWeek: use provided value, or derive from AvailabilityDate if given
+            int? dayOfWeek = request.DayOfWeek;
+            if (!dayOfWeek.HasValue)
             {
-                availabilityDate = DateOnly.FromDateTime(request.AvailabilityDate.Value);
+                if (request.AvailabilityDate.HasValue)
+                {
+                    // Derive DayOfWeek from the provided date
+                    dayOfWeek = (int)request.AvailabilityDate.Value.DayOfWeek;
+                }
+                else if (!request.IsRecurring)
+                {
+                    return BadRequest(new { error = "For non-recurring availabilities without AvailabilityDate, DayOfWeek is required" });
+                }
+                else
+                {
+                    return BadRequest(new { error = "For recurring availabilities, DayOfWeek is required" });
+                }
             }
 
             var availability = await _availabilityService.CreateAvailabilityAsync(
                 currentUserId.Value, 
-                request.DayOfWeek!.Value, 
+                dayOfWeek.Value, 
                 startTime, 
                 endTime, 
                 request.IsRecurring,
-                availabilityDate
+                request.AvailabilityDate
             );
 
             return Ok(new AvailabilityResponse

@@ -4,12 +4,11 @@ namespace backend.Domains.Availabilities;
 
 public class CreateAvailabilityRequest
 {
-    [Required(ErrorMessage = "DayOfWeek is required")]
     [Range(0, 6, ErrorMessage = "DayOfWeek must be between 0 (Sunday) and 6 (Saturday)")]
     public int? DayOfWeek { get; set; }
 
-    // Required when IsRecurring is false
-    public DateTime? AvailabilityDate { get; set; }
+    // Optional: if not specified for non-recurring slots, defaults to the next future day with this day of week
+    public DateOnly? AvailabilityDate { get; set; }
 
     [Required(ErrorMessage = "StartTime is required")]
     public string? StartTime { get; set; }
