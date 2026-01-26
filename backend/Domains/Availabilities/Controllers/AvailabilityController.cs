@@ -14,13 +14,11 @@ namespace backend.Domains.Availabilities.Controllers;
 public class AvailabilityController : ControllerBase
 {
     private readonly AvailabilityService _availabilityService;
-    private readonly AppDbContext _dbContext;
     private readonly ILogger<AvailabilityController> _logger;
 
-    public AvailabilityController(AvailabilityService availabilityService, AppDbContext dbContext, ILogger<AvailabilityController> logger)
+    public AvailabilityController(AvailabilityService availabilityService, ILogger<AvailabilityController> logger)
     {
         _availabilityService = availabilityService;
-        _dbContext = dbContext;
         _logger = logger;
     }
 
@@ -55,52 +53,35 @@ public class AvailabilityController : ControllerBase
                 return Unauthorized(new { error = "Invalid token" });
             }
 
-            // Verify the user is a teacher
-            var teacher = await _dbContext.Users
-                .Include(u => u.Teacher)
-                .FirstOrDefaultAsync(u => u.Id == currentUserId && u.Profile == ProfileType.Teacher);
-
-            if (teacher?.Teacher == null)
-            {
-                return BadRequest(new { error = "User is not a teacher" });
-            }
-
             // Parse time strings - handle both ISO 8601 DateTime format and TimeOnly format
             TimeOnly startTime;
             TimeOnly endTime;
 
-            try
+            // Try parsing as DateTime first (handles ISO 8601 like "15:58:57.894Z")
+            if (DateTime.TryParse(request.StartTime, out var startDateTime))
             {
-                // Try parsing as DateTime first (handles ISO 8601 like "15:58:57.894Z")
-                if (DateTime.TryParse(request.StartTime, out var startDateTime))
-                {
-                    startTime = TimeOnly.FromDateTime(startDateTime);
-                }
-                else if (TimeOnly.TryParse(request.StartTime, out var parsedStartTime))
-                {
-                    startTime = parsedStartTime;
-                }
-                else
-                {
-                    return BadRequest(new { error = "Invalid StartTime format. Use HH:mm:ss or ISO 8601 format." });
-                }
-
-                if (DateTime.TryParse(request.EndTime, out var endDateTime))
-                {
-                    endTime = TimeOnly.FromDateTime(endDateTime);
-                }
-                else if (TimeOnly.TryParse(request.EndTime, out var parsedEndTime))
-                {
-                    endTime = parsedEndTime;
-                }
-                else
-                {
-                    return BadRequest(new { error = "Invalid EndTime format. Use HH:mm:ss or ISO 8601 format." });
-                }
+                startTime = TimeOnly.FromDateTime(startDateTime);
             }
-            catch (Exception ex)
+            else if (TimeOnly.TryParse(request.StartTime, out var parsedStartTime))
             {
-                return BadRequest(new { error = $"Error parsing time values: {ex.Message}" });
+                startTime = parsedStartTime;
+            }
+            else
+            {
+                return BadRequest(new { error = "Invalid StartTime format. Use HH:mm:ss or ISO 8601 format." });
+            }
+
+            if (DateTime.TryParse(request.EndTime, out var endDateTime))
+            {
+                endTime = TimeOnly.FromDateTime(endDateTime);
+            }
+            else if (TimeOnly.TryParse(request.EndTime, out var parsedEndTime))
+            {
+                endTime = parsedEndTime;
+            }
+            else
+            {
+                return BadRequest(new { error = "Invalid EndTime format. Use HH:mm:ss or ISO 8601 format." });
             }
 
             var availability = await _availabilityService.CreateAvailabilityAsync(

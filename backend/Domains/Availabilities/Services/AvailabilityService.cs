@@ -23,6 +23,22 @@ public class AvailabilityService
             throw new ArgumentException("EndTime must be after StartTime");
         }
 
+        // Check for overlapping availabilities on the same day
+        var existingAvailabilities = await _dbContext.Availabilities
+            .Where(a => a.TeacherId == teacherId && a.DayOfWeek == dayOfWeek)
+            .ToListAsync();
+
+        foreach (var existing in existingAvailabilities)
+        {
+            // Check if the new time range overlaps with existing availability
+            // Overlap occurs when: newStart < existingEnd AND newEnd > existingStart
+            if (startTime < existing.EndTime && endTime > existing.StartTime)
+            {
+                throw new ArgumentException(
+                    $"Availability overlaps with existing slot ({existing.StartTime:HH:mm:ss} - {existing.EndTime:HH:mm:ss}) on the same day");
+            }
+        }
+
         var availability = new Availability
         {
             TeacherId = teacherId,
