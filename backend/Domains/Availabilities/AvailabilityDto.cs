@@ -1,0 +1,29 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace backend.Domains.Availabilities;
+
+public class CreateAvailabilityRequest
+{
+    [Required(ErrorMessage = "DayOfWeek is required")]
+    [Range(0, 6, ErrorMessage = "DayOfWeek must be between 0 (Sunday) and 6 (Saturday)")]
+    public int? DayOfWeek { get; set; }
+
+    [Required(ErrorMessage = "StartTime is required")]
+    public string? StartTime { get; set; }
+
+    [Required(ErrorMessage = "EndTime is required")]
+    public string? EndTime { get; set; }
+
+    public bool IsRecurring { get; set; } = false;
+}
+
+public class AvailabilityResponse
+{
+    public Guid Id { get; set; }
+    public Guid TeacherId { get; set; }
+    public int DayOfWeek { get; set; }
+    public string DayOfWeekName { get; set; } = string.Empty;
+    public TimeOnly StartTime { get; set; }
+    public TimeOnly EndTime { get; set; }
+    public bool IsRecurring { get; set; }
+}
