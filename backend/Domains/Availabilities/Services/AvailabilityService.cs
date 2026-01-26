@@ -8,11 +8,17 @@ public class AvailabilityService
 {
     private readonly AppDbContext _dbContext;
     private readonly ILogger<AvailabilityService> _logger;
+    private readonly AvailabilityQueryService _queryService;
+    private readonly UnavailableSlotService _unavailableService;
 
-    public AvailabilityService(AppDbContext dbContext, ILogger<AvailabilityService> logger)
+    public AvailabilityService(AppDbContext dbContext, ILogger<AvailabilityService> logger,
+        AvailabilityQueryService queryService,
+        UnavailableSlotService unavailableService)
     {
         _dbContext = dbContext;
         _logger = logger;
+        _queryService = queryService;
+        _unavailableService = unavailableService;
     }
 
     public async Task<Availability> CreateAvailabilityAsync(Guid teacherId, int dayOfWeek, TimeOnly startTime, TimeOnly endTime, bool isRecurring = true, DateOnly? availabilityDate = null)
@@ -144,20 +150,12 @@ public class AvailabilityService
 
     public async Task<List<Availability>> GetTeacherAvailabilitiesAsync(Guid teacherId)
     {
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-
-        return await _dbContext.Availabilities
-            .Where(a => a.TeacherId == teacherId
-                        && (a.IsRecurring || (a.AvailabilityDate != null && a.AvailabilityDate >= today)))
-            .OrderBy(a => a.DayOfWeek)
-            .ThenBy(a => a.StartTime)
-            .ToListAsync();
+        return await _queryService.GetTeacherAvailabilitiesAsync(teacherId);
     }
 
     public async Task<bool> TeacherExistsAsync(Guid teacherId)
     {
-        return await _dbContext.Users
-            .AnyAsync(u => u.Id == teacherId && u.Profile == ProfileType.Teacher);
+        return await _queryService.TeacherExistsAsync(teacherId);
     }
 
     public async Task<bool> DeleteAvailabilityAsync(Guid availabilityId, Guid teacherId)
@@ -184,57 +182,16 @@ public class AvailabilityService
 
     public async Task<UnavailableSlot> BlockTimeAsync(Guid teacherId, DateTime blockedDate, TimeOnly blockedStartTime, TimeOnly blockedEndTime, string? reason = null)
     {
-        // Validate that EndTime is after StartTime
-        if (blockedEndTime <= blockedStartTime)
-        {
-            throw new ArgumentException("Blocked end time must be after blocked start time");
-        }
-
-        var unavailableSlot = new UnavailableSlot
-        {
-            TeacherId = teacherId,
-            BlockedDate = blockedDate.Date,
-            BlockedStartTime = blockedStartTime,
-            BlockedEndTime = blockedEndTime,
-            Reason = reason
-        };
-
-        _dbContext.UnavailableSlots.Add(unavailableSlot);
-        await _dbContext.SaveChangesAsync();
-
-        return unavailableSlot;
+        return await _unavailableService.BlockTimeAsync(teacherId, blockedDate, blockedStartTime, blockedEndTime, reason);
     }
 
     public async Task<bool> RemoveBlockAsync(Guid blockId, Guid teacherId)
     {
-        var block = await _dbContext.UnavailableSlots
-            .FirstOrDefaultAsync(u => u.Id == blockId);
-
-        if (block == null)
-        {
-            return false;
-        }
-
-        // Verify the block belongs to the teacher
-        if (block.TeacherId != teacherId)
-        {
-            throw new InvalidOperationException("You do not have permission to remove this block");
-        }
-
-        _dbContext.UnavailableSlots.Remove(block);
-        await _dbContext.SaveChangesAsync();
-
-        return true;
+        return await _unavailableService.RemoveBlockAsync(blockId, teacherId);
     }
 
     public async Task<List<UnavailableSlot>> GetTeacherUnavailableSlotsAsync(Guid teacherId)
     {
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-
-        return await _dbContext.UnavailableSlots
-            .Where(u => u.TeacherId == teacherId && DateOnly.FromDateTime(u.BlockedDate) >= today)
-            .OrderBy(u => u.BlockedDate)
-            .ThenBy(u => u.BlockedStartTime)
-            .ToListAsync();
+        return await _queryService.GetTeacherUnavailableSlotsAsync(teacherId);
     }
 }

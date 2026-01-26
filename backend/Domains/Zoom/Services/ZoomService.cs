@@ -1,5 +1,4 @@
 using System.Net.Http.Headers;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using backend.Database;
@@ -9,60 +8,23 @@ namespace backend.Domains.Zoom;
 
 public class ZoomService
 {
-    private readonly string? _accountId;
-    private readonly string? _clientId;
-    private readonly string? _clientSecret;
-    private readonly string? _sdkKey;
-    private readonly string? _sdkSecret;
     private readonly HttpClient _httpClient;
     private readonly AppDbContext _dbContext;
-    private string? _cachedAccessToken;
-    private DateTime _tokenExpiry = DateTime.MinValue;
+    private readonly ZoomTokenProvider _tokenProvider;
+    private readonly ZoomSignatureService _signatureService;
 
-    public ZoomService(IConfiguration config, HttpClient httpClient, AppDbContext dbContext)
+    public ZoomService(HttpClient httpClient, AppDbContext dbContext, ZoomTokenProvider tokenProvider, ZoomSignatureService signatureService)
     {
-        _accountId = Environment.GetEnvironmentVariable("ZOOM_ACCOUNT_ID") ?? config["Zoom:AccountId"];
-        _clientId = Environment.GetEnvironmentVariable("ZOOM_CLIENT_ID") ?? config["Zoom:ClientId"];
-        _clientSecret = Environment.GetEnvironmentVariable("ZOOM_CLIENT_SECRET") ?? config["Zoom:ClientSecret"];
-        _sdkKey = Environment.GetEnvironmentVariable("ZOOM_SDK_KEY") ?? config["Zoom:SdkKey"];
-        _sdkSecret = Environment.GetEnvironmentVariable("ZOOM_SDK_SECRET") ?? config["Zoom:SdkSecret"];
         _httpClient = httpClient;
         _httpClient.BaseAddress = new Uri("https://api.zoom.us/v2/");
         _dbContext = dbContext;
+        _tokenProvider = tokenProvider;
+        _signatureService = signatureService;
     }
 
     public async Task<string> GetAccessTokenAsync()
     {
-        if (!string.IsNullOrEmpty(_cachedAccessToken) && DateTime.UtcNow < _tokenExpiry)
-        {
-            return _cachedAccessToken;
-        }
-
-        if (string.IsNullOrWhiteSpace(_accountId) || string.IsNullOrWhiteSpace(_clientId) || string.IsNullOrWhiteSpace(_clientSecret))
-        {
-            throw new InvalidOperationException("Missing Zoom configuration (Account ID, Client ID, Client Secret)");
-        }
-
-        var authValue = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{_clientId}:{_clientSecret}"));
-        
-        using var request = new HttpRequestMessage(HttpMethod.Post, $"https://zoom.us/oauth/token?grant_type=account_credentials&account_id={_accountId}");
-        request.Headers.Authorization = new AuthenticationHeaderValue("Basic", authValue);
-
-        var response = await _httpClient.SendAsync(request);
-        response.EnsureSuccessStatusCode();
-
-        var content = await response.Content.ReadAsStringAsync();
-        var tokenResponse = JsonSerializer.Deserialize<ZoomTokenResponse>(content);
-
-        if (tokenResponse == null || string.IsNullOrEmpty(tokenResponse.AccessToken))
-        {
-            throw new InvalidOperationException("Unable to obtain Zoom access token");
-        }
-
-        _cachedAccessToken = tokenResponse.AccessToken;
-        _tokenExpiry = DateTime.UtcNow.AddSeconds(tokenResponse.ExpiresIn - 300); // 5 min buffer
-
-        return _cachedAccessToken;
+        return await _tokenProvider.GetAccessTokenAsync();
     }
 
     public async Task<Meeting> CreateInstantMeetingAsync(Guid teacherId, Guid studentId, DateTime scheduledTime, int duration, string topic = "ApprendsMoi - Session")
@@ -139,51 +101,13 @@ public class ZoomService
 
     public string GenerateSignature(string meetingNumber, int role = 0)
     {
-        if (string.IsNullOrWhiteSpace(_sdkKey) || string.IsNullOrWhiteSpace(_sdkSecret))
-        {
-            throw new InvalidOperationException("Missing SDK Key/Secret");
-        }
-
-        var ts = ToUnixTimeSeconds(DateTime.UtcNow) - 30;
-        var exp = ts + 60 * 60 * 2; // 2h validity
-
-        var header = new { alg = "HS256", typ = "JWT" };
-        var payload = new
-        {
-            sdkKey = _sdkKey,
-            mn = meetingNumber,
-            role,
-            iat = ts,
-            exp,
-            appKey = _sdkKey,
-            tokenExp = exp
-        };
-
-        string headerBase64 = Base64UrlEncode(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(header)));
-        string payloadBase64 = Base64UrlEncode(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(payload)));
-        string message = $"{headerBase64}.{payloadBase64}";
-
-        using var hasher = new HMACSHA256(Encoding.UTF8.GetBytes(_sdkSecret));
-        var hash = hasher.ComputeHash(Encoding.UTF8.GetBytes(message));
-        string signature = Base64UrlEncode(hash);
-
-        return $"{message}.{signature}";
+        return _signatureService.GenerateSignature(meetingNumber, role);
     }
 
     public string GetSdkKey()
     {
-        if (string.IsNullOrWhiteSpace(_sdkKey))
-        {
-            throw new InvalidOperationException("Missing SDK Key");
-        }
-        return _sdkKey;
+        return _signatureService.GetSdkKey();
     }
-
-    private static long ToUnixTimeSeconds(DateTime dateTime) =>
-        (long)Math.Floor((dateTime - DateTime.UnixEpoch).TotalSeconds);
-
-    private static string Base64UrlEncode(byte[] input) =>
-        Convert.ToBase64String(input).TrimEnd('=').Replace('+', '-').Replace('/', '_');
 
     private static DateTime NormalizeZoomStartTime(DateTime value)
     {
