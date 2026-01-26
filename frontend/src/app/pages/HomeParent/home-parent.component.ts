@@ -1,6 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+
+// Components
 import { HeaderComponent } from '../../components/Header/header.component';
 import { ButtonComponent } from '../../components/shared/Button/button.component';
 import { IconComponent } from '../../components/shared/Icon/icon.component';
@@ -10,16 +13,12 @@ import { TextInputComponent } from '../../components/shared/TextInput/text-input
 import { SelectComponent, SelectOption } from '../../components/shared/Select/select.component';
 import { CoursesScheduleComponent } from '../../components/shared/CoursesSchedule/courses-schedule.component';
 
-// Interfaces
-interface Child {
-  id: number;
-  firstName: string;
-  lastName: string;
-  level: string;
-  subjects: string[];
-  avatarColor: string;
-}
+// Services & Models
+import { ParentService, Child, CreateChildRequest } from '../../services/parent.service';
+import { AuthService, GradeLevel } from '../../services/auth.service';
+import { ToastService } from '../../services/toast.service';
 
+// Interfaces locales
 interface Course {
   id: number;
   date: Date;
@@ -51,6 +50,7 @@ interface Payment {
   imports: [
     CommonModule,
     FormsModule,
+    RouterModule,
     HeaderComponent,
     ButtonComponent,
     IconComponent,
@@ -62,53 +62,95 @@ interface Payment {
   ]
 })
 export class HomeParentComponent implements OnInit {
-  userName = 'Sophie';
+  // Injections
+  private parentService = inject(ParentService);
+  private authService = inject(AuthService);
+  private toastService = inject(ToastService);
+
+  // État de l'utilisateur
+  userName = ''; 
+  userLastName = '';
+  userId: string | null = null; // ID stocké proprement ici
+  
+  // État de l'interface
   currentTab: 'upcoming' | 'history' = 'upcoming';
   showChildModal = false;
+  isLoading = false;
 
-  // Data
+  // Données
+  children: Child[] = [];
+  courses: Course[] = [];
   nextCourse: Course | null = null;
   lastMessage: Message | null = null;
   lastPayment: Payment | null = null;
-  
-  children: Child[] = [
-    { id: 1, firstName: 'Léa', lastName: 'Dubois', level: '3ème', subjects: ['Maths', 'Physique'], avatarColor: '#fbbf24' }, // Premium Goldish
-    { id: 2, firstName: 'Thomas', lastName: 'Dubois', level: 'CM2', subjects: ['Français'], avatarColor: '#4EE381' } // Green
-  ];
 
-  courses: Course[] = [
-    { id: 101, date: new Date('2023-11-15T14:00:00'), tutorName: 'Julie B.', subject: 'Maths', childName: 'Léa', mode: 'Domicile', status: 'Confirmé', price: 35 },
-    { id: 102, date: new Date('2023-11-18T10:00:00'), tutorName: 'Marc D.', subject: 'Français', childName: 'Thomas', mode: 'Visio', status: 'En attente', price: 25 },
-    { id: 103, date: new Date('2023-11-01T16:00:00'), tutorName: 'Julie B.', subject: 'Physique', childName: 'Léa', mode: 'Domicile', status: 'Terminé', price: 35 },
-  ];
-
-  levelOptions: SelectOption[] = [
-    { label: 'Primaire', value: 'Primaire' },
-    { label: 'Collège', value: 'Collège' },
-    { label: 'Lycée', value: 'Lycée' }
-  ];
-
-  // Form Data
+  // Données du Formulaire
   newChildName = '';
   newChildLevel: string | number | null = null;
-  newChildPassword = ''; // Added password field
+  newChildBirthDate = '';
+  newChildPassword = '';
+
+  selectedChild: Child | null = null;
+  showDetailsModal = false;
+
+  // Options
+  levelOptions: SelectOption[] = [
+    { label: 'CP', value: GradeLevel.CP },
+    { label: 'CE1', value: GradeLevel.CE1 },
+    { label: 'CE2', value: GradeLevel.CE2 },
+    { label: 'CM1', value: GradeLevel.CM1 },
+    { label: 'CM2', value: GradeLevel.CM2 },
+    { label: '6ème', value: GradeLevel.Sixieme },
+    { label: '5ème', value: GradeLevel.Cinquieme },
+    { label: '4ème', value: GradeLevel.Quatrieme },
+    { label: '3ème', value: GradeLevel.Troisieme },
+    { label: 'Seconde', value: GradeLevel.Seconde },
+    { label: 'Première', value: GradeLevel.Premiere },
+    { label: 'Terminale', value: GradeLevel.Terminale },
+  ];
 
   constructor() {}
 
   ngOnInit(): void {
-    this.nextCourse = this.courses.find(c => c.status === 'Confirmé' || c.status === 'En attente') || null;
-    
-    this.lastMessage = {
-      sender: 'Julie B.',
-      preview: 'Bonjour, est-ce qu\'on peut décaler le cours de...',
-      date: new Date()
-    };
+    // 1. On s'abonne une seule fois pour récupérer les infos ET l'ID
+    this.authService.currentUser$.subscribe(user => {
+      if (user) {
+        this.userName = user.firstName || 'Parent';
+        this.userLastName = user.lastName || '';
+      }
+    });
 
-    this.lastPayment = {
-      amount: 35,
-      status: 'Payé',
-      date: new Date('2023-11-02')
-    };
+    this.loadChildren();
+    this.loadDashboardData();
+  }
+
+  openDetailsModal(child: Child) {
+    this.selectedChild = child;
+    this.showDetailsModal = true;
+  }
+
+  closeDetailsModal() {
+    this.showDetailsModal = false;
+    this.selectedChild = null;
+  }
+
+  loadChildren() {
+    this.parentService.getMyChildren().subscribe({
+      next: (data) => this.children = data,
+      error: (err) => console.error('Impossible de charger les enfants', err)
+    });
+  }
+
+  loadDashboardData() {
+    this.parentService.getUpcomingCourses().subscribe(data => {
+      this.courses = data;
+      this.nextCourse = this.courses.find(c => 
+        (c.status === 'Confirmé' || c.status === 'En attente') && new Date(c.date) > new Date()
+      ) || null;
+    });
+
+    this.parentService.getLastPayment().subscribe(data => this.lastPayment = data);
+    this.parentService.getLastMessage().subscribe(data => this.lastMessage = data);
   }
 
   get upcomingCourses() {
@@ -131,27 +173,77 @@ export class HomeParentComponent implements OnInit {
     this.showChildModal = false;
     this.newChildName = '';
     this.newChildLevel = null;
-    this.newChildPassword = ''; // Reset password
+    this.newChildBirthDate = '';
+    this.newChildPassword = '';
+  }
+
+  // Vérification locale de la complexité (reprend la logique de votre image backend)
+  private hasPasswordComplexity(password: string): boolean {
+    if (password.length < 6) return false;
+    const hasUpper = /[A-Z]/.test(password);
+    const hasLower = /[a-z]/.test(password);
+    const hasDigit = /\d/.test(password);
+    return hasUpper && hasLower && hasDigit;
   }
 
   saveChild() {
-    // Validate that we have name, level AND password
-    if (this.newChildName && this.newChildLevel && this.newChildPassword) {
-      console.log('Creating account for child with password:', this.newChildPassword);
-      
-      this.children.push({
-        id: Date.now(),
-        firstName: this.newChildName,
-        lastName: 'Dubois',
-        level: this.newChildLevel.toString(),
-        subjects: [],
-        avatarColor: '#f97316' // Secondary Color
-      });
-      this.closeChildModal();
+    // 1. Validation Champs
+    if (!this.newChildName || this.newChildLevel === null || !this.newChildPassword) {
+      this.toastService.warning('Veuillez remplir les champs obligatoires.');
+      return;
     }
+
+    // 2. Validation Mot de passe
+    if (!this.hasPasswordComplexity(this.newChildPassword)) {
+      this.toastService.warning('Le mot de passe doit contenir : 6 caractères min, 1 majuscule, 1 minuscule, 1 chiffre.');
+      return;
+    }
+
+    this.isLoading = true;
+
+    // 4. Construction de la requête avec l'ID valide (String UUID)
+    const request: CreateChildRequest = {
+      firstName: this.newChildName,
+      lastName: this.userLastName || 'NomFamille',
+      password: this.newChildPassword,
+      gradeLevel: Number(this.newChildLevel),
+      birthDate: this.newChildBirthDate || undefined 
+    };
+
+    this.parentService.addChild(request).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.toastService.success('Compte enfant créé avec succès !');
+        this.closeChildModal();
+        this.loadChildren();
+      },
+      error: (err) => {
+        this.isLoading = false;
+        console.error('Erreur inscription:', err);
+        // Si le backend renvoie une erreur, on essaie de l'afficher
+        const message = err.error?.error || 'Erreur lors de la création.';
+        this.toastService.error(message);
+      }
+    });
   }
 
-  deleteChild(id: number) {
-    this.children = this.children.filter(c => c.id !== id);
-  }
+  deleteChild(id: string) {
+      if (confirm('Voulez-vous vraiment supprimer ce profil enfant ? Cette action est définitive.')) {
+        
+        // Appel au service pour la suppression côté serveur
+        this.parentService.deleteChild(id).subscribe({
+          next: () => {
+            // Succès : On retire l'enfant de la liste locale pour éviter de recharger toute la page
+            this.children = this.children.filter(c => c.id !== id);
+            this.toastService.success('Le profil enfant a été supprimé.');
+          },
+          error: (err) => {
+            console.error('Erreur lors de la suppression :', err);
+            // Gestion des erreurs (ex: 404 introuvable, 403 interdit)
+            const message = err.error?.detail || 'Impossible de supprimer ce profil.';
+            this.toastService.error(message);
+          }
+        });
+      }
+    }
 }

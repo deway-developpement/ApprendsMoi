@@ -60,15 +60,7 @@ export class InscriptionComponent {
    * - At least 1 Lowercase
    * - At least 1 Digit
    */
-  private hasPasswordComplexity(password: string): boolean {
-    if (password.length < 6) return false;
-
-    const hasUpper = /[A-Z]/.test(password);
-    const hasLower = /[a-z]/.test(password);
-    const hasDigit = /\d/.test(password);
-
-    return hasUpper && hasLower && hasDigit;
-  }
+  
 
   onRegister() {
     // --- 1. VALIDATION ---
@@ -92,7 +84,7 @@ export class InscriptionComponent {
     }
 
     // Password Complexity Check (New logic from image)
-    if (!this.hasPasswordComplexity(this.password)) {
+    if (!this.authService.hasPasswordComplexity(this.password)) {
       this.toastService.warning('Le mot de passe doit contenir au moins 6 caractères, une majuscule, une minuscule et un chiffre.');
       return;
     }

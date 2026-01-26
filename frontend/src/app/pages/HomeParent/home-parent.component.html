@@ -17,7 +17,7 @@
         <div class="widget-card accent-blue">
           <div class="widget-top">
             <div class="icon-circle blue">
-              <app-small-icon icon="/assets/icons/schedule.svg" [size]=30></app-small-icon>
+              <app-small-icon icon="/assets/icons/schedule.svg" [size]="30"></app-small-icon>
             </div>
             <h3>Prochain cours</h3>
           </div>
@@ -28,34 +28,44 @@
             </div>
             <p class="subtext">Avec {{ nextCourse.tutorName }} ({{ nextCourse.subject }})</p>
             <div class="widget-action">
-              <app-button variant="ghost">Voir les détails</app-button>
+              <app-button variant="ghost" [routerLink]="['/courses', nextCourse.id]">Voir les détails</app-button>
             </div>
           </div>
           <ng-template #noCourse>
-            <p class="empty-state">Aucun cours planifié.</p>
+            <div class="widget-content">
+               <p class="empty-state">Aucun cours planifié.</p>
+               <div class="widget-action">
+                  <app-button variant="ghost" [routerLink]="['/search']">Trouver un prof</app-button>
+               </div>
+            </div>
           </ng-template>
         </div>
 
         <div class="widget-card accent-orange">
           <div class="widget-top">
              <div class="icon-circle orange">
-               <app-small-icon icon="/assets/icons/email 2 1.svg" [size]=30></app-small-icon>
+               <app-small-icon icon="/assets/icons/email 2 1.svg" [size]="30"></app-small-icon>
              </div>
             <h3>Messages</h3>
           </div>
-          <div class="widget-content" *ngIf="lastMessage">
+          <div class="widget-content" *ngIf="lastMessage; else noMessage">
             <p class="message-preview">"{{ lastMessage.preview | slice:0:35 }}..."</p>
             <p class="subtext">De: <strong>{{ lastMessage.sender }}</strong></p>
             <div class="widget-action">
-              <app-button variant="ghost">Ouvrir la messagerie</app-button>
+              <app-button variant="ghost" [routerLink]="['/messages']">Ouvrir la messagerie</app-button>
             </div>
           </div>
+          <ng-template #noMessage>
+             <div class="widget-content">
+                <p class="empty-state">Aucun nouveau message.</p>
+             </div>
+          </ng-template>
         </div>
 
         <div class="widget-card accent-green">
           <div class="widget-top">
             <div class="icon-circle green">
-              <app-small-icon icon="/assets/icons/account-balance.svg" [size]=30></app-small-icon>
+              <app-small-icon icon="/assets/icons/account-balance.svg" [size]="30"></app-small-icon>
             </div>
             <h3>Paiements</h3>
           </div>
@@ -63,7 +73,7 @@
             <p class="highlight-price">-{{ lastPayment.amount }} €</p>
             <p class="status-pill paid">{{ lastPayment.status }}</p>
             <div class="widget-action">
-              <app-button variant="ghost">Factures et paiments</app-button>
+              <app-button variant="ghost" [routerLink]="['/payments']">Factures et paiements</app-button>
             </div>
           </div>
         </div>
@@ -71,7 +81,7 @@
     </section>
 
     <section class="quick-actions">
-      <button class="action-tile cta-search">
+      <button class="action-tile cta-search" [routerLink]="['/search']">
         <div class="tile-icon">
           <app-icon icon="/assets/icons/search.svg" [size]="48"></app-icon>
         </div>
@@ -81,14 +91,14 @@
         </div>
       </button>
 
-      <button class="action-tile secondary">
+      <button class="action-tile secondary" [routerLink]="['/favorites']">
         <div class="tile-icon">
           <app-icon icon="/assets/icons/star.svg" [size]="40"></app-icon>
         </div>
         <span>Mes Favoris</span>
       </button>
 
-      <button class="action-tile secondary">
+      <button class="action-tile secondary" [routerLink]="['/courses']">
         <div class="tile-icon">
           <app-icon icon="/assets/icons/book-fill.svg" [size]="40"></app-icon>
         </div>
@@ -101,20 +111,23 @@
       <section class="children-section">
         <div class="section-header">
           <h2>👦 Mes enfants</h2>
-          <app-button variant="ghost" (click)="openChildModal()">+ Ajouter</app-button>
         </div>
 
         <div class="children-list">
-          <div class="child-card" *ngFor="let child of children" [style.border-left-color]="child.avatarColor">
+          <div class="child-card" *ngFor="let child of children" [style.border-left-color]="child.avatarColor" (click)="openDetailsModal(child)">
             <div class="child-avatar" [style.background-color]="child.avatarColor">
               {{ child.firstName.charAt(0) }}
             </div>
             <div class="child-info">
               <h3>{{ child.firstName }}</h3>
-              <p class="child-level">{{ child.level }}</p>
+              <p class="child-level">{{ child.levelLabel }}</p>
             </div>
             <div class="child-actions">
-              <app-icon-button icon="/assets/icons/edit.svg" [size]="32"></app-icon-button>
+               <app-icon-button 
+                icon="/assets/icons/tabler_trash.svg" 
+                [size]="24" 
+                (click)="deleteChild(child.id)">
+              </app-icon-button>
             </div>
           </div>
           
@@ -133,7 +146,9 @@
         <h3>🚀 Boostez la réussite de vos enfants !</h3>
         <p>Découvrez nos professeurs Premium pour un accompagnement d'excellence.</p>
       </div>
-      <app-button variant="primary">Voir les profs Premium</app-button>
+      <app-button variant="primary" [routerLink]="['/search']" [queryParams]="{ premium: true }">
+        Voir les profs Premium
+      </app-button>
     </section>
 
   </main>
@@ -154,6 +169,15 @@
     </div>
 
     <div class="form-group">
+      <app-text-input 
+        label="Date de naissance" 
+        type="date"
+        [value]="newChildBirthDate"
+        (valueChange)="newChildBirthDate = $event">
+      </app-text-input>
+    </div>
+
+    <div class="form-group">
       <app-select 
         label="Niveau Scolaire" 
         [options]="levelOptions"
@@ -165,15 +189,56 @@
       <app-text-input 
         label="Mot de passe du compte enfant" 
         type="password"
-        placeholder="Définir un mot de passe" 
+        placeholder="6 caractères minimum" 
         [value]="newChildPassword"
         (valueChange)="newChildPassword = $event">
       </app-text-input>
     </div>
 
     <div class="modal-actions">
-      <app-button variant="ghost" (click)="closeChildModal()">Annuler</app-button>
-      <app-button variant="primary" (click)="saveChild()">Créer le compte</app-button>
+      <app-button variant="ghost" (click)="closeChildModal()" [disabled]="isLoading">
+        Annuler
+      </app-button>
+      
+      <app-button variant="primary" (click)="saveChild()" [disabled]="isLoading">
+        {{ isLoading ? 'Création...' : 'Créer le compte' }}
+      </app-button>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="modal-overlay" *ngIf="showDetailsModal && selectedChild" (click)="closeDetailsModal()">
+  <div class="modal-content details-modal" (click)="$event.stopPropagation()">
+    
+    <header class="details-header">
+      <div class="child-avatar large" [style.background-color]="selectedChild.avatarColor">
+        {{ selectedChild.firstName.charAt(0) }}
+      </div>
+      <h2>{{ selectedChild.firstName }} {{ selectedChild.lastName }}</h2>
+      <p class="subtitle">Profil Élève</p>
+    </header>
+
+    <div class="details-body">
+      <div class="info-row">
+        <span class="label">Niveau scolaire</span>
+        <span class="value">{{ selectedChild.levelLabel }}</span>
+      </div>
+      
+      <div class="info-row">
+        <span class="label">Nom d'utilisateur</span>
+        <span class="value highlight">{{ selectedChild.username }}</span>
+      </div>
+      
+      <div class="info-row" *ngIf="selectedChild.firstName">
+        <span class="label">Statut</span>
+        <span class="value badge-success">Actif</span>
+      </div>
+    </div>
+
+    <div class="modal-actions centered">
+      <app-button variant="primary" (click)="closeDetailsModal()">Fermer</app-button>
     </div>
   </div>
 </div>

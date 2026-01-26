@@ -136,6 +136,16 @@ export class AuthService {
     );
   }
 
+  hasPasswordComplexity(password: string): boolean {
+    if (password.length < 6) return false;
+
+    const hasUpper = /[A-Z]/.test(password);
+    const hasLower = /[a-z]/.test(password);
+    const hasDigit = /\d/.test(password);
+
+    return hasUpper && hasLower && hasDigit;
+  }
+
   refreshToken(): Observable<LoginResponse> {
     const refreshToken = this.getRefreshToken();
     const payload: RefreshTokenRequest = { refreshToken: refreshToken || '' };

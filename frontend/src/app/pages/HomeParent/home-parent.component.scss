@@ -268,6 +268,7 @@
     align-items: center;
     gap: 1rem;
     border-left: 6px solid #ccc; // Default fallback
+    cursor: pointer;
 
     .child-avatar {
       width: 56px;
@@ -381,6 +382,107 @@
       justify-content: flex-end;
       gap: 1rem;
       margin-top: 3rem;
+    }
+  }
+}
+
+.details-modal {
+  text-align: center;
+  max-width: 400px;
+}
+
+.details-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+
+  .child-avatar.large {
+    width: 80px;
+    height: 80px;
+    // Assurez-vous que $titleFontSize est défini ailleurs, sinon remplacez par une valeur fixe (ex: 2.5rem)
+    font-size: $titleFontSize;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    border-radius: 50%;
+    margin-bottom: 1rem;
+    font-weight: bold;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  h2 {
+    margin: 0;
+    margin-bottom: 0.5rem;
+    color: $PrimaryColor; // Utilisation du Bleu Nuit
+    font-size: $biggerFontSize;
+  }
+
+  .subtitle {
+    margin: 0.25rem 0 0;
+    color: rgba($heroIntroBackground, 0.6); // Noir/Gris foncé avec transparence
+    font-size: $regularFontSize;
+  }
+}
+
+.details-body {
+  background-color: $backgroundColor; // Utilisation du fond crème/blanc cassé
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  text-align: left;
+  border: 1px solid rgba($heroIntroBackground, 0.05); // Bordure subtile
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba($heroIntroBackground, 0.1);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .label {
+      color: rgba($heroIntroBackground, 0.6);
+      font-size: $regularFontSize;
+      font-weight: 600;
+    }
+
+    .value {
+      font-weight: 600;
+      color: $heroIntroBackground; // Texte principal sombre
+      
+      &.highlight {
+        color: $statusInfo; // Bleu info
+        font-family: monospace;
+        background: rgba($statusInfo, 0.1); // Fond bleu très léger
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+      
+      &.badge-success {
+        // Le vert brut est très clair, on l'assombrit pour le texte pour qu'il soit lisible
+        color: darken($statusConfirmed, 25%); 
+        background: rgba($statusConfirmed, 0.15); // Fond vert léger
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: $regularFontSize ;
+      }
+    }
+  }
+}
+
+.modal-actions.centered {
+  justify-content: center;
+  
+  // Si vous voulez styliser le bouton fermer ici spécifiquement
+  button {
+    background-color: $PrimaryColor;
+    &:hover {
+      background-color: $PrimaryColorHover;
     }
   }
 }

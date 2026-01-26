@@ -13,14 +13,14 @@ export class TextInputComponent {
   @Input() label: string = '';
   @Input() placeholder: string = '';
   
-  // Added 'tel' to the type definition here
-  @Input() type: 'text' | 'email' | 'password' | 'search' | 'tel' = 'text';
+  // AJOUT : 'date' est maintenant accepté
+  @Input() type: 'text' | 'email' | 'password' | 'search' | 'tel' | 'date' = 'text';
   
   @Input() value: string = '';
   @Input() error: string | null = null;
   @Input() disabled: boolean = false;
   @Input() fullWidth: boolean = true;
-  @Input() iconLeft?: string;   // ex: 'search', 'mail', etc. (optionnel)
+  @Input() iconLeft?: string;
 
   @Output() valueChange = new EventEmitter<string>();
   @Output() enter = new EventEmitter<void>();
