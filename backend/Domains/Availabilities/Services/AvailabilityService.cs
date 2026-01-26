@@ -23,16 +23,22 @@ public class AvailabilityService
             throw new ArgumentException("EndTime must be after StartTime");
         }
 
-        // For non-recurring, date is required and must be today or future
+        // For non-recurring, calculate date if not provided
         if (!isRecurring)
         {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            
             if (!availabilityDate.HasValue)
             {
-                throw new ArgumentException("AvailabilityDate is required when the slot is not recurring");
+                // Calculate the next future day with the matching dayOfWeek
+                var daysAhead = dayOfWeek - (int)today.DayOfWeek;
+                if (daysAhead <= 0)
+                {
+                    daysAhead += 7; // Go to next week if day has passed
+                }
+                availabilityDate = today.AddDays(daysAhead);
             }
-
-            var today = DateOnly.FromDateTime(DateTime.UtcNow);
-            if (availabilityDate.Value < today)
+            else if (availabilityDate.Value < today)
             {
                 throw new ArgumentException("AvailabilityDate must be today or in the future");
             }
@@ -49,14 +55,74 @@ public class AvailabilityService
             .Where(a => a.TeacherId == teacherId && a.DayOfWeek == dayOfWeek)
             .ToListAsync();
 
-        foreach (var existing in existingAvailabilities)
+        if (isRecurring)
         {
-            // Check if the new time range overlaps with existing availability
-            // Overlap occurs when: newStart < existingEnd AND newEnd > existingStart
-            if (startTime < existing.EndTime && endTime > existing.StartTime)
+            // When adding a recurring availability, handle overlapping non-recurring availabilities
+            foreach (var existing in existingAvailabilities)
             {
-                throw new ArgumentException(
-                    $"Availability overlaps with existing slot ({existing.StartTime:HH:mm:ss} - {existing.EndTime:HH:mm:ss}) on the same day");
+                // Check if the new time range overlaps with existing availability
+                // Overlap occurs when: newStart < existingEnd AND newEnd > existingStart
+                if (startTime < existing.EndTime && endTime > existing.StartTime)
+                {
+                    if (existing.IsRecurring)
+                    {
+                        // Recurring overlaps with recurring - reject
+                        throw new ArgumentException(
+                            $"Availability overlaps with existing recurring slot ({existing.StartTime:HH:mm:ss} - {existing.EndTime:HH:mm:ss}) on the same day");
+                    }
+                    else
+                    {
+                        // Recurring overlaps with non-recurring - adjust the non-recurring
+                        // Case 1: Recurring completely contains non-recurring
+                        if (startTime <= existing.StartTime && endTime >= existing.EndTime)
+                        {
+                            // Delete the non-recurring availability
+                            _dbContext.Availabilities.Remove(existing);
+                        }
+                        // Case 2: Recurring is in the middle of non-recurring - split it
+                        else if (startTime > existing.StartTime && endTime < existing.EndTime)
+                        {
+                            // Create a new slot from recurring.end to existing.end
+                            var newSlot = new Availability
+                            {
+                                TeacherId = teacherId,
+                                DayOfWeek = dayOfWeek,
+                                AvailabilityDate = existing.AvailabilityDate,
+                                StartTime = endTime,
+                                EndTime = existing.EndTime,
+                                IsRecurring = false
+                            };
+                            _dbContext.Availabilities.Add(newSlot);
+                            
+                            // Trim existing to end at recurring.start
+                            existing.EndTime = startTime;
+                        }
+                        // Case 3: Recurring overlaps from the left
+                        else if (startTime <= existing.StartTime && endTime < existing.EndTime)
+                        {
+                            // Trim non-recurring to start at recurring.end
+                            existing.StartTime = endTime;
+                        }
+                        // Case 4: Recurring overlaps from the right
+                        else if (startTime > existing.StartTime && endTime >= existing.EndTime)
+                        {
+                            // Trim non-recurring to end at recurring.start
+                            existing.EndTime = startTime;
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            // Non-recurring availability - reject any overlaps
+            foreach (var existing in existingAvailabilities)
+            {
+                if (startTime < existing.EndTime && endTime > existing.StartTime)
+                {
+                    throw new ArgumentException(
+                        $"Availability overlaps with existing slot ({existing.StartTime:HH:mm:ss} - {existing.EndTime:HH:mm:ss}) on the same day");
+                }
             }
         }
 
