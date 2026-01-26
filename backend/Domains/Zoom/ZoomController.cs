@@ -119,7 +119,7 @@ public class ZoomController : ControllerBase
     /// Gets all meetings (filtered by user role and ownership)
     /// </summary>
     [HttpGet("meetings")]
-    [RequireRole(ProfileType.Admin, ProfileType.Teacher, ProfileType.Student)]
+    [RequireRole(ProfileType.Admin, ProfileType.Teacher, ProfileType.Student, ProfileType.Parent)]
     [Produces("application/json")]
     [ProducesResponseType(typeof(IEnumerable<MeetingResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -146,6 +146,23 @@ public class ZoomController : ControllerBase
             else if (userProfile == ProfileType.Student)
             {
                 query = query.Where(m => m.StudentId == currentUserId);
+            }
+            else if (userProfile == ProfileType.Parent)
+            {
+                // Parents can see meetings for their children
+                var parentWithChildren = await _dbContext.Users
+                    .Where(u => u.Id == currentUserId)
+                    .Include(u => u.Parent!)
+                    .ThenInclude(p => p.Students)
+                    .FirstOrDefaultAsync();
+
+                if (parentWithChildren?.Parent == null)
+                {
+                    return Forbid();
+                }
+
+                var childrenIds = parentWithChildren.Parent.Students.Select(s => s.UserId).ToList();
+                query = query.Where(m => childrenIds.Contains(m.StudentId));
             }
             // Admin can see all meetings (no filter)
 
@@ -178,7 +195,7 @@ public class ZoomController : ControllerBase
     /// Gets a specific meeting by ID
     /// </summary>
     [HttpGet("meetings/{id}")]
-    [RequireRole(ProfileType.Admin, ProfileType.Teacher, ProfileType.Student)]
+    [RequireRole(ProfileType.Admin, ProfileType.Teacher, ProfileType.Student, ProfileType.Parent)]
     [Produces("application/json")]
     [ProducesResponseType(typeof(MeetingDetailsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -215,6 +232,20 @@ public class ZoomController : ControllerBase
                 if (userProfile == ProfileType.Student && meeting.StudentId != currentUserId)
                 {
                     return Forbid();
+                }
+                // Parents can only view their children's meetings
+                if (userProfile == ProfileType.Parent)
+                {
+                    var parentWithChildren = await _dbContext.Users
+                        .Where(u => u.Id == currentUserId)
+                        .Include(u => u.Parent!)
+                        .ThenInclude(p => p.Students)
+                        .FirstOrDefaultAsync();
+
+                    if (parentWithChildren?.Parent == null || !parentWithChildren.Parent.Students.Any(s => s.UserId == meeting.StudentId))
+                    {
+                        return Forbid();
+                    }
                 }
             }
 
