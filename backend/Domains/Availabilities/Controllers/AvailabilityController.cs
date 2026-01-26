@@ -84,12 +84,19 @@ public class AvailabilityController : ControllerBase
                 return BadRequest(new { error = "Invalid EndTime format. Use HH:mm:ss or ISO 8601 format." });
             }
 
+            DateOnly? availabilityDate = null;
+            if (request.AvailabilityDate.HasValue)
+            {
+                availabilityDate = DateOnly.FromDateTime(request.AvailabilityDate.Value);
+            }
+
             var availability = await _availabilityService.CreateAvailabilityAsync(
                 currentUserId.Value, 
                 request.DayOfWeek!.Value, 
                 startTime, 
                 endTime, 
-                request.IsRecurring
+                request.IsRecurring,
+                availabilityDate
             );
 
             return Ok(new AvailabilityResponse
@@ -98,6 +105,7 @@ public class AvailabilityController : ControllerBase
                 TeacherId = availability.TeacherId,
                 DayOfWeek = availability.DayOfWeek,
                 DayOfWeekName = ((DayOfWeek)availability.DayOfWeek).ToString(),
+                AvailabilityDate = availability.AvailabilityDate,
                 StartTime = availability.StartTime,
                 EndTime = availability.EndTime,
                 IsRecurring = availability.IsRecurring
@@ -142,6 +150,7 @@ public class AvailabilityController : ControllerBase
                 TeacherId = a.TeacherId,
                 DayOfWeek = a.DayOfWeek,
                 DayOfWeekName = ((DayOfWeek)a.DayOfWeek).ToString(),
+                AvailabilityDate = a.AvailabilityDate,
                 StartTime = a.StartTime,
                 EndTime = a.EndTime,
                 IsRecurring = a.IsRecurring

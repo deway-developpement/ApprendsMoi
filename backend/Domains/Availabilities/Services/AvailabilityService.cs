@@ -15,12 +15,33 @@ public class AvailabilityService
         _logger = logger;
     }
 
-    public async Task<Availability> CreateAvailabilityAsync(Guid teacherId, int dayOfWeek, TimeOnly startTime, TimeOnly endTime, bool isRecurring = true)
+    public async Task<Availability> CreateAvailabilityAsync(Guid teacherId, int dayOfWeek, TimeOnly startTime, TimeOnly endTime, bool isRecurring = true, DateOnly? availabilityDate = null)
     {
         // Validate that EndTime is after StartTime
         if (endTime <= startTime)
         {
             throw new ArgumentException("EndTime must be after StartTime");
+        }
+
+        // For non-recurring, date is required and must be today or future
+        if (!isRecurring)
+        {
+            if (!availabilityDate.HasValue)
+            {
+                throw new ArgumentException("AvailabilityDate is required when the slot is not recurring");
+            }
+
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            if (availabilityDate.Value < today)
+            {
+                throw new ArgumentException("AvailabilityDate must be today or in the future");
+            }
+
+            // Ensure dayOfWeek matches provided date
+            if ((int)availabilityDate.Value.DayOfWeek != dayOfWeek)
+            {
+                throw new ArgumentException("DayOfWeek does not match AvailabilityDate");
+            }
         }
 
         // Check for overlapping availabilities on the same day
@@ -43,6 +64,7 @@ public class AvailabilityService
         {
             TeacherId = teacherId,
             DayOfWeek = dayOfWeek,
+            AvailabilityDate = availabilityDate,
             StartTime = startTime,
             EndTime = endTime,
             IsRecurring = isRecurring
@@ -56,8 +78,11 @@ public class AvailabilityService
 
     public async Task<List<Availability>> GetTeacherAvailabilitiesAsync(Guid teacherId)
     {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
         return await _dbContext.Availabilities
-            .Where(a => a.TeacherId == teacherId)
+            .Where(a => a.TeacherId == teacherId
+                        && (a.IsRecurring || (a.AvailabilityDate != null && a.AvailabilityDate >= today)))
             .OrderBy(a => a.DayOfWeek)
             .ThenBy(a => a.StartTime)
             .ToListAsync();
@@ -138,8 +163,10 @@ public class AvailabilityService
 
     public async Task<List<UnavailableSlot>> GetTeacherUnavailableSlotsAsync(Guid teacherId)
     {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
         return await _dbContext.UnavailableSlots
-            .Where(u => u.TeacherId == teacherId)
+            .Where(u => u.TeacherId == teacherId && DateOnly.FromDateTime(u.BlockedDate) >= today)
             .OrderBy(u => u.BlockedDate)
             .ThenBy(u => u.BlockedStartTime)
             .ToListAsync();
