@@ -98,6 +98,11 @@ public class ZoomController : ControllerBase
                 StudentId = meeting.StudentId
             });
         }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid argument while creating meeting.");
+            return BadRequest(new { error = ex.Message });
+        }
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning(ex, "Invalid operation while creating meeting.");
