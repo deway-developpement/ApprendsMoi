@@ -9,6 +9,24 @@
 
     <form (ngSubmit)="onRegister()" class="inscription-form">
 
+      <div class="form-row" style="display: flex; gap: 1rem;">
+        <app-text-input
+          label="Prénom"
+          placeholder="Jean"
+          type="text"
+          [fullWidth]="true"
+          [(value)]="firstName">
+        </app-text-input>
+
+        <app-text-input
+          label="Nom"
+          placeholder="Dupont"
+          type="text"
+          [fullWidth]="true"
+          [(value)]="lastName">
+        </app-text-input>
+      </div>
+
       <app-text-input
         label="Email"
         placeholder="exemple@email.com"
@@ -18,6 +36,14 @@
         [(value)]="email">
       </app-text-input>
       
+      <app-text-input
+        label="Téléphone (Optionnel)"
+        placeholder="06 12 34 56 78"
+        type="tel"
+        [fullWidth]="true"
+        [(value)]="phoneNumber">
+      </app-text-input>
+
       <app-select
         label="Vous souhaitez vous inscrire en tant que ?"
         [options]="profileOptions"
@@ -47,8 +73,9 @@
         <app-button 
           variant="primary" 
           type="submit"
-          class="submit-btn">
-          S'inscrire
+          class="submit-btn"
+          [disabled]="isLoading">
+          {{ isLoading ? 'Inscription...' : "S'inscrire" }}
         </app-button>
       </div>
     </form>

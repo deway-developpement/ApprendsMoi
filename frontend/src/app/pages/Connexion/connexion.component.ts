@@ -30,17 +30,16 @@ import { SelectComponent, SelectOption } from '../../components/shared/Select/se
 export class ConnexionComponent {
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
-  private router = inject(Router);
+  private router = inject(Router); // Utilisé indirectement via AuthService, mais injecté si besoin de redirections spécifiques
 
-  // On utilise 'credential' car ça peut être un email OU un username
-  credential = ''; 
+  // Champs du formulaire
+  credential = ''; // Sera Email ou Username
   password = '';
   
-  // Par défaut Parent
+  // Gestion du profil sélectionné (par défaut Parent)
   selectedProfile: number = ProfileType.Parent;
 
-  // Assurez-vous que ProfileType.Student existe dans votre enum auth.models.ts
-  // Si ce n'est pas le cas, ajoutez Student = 4 dans l'enum
+  // Options du menu déroulant
   profileOptions: SelectOption[] = [
     { label: 'Je suis un Élève', value: ProfileType.Student }, 
     { label: 'Je suis un Parent', value: ProfileType.Parent },
@@ -50,12 +49,16 @@ export class ConnexionComponent {
 
   isLoading = false;
 
-  // Helper pour savoir si c'est un élève (pour l'affichage)
+  /**
+   * Helper pour déterminer si l'utilisateur se connecte en tant qu'élève.
+   * Utilisé pour adapter l'UI (Email vs Username) et la requête API.
+   */
   get isStudent(): boolean {
     return Number(this.selectedProfile) === ProfileType.Student;
   }
 
   onSubmit() {
+    // 1. Validation basique
     if (!this.credential || !this.password) {
       this.toastService.warning('Veuillez remplir tous les champs.');
       return;
@@ -63,27 +66,35 @@ export class ConnexionComponent {
 
     this.isLoading = true;
 
+    // 2. Construction de la requête selon le Swagger
     const request: LoginRequest = {
       credential: this.credential,
       password: this.password,
-      isStudent: this.isStudent // Le backend a besoin de savoir si c'est un élève
+      isStudent: this.isStudent // Crucial pour le backend
     };
 
+    // 3. Appel API
     this.authService.login(request).subscribe({
       next: () => {
         this.isLoading = false;
         this.toastService.success('Connexion réussie !');
-        // La redirection est gérée dans le AuthService via redirectUser()
+        // La redirection est gérée automatiquement dans authService.login() -> tap(redirectUser)
       },
       error: (err) => {
         this.isLoading = false;
         console.error('Erreur login:', err);
-        this.toastService.error('Identifiants incorrects ou compte inexistant.');
+        
+        // Gestion d'erreur plus fine si possible
+        const message = err.error?.detail || 'Identifiants incorrects ou compte inexistant.';
+        this.toastService.error(message);
       }
     });
   }
 
   onForgotPassword() {
-    this.toastService.info('Fonctionnalité de mot de passe oublié à venir.');
+    // TODO: Implémenter la navigation vers /forgot-password
+    this.router.navigate(['/forgot-password']); 
+    // Ou afficher un toast si la page n'existe pas encore :
+    // this.toastService.info('Fonctionnalité de mot de passe oublié à venir.');
   }
 }
