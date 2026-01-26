@@ -12,7 +12,10 @@ import { FormsModule } from '@angular/forms';
 export class TextInputComponent {
   @Input() label: string = '';
   @Input() placeholder: string = '';
-  @Input() type: 'text' | 'email' | 'password' | 'search' = 'text';
+  
+  // Added 'tel' to the type definition here
+  @Input() type: 'text' | 'email' | 'password' | 'search' | 'tel' = 'text';
+  
   @Input() value: string = '';
   @Input() error: string | null = null;
   @Input() disabled: boolean = false;

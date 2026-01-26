@@ -1,11 +1,12 @@
-import { Injectable, inject, PLATFORM_ID } from '@angular/core'; // AJOUT: PLATFORM_ID
-import { isPlatformBrowser } from '@angular/common'; // AJOUT: isPlatformBrowser
+import { Injectable, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of, tap, switchMap, catchError } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../environments/environment';
 
-// --- MODELS (inchangés) ---
+// --- MODELS ---
+
 export enum ProfileType {
   Admin = 0,
   Teacher = 1,
@@ -13,8 +14,23 @@ export enum ProfileType {
   Student = 3
 }
 
+export enum GradeLevel {
+  CP = 0,
+  CE1 = 1,
+  CE2 = 2,
+  CM1 = 3,
+  CM2 = 4,
+  Sixieme = 5,
+  Cinquieme = 6,
+  Quatrieme = 7,
+  Troisieme = 8,
+  Seconde = 9,
+  Premiere = 10,
+  Terminale = 11
+}
+
 export interface LoginRequest {
-  credential?: string;
+  credential?: string; // Email ou Username
   password?: string;
   isStudent: boolean;
 }
@@ -22,7 +38,20 @@ export interface LoginRequest {
 export interface RegisterRequest {
   email?: string;
   password?: string;
+  firstName?: string;
+  lastName?: string;
   profile: ProfileType;
+  phoneNumber?: string;
+}
+
+export interface RegisterStudentRequest {
+  username?: string;
+  password?: string;
+  firstName?: string;
+  lastName?: string;
+  gradeLevel: GradeLevel;
+  birthDate?: string; // Format YYYY-MM-DD
+  parentId?: string; // UUID
 }
 
 export interface RefreshTokenRequest {
@@ -30,15 +59,21 @@ export interface RefreshTokenRequest {
 }
 
 export interface UserDto {
-  id: number;
-  email: string;
-  username: string;
+  id: string; // Changement: number -> string (UUID selon Swagger)
+  email?: string;
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  profilePicture?: string;
   profile: ProfileType;
+  isActive: boolean;
+  lastLoginAt?: string;
 }
 
 export interface LoginResponse {
   token: string;
   refreshToken: string;
+  user: UserDto;
 }
 
 // --- SERVICE ---
@@ -47,7 +82,7 @@ export interface LoginResponse {
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
-  private readonly platformId = inject(PLATFORM_ID); // AJOUT: Injection de l'ID de plateforme
+  private readonly platformId = inject(PLATFORM_ID);
   private readonly API_URL = environment.apiUrl;
 
   private currentUserSubject = new BehaviorSubject<UserDto | null>(null);
@@ -56,7 +91,6 @@ export class AuthService {
   constructor() {}
 
   initializeUser(): Observable<any> {
-    // Si on est sur le serveur (SSR), on ne fait rien pour éviter le crash
     if (!isPlatformBrowser(this.platformId)) {
       return of(null);
     }
@@ -67,6 +101,7 @@ export class AuthService {
       return of(null);
     }
 
+    // On utilise fetchMe pour vérifier si le token est toujours valide et récupérer les infos à jour
     return this.fetchMe().pipe(
       catchError(() => {
         this.logout();
@@ -79,10 +114,24 @@ export class AuthService {
     return this.http.post(`${this.API_URL}/api/Auth/register`, data);
   }
 
+  registerStudent(data: RegisterStudentRequest): Observable<any> {
+    return this.http.post(`${this.API_URL}/api/Auth/register/student`, data);
+  }
+
   login(credentials: LoginRequest): Observable<UserDto> {
     return this.http.post<LoginResponse>(`${this.API_URL}/api/Auth/login`, credentials).pipe(
-      tap(res => this.storeTokens(res.token, res.refreshToken)),
-      switchMap(() => this.fetchMe()),
+      tap(res => {
+        this.storeTokens(res.token, res.refreshToken);
+        // Le Swagger indique que la LoginResponse contient déjà l'objet UserDto, 
+        // on peut donc mettre à jour le sujet directement sans refaire un appel fetchMe()
+        if (res.user) {
+          this.currentUserSubject.next(res.user);
+        }
+      }),
+      // Si l'objet user n'est pas complet dans la réponse login, on peut garder switchMap
+      // switchMap(() => this.fetchMe()), 
+      // Mais ici on renvoie l'utilisateur directement s'il est présent
+      switchMap((res) => res.user ? of(res.user) : this.fetchMe()),
       tap(user => this.redirectUser(user.profile))
     );
   }
@@ -103,9 +152,8 @@ export class AuthService {
         this.currentUserSubject.next(user);
       }),
       catchError(err => {
-        // On évite de logout si l'erreur vient du serveur lors du rendu initial
         if (isPlatformBrowser(this.platformId)) {
-             this.logout();
+           this.logout();
         }
         throw err;
       })
@@ -113,6 +161,7 @@ export class AuthService {
   }
 
   private redirectUser(profile: ProfileType): void {
+    // Redirection simple pour l'instant
     this.router.navigate(['/']);
   }
 
@@ -125,7 +174,7 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
-  // --- Gestion des Tokens (Sécurisée pour SSR) ---
+  // --- Gestion des Tokens ---
 
   private storeTokens(token: string, refreshToken: string): void {
     if (isPlatformBrowser(this.platformId)) {

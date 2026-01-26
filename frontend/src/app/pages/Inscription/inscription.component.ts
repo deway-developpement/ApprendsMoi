@@ -32,13 +32,18 @@ export class InscriptionComponent {
   private toastService = inject(ToastService);
   private router = inject(Router);
 
+  // Form Fields
   email = '';
   password = '';
   confirmPassword = '';
   
-  // Profile Management (Default to Parent)
-  selectedProfile: number = ProfileType.Parent;
+  // Extra fields required by updated AuthService/Swagger (FirstName, LastName, PhoneNumber)
+  firstName = '';
+  lastName = '';
+  phoneNumber = '';
 
+  // Profile Management
+  selectedProfile: number = ProfileType.Parent;
   profileOptions: SelectOption[] = [
     { label: 'Je suis un Parent', value: ProfileType.Parent },
     { label: 'Je suis un Professeur', value: ProfileType.Teacher }
@@ -48,47 +53,67 @@ export class InscriptionComponent {
 
   private readonly emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-  onRegister() {
-    // --- 1. WARNING TOASTS (Validation) ---
+  /**
+   * [cite_start]Validates password complexity based on C# backend logic[cite: 1]:
+   * - Length >= 6
+   * - At least 1 Uppercase
+   * - At least 1 Lowercase
+   * - At least 1 Digit
+   */
+  private hasPasswordComplexity(password: string): boolean {
+    if (password.length < 6) return false;
 
-    // Check for empty fields
-    if (!this.email || !this.password || !this.confirmPassword) {
-      this.toastService.warning('Veuillez remplir tous les champs obligatoires.');
-      return; // STOP SUBMIT
+    const hasUpper = /[A-Z]/.test(password);
+    const hasLower = /[a-z]/.test(password);
+    const hasDigit = /\d/.test(password);
+
+    return hasUpper && hasLower && hasDigit;
+  }
+
+  onRegister() {
+    // --- 1. VALIDATION ---
+
+    // Empty fields check (including new name fields)
+    if (!this.email || !this.password || !this.confirmPassword || !this.firstName || !this.lastName) {
+      this.toastService.warning('Veuillez remplir tous les champs obligatoires (Nom, Prénom, Email, Mot de passe).');
+      return;
     }
 
+    // Email format
     if (!this.emailRegex.test(this.email)) {
       this.toastService.warning('Le format de l\'adresse email est invalide.');
-      return; // STOP SUBMIT
+      return;
     }
 
-    // Check for password mismatch
+    // Password mismatch
     if (this.password !== this.confirmPassword) {
       this.toastService.warning('Les mots de passe ne correspondent pas.');
-      return; // STOP SUBMIT
+      return;
     }
 
-    // Optional: Check password length (Good practice)
-    if (this.password.length < 6) {
-      this.toastService.warning('Le mot de passe doit contenir au moins 6 caractères.');
-      return; // STOP SUBMIT
+    // Password Complexity Check (New logic from image)
+    if (!this.hasPasswordComplexity(this.password)) {
+      this.toastService.warning('Le mot de passe doit contenir au moins 6 caractères, une majuscule, une minuscule et un chiffre.');
+      return;
     }
 
     // --- 2. API CALL ---
     
     this.isLoading = true;
 
+    // Mapping to the updated RegisterRequest interface
     const request: RegisterRequest = {
       email: this.email,
       password: this.password,
+      firstName: this.firstName,
+      lastName: this.lastName,
+      phoneNumber: this.phoneNumber, // Optional
       profile: Number(this.selectedProfile)
     };
 
     this.authService.register(request).subscribe({
       next: () => {
         this.isLoading = false;
-        
-        // --- 3. SUCCESS TOAST ---
         this.toastService.success('Compte créé avec succès ! Connectez-vous.');
         this.router.navigate(['/login']);
       },
@@ -96,8 +121,7 @@ export class InscriptionComponent {
         this.isLoading = false;
         console.error('Erreur inscription:', err);
 
-        // --- 4. ERROR TOAST ---
-        // Try to get specific message from backend (ProblemDetails), otherwise generic message
+        // Extract error message safely
         const message = err.error?.detail || err.error?.title || 'Erreur lors de l\'inscription. Vérifiez vos données.';
         this.toastService.error(message);
       }
