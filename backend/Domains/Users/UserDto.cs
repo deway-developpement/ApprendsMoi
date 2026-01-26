@@ -16,6 +16,7 @@ public class UserDto {
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public string? ProfilePicture { get; set; }
+    [JsonPropertyName("profileType")]
     public ProfileType Profile { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
