@@ -68,4 +68,91 @@ public class AvailabilityService
         return await _dbContext.Users
             .AnyAsync(u => u.Id == teacherId && u.Profile == ProfileType.Teacher);
     }
+
+    public async Task<bool> DeleteAvailabilityAsync(Guid availabilityId, Guid teacherId)
+    {
+        var availability = await _dbContext.Availabilities
+            .FirstOrDefaultAsync(a => a.Id == availabilityId);
+
+        if (availability == null)
+        {
+            return false;
+        }
+
+        // Verify the availability belongs to the teacher
+        if (availability.TeacherId != teacherId)
+        {
+            throw new InvalidOperationException("You do not have permission to delete this availability");
+        }
+
+        _dbContext.Availabilities.Remove(availability);
+        await _dbContext.SaveChangesAsync();
+
+        return true;
+    }
+
+    public async Task<UnavailableSlot> BlockTimeAsync(Guid teacherId, DateTime blockedDate, TimeOnly blockedStartTime, TimeOnly blockedEndTime, string? reason = null)
+    {
+        // Validate that EndTime is after StartTime
+        if (blockedEndTime <= blockedStartTime)
+        {
+            throw new ArgumentException("Blocked end time must be after blocked start time");
+        }
+
+        var unavailableSlot = new UnavailableSlot
+        {
+            TeacherId = teacherId,
+            BlockedDate = blockedDate.Date,
+            BlockedStartTime = blockedStartTime,
+            BlockedEndTime = blockedEndTime,
+            Reason = reason
+        };
+
+        _dbContext.UnavailableSlots.Add(unavailableSlot);
+        await _dbContext.SaveChangesAsync();
+
+        return unavailableSlot;
+    }
+
+    public async Task<bool> RemoveBlockAsync(Guid blockId, Guid teacherId)
+    {
+        var block = await _dbContext.UnavailableSlots
+            .FirstOrDefaultAsync(u => u.Id == blockId);
+
+        if (block == null)
+        {
+            return false;
+        }
+
+        // Verify the block belongs to the teacher
+        if (block.TeacherId != teacherId)
+        {
+            throw new InvalidOperationException("You do not have permission to remove this block");
+        }
+
+        _dbContext.UnavailableSlots.Remove(block);
+        await _dbContext.SaveChangesAsync();
+
+        return true;
+    }
+
+    public async Task<List<UnavailableSlot>> GetTeacherUnavailableSlotsAsync(Guid teacherId, DateTime? fromDate = null, DateTime? toDate = null)
+    {
+        var query = _dbContext.UnavailableSlots.Where(u => u.TeacherId == teacherId);
+
+        if (fromDate.HasValue)
+        {
+            query = query.Where(u => u.BlockedDate >= fromDate.Value.Date);
+        }
+
+        if (toDate.HasValue)
+        {
+            query = query.Where(u => u.BlockedDate <= toDate.Value.Date);
+        }
+
+        return await query
+            .OrderBy(u => u.BlockedDate)
+            .ThenBy(u => u.BlockedStartTime)
+            .ToListAsync();
+    }
 }

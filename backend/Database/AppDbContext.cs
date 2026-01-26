@@ -13,6 +13,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Subject> Subjects { get; set; } = null!;
     public DbSet<TeacherSubject> TeacherSubjects { get; set; } = null!;
     public DbSet<Availability> Availabilities { get; set; } = null!;
+    public DbSet<UnavailableSlot> UnavailableSlots { get; set; } = null!;
     public DbSet<Course> Courses { get; set; } = null!;
     
     public DbSet<Meeting> Meetings { get; set; } = null!;
@@ -26,6 +27,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         ConfigureSubjects(modelBuilder);
         ConfigureTeacherSubjects(modelBuilder);
         ConfigureAvailabilities(modelBuilder);
+        ConfigureUnavailableSlots(modelBuilder);
         ConfigureCourses(modelBuilder);
         ConfigureMeetings(modelBuilder);
     }
@@ -191,6 +193,26 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             b.HasOne(a => a.Teacher)
                 .WithMany(t => t.Availabilities)
                 .HasForeignKey(a => a.TeacherId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private void ConfigureUnavailableSlots(ModelBuilder modelBuilder) {
+        modelBuilder.Entity<UnavailableSlot>(b => {
+            b.ToTable("unavailable_slots");
+            b.HasKey(e => e.Id);
+            
+            b.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
+            b.Property(e => e.TeacherId).HasColumnName("teacher_id").IsRequired();
+            b.Property(e => e.BlockedDate).HasColumnName("blocked_date").IsRequired();
+            b.Property(e => e.BlockedStartTime).HasColumnName("blocked_start_time").IsRequired();
+            b.Property(e => e.BlockedEndTime).HasColumnName("blocked_end_time").IsRequired();
+            b.Property(e => e.Reason).HasColumnName("reason");
+            b.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("GETUTCDATE()");
+            
+            b.HasOne(u => u.Teacher)
+                .WithMany(t => t.UnavailableSlots)
+                .HasForeignKey(u => u.TeacherId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }

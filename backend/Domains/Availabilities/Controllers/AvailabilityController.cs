@@ -155,4 +155,177 @@ public class AvailabilityController : ControllerBase
             return StatusCode(500, new { error = "An unexpected error occurred." });
         }
     }
+
+    /// <summary>
+    /// Blocks a specific time range (independent of availability slots)
+    /// </summary>
+    [HttpPost("block")]
+    [RequireRole(ProfileType.Teacher)]
+    [Consumes("application/json")]
+    [Produces("application/json")]
+    [ProducesResponseType(typeof(UnavailableSlotResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> BlockTime([FromBody] BlockAvailabilityRequest? request)
+    {
+        try
+        {
+            if (request == null)
+            {
+                return BadRequest(new { error = "Request body is required" });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            var currentUserId = JwtHelper.GetUserIdFromClaims(User);
+            if (currentUserId == null)
+            {
+                return Unauthorized(new { error = "Invalid token" });
+            }
+
+            // Parse time strings
+            TimeOnly blockedStartTime;
+            TimeOnly blockedEndTime;
+
+            if (DateTime.TryParse(request.BlockedStartTime, out var startDateTime))
+            {
+                blockedStartTime = TimeOnly.FromDateTime(startDateTime);
+            }
+            else if (TimeOnly.TryParse(request.BlockedStartTime, out var parsedStartTime))
+            {
+                blockedStartTime = parsedStartTime;
+            }
+            else
+            {
+                return BadRequest(new { error = "Invalid BlockedStartTime format. Use HH:mm:ss or ISO 8601 format." });
+            }
+
+            if (DateTime.TryParse(request.BlockedEndTime, out var endDateTime))
+            {
+                blockedEndTime = TimeOnly.FromDateTime(endDateTime);
+            }
+            else if (TimeOnly.TryParse(request.BlockedEndTime, out var parsedEndTime))
+            {
+                blockedEndTime = parsedEndTime;
+            }
+            else
+            {
+                return BadRequest(new { error = "Invalid BlockedEndTime format. Use HH:mm:ss or ISO 8601 format." });
+            }
+
+            var unavailableSlot = await _availabilityService.BlockTimeAsync(
+                currentUserId.Value,
+                request.BlockedDate ?? DateTime.UtcNow,
+                blockedStartTime,
+                blockedEndTime,
+                request.Reason
+            );
+
+            return Ok(new UnavailableSlotResponse
+            {
+                Id = unavailableSlot.Id,
+                TeacherId = unavailableSlot.TeacherId,
+                BlockedDate = unavailableSlot.BlockedDate,
+                BlockedStartTime = unavailableSlot.BlockedStartTime,
+                BlockedEndTime = unavailableSlot.BlockedEndTime,
+                Reason = unavailableSlot.Reason,
+                CreatedAt = unavailableSlot.CreatedAt
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid argument while blocking time.");
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred while blocking time.");
+            return StatusCode(500, new { error = "An unexpected error occurred." });
+        }
+    }
+
+    /// <summary>
+    /// Removes a blocked time slot
+    /// </summary>
+    [HttpDelete("block/{blockId}")]
+    [RequireRole(ProfileType.Teacher)]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> RemoveBlock(Guid blockId)
+    {
+        try
+        {
+            var currentUserId = JwtHelper.GetUserIdFromClaims(User);
+            if (currentUserId == null)
+            {
+                return Unauthorized(new { error = "Invalid token" });
+            }
+
+            var removed = await _availabilityService.RemoveBlockAsync(blockId, currentUserId.Value);
+
+            if (!removed)
+            {
+                return NotFound(new { error = "Block not found" });
+            }
+
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Unauthorized attempt to remove block.");
+            return Forbid();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred while removing block.");
+            return StatusCode(500, new { error = "An unexpected error occurred." });
+        }
+    }
+
+    /// <summary>
+    /// Gets all blocked time slots for the current teacher
+    /// </summary>
+    [HttpGet("block")]
+    [RequireRole(ProfileType.Teacher)]
+    [Produces("application/json")]
+    [ProducesResponseType(typeof(IEnumerable<UnavailableSlotResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetBlockedTimes([FromQuery] DateTime? fromDate = null, [FromQuery] DateTime? toDate = null)
+    {
+        try
+        {
+            var currentUserId = JwtHelper.GetUserIdFromClaims(User);
+            if (currentUserId == null)
+            {
+                return Unauthorized(new { error = "Invalid token" });
+            }
+
+            var blocks = await _availabilityService.GetTeacherUnavailableSlotsAsync(currentUserId.Value, fromDate, toDate);
+
+            var response = blocks.Select(u => new UnavailableSlotResponse
+            {
+                Id = u.Id,
+                TeacherId = u.TeacherId,
+                BlockedDate = u.BlockedDate,
+                BlockedStartTime = u.BlockedStartTime,
+                BlockedEndTime = u.BlockedEndTime,
+                Reason = u.Reason,
+                CreatedAt = u.CreatedAt
+            }).ToList();
+
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred while getting blocked times.");
+            return StatusCode(500, new { error = "An unexpected error occurred." });
+        }
+    }
 }
+
