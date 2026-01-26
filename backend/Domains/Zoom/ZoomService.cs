@@ -66,7 +66,7 @@ public class ZoomService
         return _cachedAccessToken;
     }
 
-    public async Task<Meeting> CreateInstantMeetingAsync(Guid teacherId, Guid studentId, DateTime scheduledTime, string topic = "ApprendsMoi - Session")
+    public async Task<Meeting> CreateInstantMeetingAsync(Guid teacherId, Guid studentId, DateTime scheduledTime, int duration, string topic = "ApprendsMoi - Session")
     {
         var token = await GetAccessTokenAsync();
         
@@ -84,7 +84,7 @@ public class ZoomService
             type = 2, // Scheduled meeting (type 1 = instant has concurrency limits, type 2 = scheduled allows unlimited)
             start_time = startTimeFormatted,
             timezone = "UTC",
-            duration = 60, // 1 hour duration
+            duration,
             settings = new
             {
                 join_before_host = true,
