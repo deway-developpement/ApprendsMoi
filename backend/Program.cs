@@ -85,6 +85,9 @@ builder.Services.AddScoped<UserManagementService>();
 builder.Services.AddHttpClient<backend.Domains.Zoom.ZoomService>();
 builder.Services.AddScoped<backend.Domains.Zoom.ZoomService>();
 
+// Availability services
+builder.Services.AddScoped<backend.Domains.Availabilities.Services.AvailabilityService>();
+
 // Register FluentMigrator services
 builder.Services.AddFluentMigratorCore()
     .ConfigureRunner(rb => rb
