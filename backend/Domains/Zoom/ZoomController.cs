@@ -80,7 +80,7 @@ public class ZoomController : ControllerBase
 
             var topic = request.Topic ?? "ApprendsMoi - Session";
             
-            var meeting = await _zoomService.CreateInstantMeetingAsync(request.TeacherId!.Value, request.StudentId!.Value, topic);
+            var meeting = await _zoomService.CreateInstantMeetingAsync(request.TeacherId!.Value, request.StudentId!.Value, request.Time!.Value, topic);
             var participantSignature = _zoomService.GenerateSignature(meeting.ZoomMeetingId.ToString());
 
             return Ok(new CreateMeetingResponse

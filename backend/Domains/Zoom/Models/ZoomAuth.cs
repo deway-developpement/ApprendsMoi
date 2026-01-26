@@ -11,6 +11,9 @@ public class CreateMeetingRequest
 
     [Required(ErrorMessage = "StudentId is required")]
     public Guid? StudentId { get; set; }
+
+    [Required(ErrorMessage = "Time is required")]
+    public DateTime? Time { get; set; }
 }
 
 public class ZoomSignatureRequest

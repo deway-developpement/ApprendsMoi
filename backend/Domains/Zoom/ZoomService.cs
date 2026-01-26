@@ -66,17 +66,17 @@ public class ZoomService
         return _cachedAccessToken;
     }
 
-    public async Task<Meeting> CreateInstantMeetingAsync(Guid teacherId, Guid studentId, string topic = "ApprendsMoi - Session")
+    public async Task<Meeting> CreateInstantMeetingAsync(Guid teacherId, Guid studentId, DateTime scheduledTime, string topic = "ApprendsMoi - Session")
     {
         var token = await GetAccessTokenAsync();
         
-        // Use scheduled meeting with unique start time to allow unlimited concurrent meetings
-        // Add random offset (0-30 seconds) to ensure each meeting has a unique start_time
-        var random = new Random();
-        var randomOffset = random.Next(0, 30);
-        var startTime = DateTime.UtcNow.AddSeconds(randomOffset);
-        // Use precise format with milliseconds for uniqueness
-        var startTimeFormatted = startTime.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+        // Reject past scheduled times
+        if (scheduledTime <= DateTime.UtcNow)
+        {
+            throw new ArgumentException("Meeting time must be in the future");
+        }
+        
+        var startTimeFormatted = scheduledTime.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
 
         var meetingData = new
         {
