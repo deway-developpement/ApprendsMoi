@@ -14,7 +14,7 @@ public class CreateAvailabilityRequest
     [Required(ErrorMessage = "EndTime is required")]
     public string? EndTime { get; set; }
 
-    public bool IsRecurring { get; set; } = false;
+    public bool IsRecurring { get; set; } = true;
 }
 
 public class AvailabilityResponse
