@@ -1,10 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using backend.Database;
 using backend.Database.Models;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using backend.Helpers;
-using backend.Domains.Availabilities;
 
 namespace backend.Domains.Availabilities;
 
