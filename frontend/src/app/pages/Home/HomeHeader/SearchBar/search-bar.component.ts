@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router'; // 1. Import Router
 
 import { SelectComponent, SelectOption } from '../../../../components/shared/Select/select.component';
 import { TextInputComponent } from '../../../../components/shared/TextInput/text-input.component';
@@ -49,11 +50,18 @@ export class SearchBarComponent {
     location: string;
   }>();
 
+  // 2. Inject the Router in the constructor
+  constructor(private router: Router) {}
+
   onSearch() {
+    // Optional: Keep this if you still want to notify the parent component
     this.search.emit({
       subject: this.selectedSubject,
       level: this.selectedLevel,
       location: this.location,
     });
+
+    // 3. Use the router to navigate to the register page
+    this.router.navigate(['/register']);
   }
 }
