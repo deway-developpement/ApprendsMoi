@@ -47,30 +47,44 @@ $maxContentWidth: 1200px;
 
 shares comp :
 
-  selector: 'app-button' : 
+  import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
-export class ButtonComponent {
-  @Input() variant: 'ghost' | 'primary' = 'ghost';
-  @Input() type: 'button' | 'submit' | 'reset' = 'button';
+@Component({
+  selector: 'app-text-input',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './text-input.component.html',
+  styleUrls: ['./text-input.component.scss'],
+})
+export class TextInputComponent {
+  @Input() label: string = '';
+  @Input() placeholder: string = '';
+  
+  // AJOUT : 'date' est maintenant accepté
+  @Input() type: 'text' | 'email' | 'password' | 'search' | 'tel' | 'date' = 'text';
+  
+  @Input() value: string = '';
+  @Input() error: string | null = null;
+  @Input() disabled: boolean = false;
+  @Input() fullWidth: boolean = true;
+  @Input() iconLeft?: string;
+
+  @Output() valueChange = new EventEmitter<string>();
+  @Output() enter = new EventEmitter<void>();
+
+  onInputChange(newValue: string) {
+    this.value = newValue;
+    this.valueChange.emit(newValue);
+  }
+
+  onKeyDown(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      this.enter.emit();
+    }
+  }
 }
-
-
-  selector: 'app-icon' :
-
-export class IconComponent {
-  @Input() icon!: string;
-  @Input() size = 32;
-}
-
-
-
-  selector: 'app-icon-button' : 
-
-export class IconButtonComponent {
-  @Input() icon: string = ''; // ex: 'assets/icons/search.svg'
-  @Input() size: number = 48; // taille du carré (px)
-}
-
 
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -81,13 +95,13 @@ export interface SelectOption {
   value: string | number;
 }
 
-
-
-
-  selector: 'app-select' : 
-
-
-
+@Component({
+  selector: 'app-select',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './select.component.html',
+  styleUrls: ['./select.component.scss'],
+})
 export class SelectComponent {
   @Input() label: string = '';
   @Input() placeholder: string = 'Sélectionner...';
@@ -106,41 +120,116 @@ export class SelectComponent {
 }
 
 
+import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
-  selector: 'app-small-icon' :
+@Component({
+  selector: 'app-icon-button',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './icon-button.component.html',
+  styleUrls: ['./icon-button.component.scss'],
+})
+export class IconButtonComponent {
+  @Input() icon: string = ''; // ex: 'assets/icons/search.svg'
+  @Input() size: number = 48; // taille du carré (px)
+}
 
+
+import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+@Component({
+  selector: 'app-icon',
+  templateUrl: './icon.component.html',
+  standalone: true,
+  imports: [CommonModule],
+  styleUrls: ['./icon.component.scss']
+})
+export class IconComponent {
+  @Input() icon!: string;
+  @Input() size = 32;
+}
+
+
+import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { IconButtonComponent } from '../IconButton/icon-button.component'; // Ajustez le chemin selon votre structure
+
+export interface Course {
+  id: number;
+  date: Date;
+  tutorName: string;
+  subject: string;
+  childName: string;
+  mode: 'Domicile' | 'Visio';
+  status: 'Confirmé' | 'En attente' | 'Annulé' | 'Terminé';
+  price: number;
+}
+
+@Component({
+  selector: 'app-courses-schedule',
+  standalone: true,
+  imports: [CommonModule, IconButtonComponent],
+  templateUrl: './courses-schedule.component.html',
+  styleUrls: ['./courses-schedule.component.scss']
+})
+export class CoursesScheduleComponent {
+  @Input() courses: Course[] = [];
+  
+  currentTab: 'upcoming' | 'history' = 'upcoming';
+
+  get upcomingCourses() {
+    return this.courses.filter(c => c.status !== 'Terminé' && c.status !== 'Annulé');
+  }
+
+  get historyCourses() {
+    return this.courses.filter(c => c.status === 'Terminé' || c.status === 'Annulé');
+  }
+
+  toggleTab(tab: 'upcoming' | 'history') {
+    this.currentTab = tab;
+  }
+}
+
+
+import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+@Component({
+  selector: 'app-button',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './button.component.html',
+  styleUrls: ['./button.component.scss'],
+})
+export class ButtonComponent {
+  @Input() variant: 'ghost' | 'primary' = 'ghost';
+  @Input() type: 'button' | 'submit' | 'reset' = 'button';
+  @Input() disabled: boolean = false;
+  @Input() size: 'small' | 'medium' | 'large' = 'medium';
+}
+
+
+
+import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+@Component({
+  selector: 'app-small-icon',
+  standalone: true,
+  templateUrl: './small-icon.component.html',
+  styleUrls: ['./small-icon.component.scss'],
+  imports: [CommonModule]
+})
 export class SmallIconComponent {
   @Input() icon!: string;
   @Input() size = 24; // always small
 }
 
 
-  selector: 'app-text-input' :
 
-export class TextInputComponent {
-  @Input() label: string = '';
-  @Input() placeholder: string = '';
-  @Input() type: 'text' | 'email' | 'password' | 'search' = 'text';
-  @Input() value: string = '';
-  @Input() error: string | null = null;
-  @Input() disabled: boolean = false;
-  @Input() fullWidth: boolean = true;
-  @Input() iconLeft?: string;   // ex: 'search', 'mail', etc. (optionnel)
 
-  @Output() valueChange = new EventEmitter<string>();
-  @Output() enter = new EventEmitter<void>();
-
-  onInputChange(newValue: string) {
-    this.value = newValue;
-    this.valueChange.emit(newValue);
-  }
-
-  onKeyDown(event: KeyboardEvent) {
-    if (event.key === 'Enter') {
-      this.enter.emit();
-    }
-  }
-}
 
 
 exemple d'import de components :
@@ -168,3 +257,67 @@ private currentUserSubject = new BehaviorSubject<UserDto | null>(null);
   username: string;
   profile: ProfileType;
 }
+
+
+
+Use toats to display notifications when needed!
+
+import { ToastService } from '../../services/toast.service';
+
+
+import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
+
+export type ToastType = 'success' | 'error' | 'info' | 'warning';
+
+export interface Toast {
+  id: number;
+  message: string;
+  type: ToastType;
+}
+
+@Injectable({ providedIn: 'root' })
+export class ToastService {
+  private toastsSubject = new BehaviorSubject<Toast[]>([]);
+  toasts$ = this.toastsSubject.asObservable();
+  
+  private counter = 0;
+
+  show(message: string, type: ToastType = 'info', duration: number = 3000) {
+    const id = this.counter++;
+    const newToast: Toast = { id, message, type };
+    
+    // Ajout du toast à la liste actuelle
+    const currentToasts = this.toastsSubject.value;
+    this.toastsSubject.next([...currentToasts, newToast]);
+
+    // Suppression automatique après le délai
+    setTimeout(() => {
+      this.remove(id);
+    }, duration);
+  }
+
+  // Helpers pour une utilisation plus propre dans les composants
+  success(message: string) { this.show(message, 'success'); }
+  error(message: string) { this.show(message, 'error'); }
+  info(message: string) { this.show(message, 'info'); }
+  warning(message: string) { this.show(message, 'warning'); }
+
+  remove(id: number) {
+    const currentToasts = this.toastsSubject.value;
+    this.toastsSubject.next(currentToasts.filter(t => t.id !== id));
+  }
+}
+
+to use it :
+
+import { Component, OnInit, inject } from '@angular/core';
+import { ToastService } from '../../services/toast.service';
+  private toastService = inject(ToastService);
+      this.toastService.warning('Veuillez remplir les champs obligatoires.');
+
+
+also import the header : 
+
+<app-header theme="light"></app-header>
+import { HeaderComponent } from '../../components/Header/header.component';

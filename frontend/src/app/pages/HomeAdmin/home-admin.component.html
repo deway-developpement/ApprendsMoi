@@ -1,4 +1,4 @@
-<app-header theme="dark"></app-header>
+<app-header theme="light"></app-header>
 
 <div class="dashboard-wrapper">
   
@@ -96,19 +96,19 @@
     <section class="shortcuts-section">
       <h3>Accès Rapide</h3>
       <div class="shortcuts-grid">
-        <button class="shortcut-btn">
+        <button class="shortcut-btn" (click)="navigateTo('/admin/users')">
           <app-icon icon="/assets/icons/user.svg" [size]="28"></app-icon>
           <span>Gérer Utilisateurs</span>
         </button>
-        <button class="shortcut-btn">
+        <button class="shortcut-btn" (click)="navigateTo('/admin/courses')">
           <app-icon icon="/assets/icons/book-fill.svg" [size]="28"></app-icon>
           <span>Gérer Cours</span>
         </button>
-        <button class="shortcut-btn">
+        <button class="shortcut-btn" (click)="navigateTo('/admin/finance')">
           <app-icon icon="/assets/icons/account-balance.svg" [size]="28"></app-icon>
           <span>Comptabilité</span>
         </button>
-        <button class="shortcut-btn">
+        <button class="shortcut-btn" (click)="navigateTo('/admin/settings')">
           <app-icon icon="/assets/icons/settings.svg" [size]="28"></app-icon>
           <span>Configuration</span>
         </button>

@@ -1,0 +1,40 @@
+<app-header theme="light"></app-header>
+
+<div class="details-page-container">
+  
+  <ng-container *ngIf="user$ | async as user; else loadingTemplate">
+    
+    <ng-container [ngSwitch]="user.profileType">
+
+      <app-teacher-detail 
+        *ngSwitchCase="ProfileType.Teacher" 
+        [user]="user">
+      </app-teacher-detail>
+
+      <app-parent-detail 
+        *ngSwitchCase="ProfileType.Parent" 
+        [user]="user">
+      </app-parent-detail>
+
+      <app-student-detail 
+        *ngSwitchCase="ProfileType.Student" 
+        [user]="user">
+      </app-student-detail>
+
+      <div *ngSwitchDefault class="error-card">
+        <h2>Type de profil inconnu</h2>
+        <p>Impossible d'afficher les détails pour ce type de profil.</p>
+      </div>
+
+    </ng-container>
+
+  </ng-container>
+
+  <ng-template #loadingTemplate>
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Chargement du profil utilisateur...</p>
+    </div>
+  </ng-template>
+
+</div>
