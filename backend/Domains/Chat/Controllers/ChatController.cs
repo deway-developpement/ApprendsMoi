@@ -1,4 +1,3 @@
-using backend.Domains.Chat;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -9,9 +8,8 @@ namespace backend.Domains.Chat.Controllers;
 [ApiController]
 [Route("api/chats")]
 [Authorize]
-public class ChatController(ChatService chatService, MessageService messageService) : ControllerBase {
+public class ChatController(ChatService chatService) : ControllerBase {
     private readonly ChatService _chatService = chatService;
-    private readonly MessageService _messageService = messageService;
 
     /// <summary>
     /// Get all chats for the current user

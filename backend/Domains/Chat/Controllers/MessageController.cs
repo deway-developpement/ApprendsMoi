@@ -10,14 +10,10 @@ namespace backend.Domains.Chat.Controllers;
 [Authorize]
 public class MessageController(
     MessageService messageService,
-    ChatService chatService,
-    ChatAttachmentService attachmentService,
-    IFileStorageService fileStorageService) : ControllerBase {
+    ChatAttachmentService attachmentService) : ControllerBase {
     
     private readonly MessageService _messageService = messageService;
-    private readonly ChatService _chatService = chatService;
     private readonly ChatAttachmentService _attachmentService = attachmentService;
-    private readonly IFileStorageService _fileStorageService = fileStorageService;
 
     /// <summary>
     /// Get messages for a chat with pagination

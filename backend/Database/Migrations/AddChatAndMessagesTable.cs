@@ -2,7 +2,7 @@ using FluentMigrator;
 
 namespace backend.Database.Migrations;
 
-[Migration(202401010004)]
+[Migration(202601270001)]
 public class AddChatAndMessagesTable : Migration {
     public override void Up() {
         // Only create tables if they don't exist
@@ -41,6 +41,8 @@ public class AddChatAndMessagesTable : Migration {
             Create.Index("IX_chats_teacher_student")
                 .OnTable("chats")
                 .OnColumn("teacher_id")
+                .Ascending()
+                .OnColumn("student_id")
                 .Ascending()
                 .WithOptions()
                 .NonClustered();

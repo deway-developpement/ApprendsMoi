@@ -2,9 +2,13 @@ using FluentMigrator;
 
 namespace backend.Database.Migrations;
 
-[Migration(202601270001)]
+[Migration(202601270002)]
 public class AddChatReadTracking : Migration {
     public override void Up() {
+        if (!Schema.Table("chats").Exists()) {
+            return;
+        }
+
         if (!Schema.Table("chats").Column("teacher_last_read_at").Exists()) {
             Alter.Table("chats")
                 .AddColumn("teacher_last_read_at").AsDateTime().Nullable();

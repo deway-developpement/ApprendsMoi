@@ -147,7 +147,10 @@ public class FileController(
         }
 
         try {
-            await _attachmentService.DeleteAttachmentAsync(attachmentId, userGuid, ct);
+            var deleted = await _attachmentService.DeleteAttachmentAsync(attachmentId, userGuid, ct);
+            if (!deleted) {
+                return NotFound();
+            }
             return NoContent();
         } catch (UnauthorizedAccessException) {
             return Forbid();

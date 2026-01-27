@@ -181,6 +181,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 // SignalR hubs
-app.MapHub<ChatHub>("/hubs/chat");
+app.MapHub<ChatHub>("/hubs/chat").RequireAuthorization();
 
 app.Run();

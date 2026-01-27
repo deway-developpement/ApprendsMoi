@@ -35,7 +35,8 @@ public class ChatService(AppDbContext db) {
     public async Task<List<ChatDto>> GetChatsByParentAsync(Guid parentId, CancellationToken ct = default) {
         var chats = await _db.Chats
             .Where(c => c.ParentId == parentId && c.ChatType == ChatType.ParentChat && c.IsActive)
-            .Include(c => c.Teacher)
+            .Include(c => c.Parent).ThenInclude(p => p!.User)
+            .Include(c => c.Teacher).ThenInclude(t => t!.User)
             .Include(c => c.Messages.OrderByDescending(m => m.CreatedAt).Take(1))
             .AsNoTracking()
             .OrderByDescending(c => c.UpdatedAt)
@@ -84,6 +85,7 @@ public class ChatService(AppDbContext db) {
                 .ThenInclude(m => m.Sender)
             .Include(c => c.Messages)
                 .ThenInclude(m => m.Attachments)
+                    .ThenInclude(a => a.Uploader)
             .AsNoTracking()
             .FirstOrDefaultAsync(ct);
 
@@ -189,6 +191,8 @@ public class ChatService(AppDbContext db) {
             if (userProfile != ProfileType.Admin && userId != teacherId && userId != studentId) {
                 throw new InvalidOperationException("You don't have permission to create this chat");
             }
+        } else {
+            throw new InvalidOperationException($"Unsupported chat type: {dto.ChatType}");
         }
 
         // Check for existing chat
@@ -231,7 +235,15 @@ public class ChatService(AppDbContext db) {
         _db.Chats.Add(chat);
         await _db.SaveChangesAsync(ct);
 
-        return MapChatToDto(chat);
+        // Reload with navigations for DTO mapping
+        var createdChat = await _db.Chats
+            .Where(c => c.Id == chat.Id)
+            .Include(c => c.Parent).ThenInclude(p => p!.User)
+            .Include(c => c.Student).ThenInclude(s => s!.User)
+            .Include(c => c.Teacher)
+            .FirstOrDefaultAsync(ct);
+
+        return MapChatToDto(createdChat ?? chat);
     }
 
     /// <summary>
