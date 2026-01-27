@@ -1,0 +1,123 @@
+<app-header theme="light"></app-header>
+
+
+<div class="page-container">
+  
+  <header class="page-header">
+    <div class="header-text">
+      <h1>Gestion des utilisateurs</h1>
+      <p>Consultez, recherchez et gérez tous les comptes de la plateforme.</p>
+    </div>
+  </header>
+
+  <section class="filters-bar">
+    <div class="search-input">
+      <app-text-input 
+        type="search" 
+        placeholder="Rechercher par nom, email..." 
+        [value]="searchQuery"
+        (valueChange)="onSearchChange($event)"
+        iconLeft="assets/icons/search.svg">
+      </app-text-input>
+    </div>
+
+    <div class="select-filters">
+      <app-select 
+        label="" 
+        [options]="roleOptions" 
+        [value]="selectedRole" 
+        (valueChange)="onRoleChange($event)"
+        placeholder="Rôle">
+      </app-select>
+
+      <app-select 
+        label="" 
+        [options]="statusOptions" 
+        [value]="selectedStatus" 
+        (valueChange)="onStatusChange($event)"
+        placeholder="Statut">
+      </app-select>
+    </div>
+  </section>
+
+  <section class="table-container">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>Utilisateur</th>
+          <th>Rôle</th>
+          <th>Création du compte</th>
+          <th>Statut</th>
+          <th>Dernière connexion</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="isLoading">
+          <td colspan="6" class="loading-cell">Chargement des utilisateurs...</td>
+        </tr>
+
+        <tr *ngIf="!isLoading && filteredUsers.length === 0">
+          <td colspan="6" class="empty-cell">
+            <app-icon icon="assets/icons/user.svg" [size]="48"></app-icon>
+            <p>Aucun utilisateur trouvé avec ces critères.</p>
+          </td>
+        </tr>
+
+        <tr *ngFor="let user of filteredUsers">
+          <td>
+            <div class="user-info">
+              <div class="avatar">
+                <img *ngIf="user.profilePicture" [src]="user.profilePicture" alt="Avatar">
+                <span *ngIf="!user.profilePicture">
+                  {{ user.firstName?.charAt(0) }}{{ user.lastName?.charAt(0) }}
+                </span>
+              </div>
+              <div class="user-details">
+                <span class="name">{{ user.firstName }} {{ user.lastName }}</span>
+                <span class="email">{{ user.email }}</span>
+              </div>
+            </div>
+          </td>
+          
+          <td>
+            <span class="role-badge" [ngClass]="getRoleClass(user.profileType)">
+              {{ getRoleLabel(user.profileType) }}
+            </span>
+          </td>
+
+          <td class="date-cell">
+            {{ user.createdAt | date:'dd/MM/yyyy' }}
+          </td>
+
+          <td>
+            <span class="status-indicator" [class.active]="user.isActive" [class.inactive]="!user.isActive">
+              <span class="dot"></span>
+              {{ user.isActive ? 'Actif' : 'Suspendu' }}
+            </span>
+          </td>
+
+          <td class="date-cell">
+            {{ user.lastLoginAt ? (user.lastLoginAt | date:'dd/MM/yyyy HH:mm') : 'Jamais' }}
+          </td>
+
+          <td class="actions-cell">
+            <div class="actions-wrapper">
+              <button class="action-btn chat" title="Ouvrir le chat" (click)="openChat(user.id)">
+                <app-small-icon icon="assets/icons/email 2 1.svg" [size]=32 ></app-small-icon>
+              </button>
+
+              <button class="action-btn view" title="Voir profil" (click)="viewUser(user.id)">
+                <app-small-icon icon="assets/icons/eye.svg"[size]=32 ></app-small-icon>
+              </button>
+              
+              <button class="action-btn delete" title="Supprimer/Suspendre" (click)="deleteUser(user)">
+                <app-small-icon icon="assets/icons/tabler_trash.svg"[size]=32 ></app-small-icon>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</div>

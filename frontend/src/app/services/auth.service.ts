@@ -67,7 +67,9 @@ export interface UserDto {
   profilePicture?: string;
   profileType: ProfileType;
   isActive: boolean;
+  createdAt: string;
   lastLoginAt?: string;
+
 }
 
 export interface LoginResponse {
