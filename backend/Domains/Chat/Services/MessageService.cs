@@ -1,5 +1,6 @@
 using backend.Database;
 using backend.Database.Models;
+using backend.Domains.Chat.Mappers;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Domains.Chat;
@@ -27,30 +28,14 @@ public class MessageService(AppDbContext db) {
             .Where(m => m.ChatId == chatId)
             .Include(m => m.Sender)
             .Include(m => m.Attachments)
+                .ThenInclude(a => a.Uploader)
             .OrderBy(m => m.CreatedAt)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .AsNoTracking()
             .ToListAsync(ct);
 
-        var messageDtos = messages.Select(m => new MessageDto {
-            MessageId = m.Id,
-            ChatId = m.ChatId,
-            SenderId = m.SenderId,
-            SenderName = $"{m.Sender.FirstName} {m.Sender.LastName}",
-            SenderProfilePicture = m.Sender.ProfilePicture,
-            Content = m.Content,
-            CreatedAt = m.CreatedAt,
-            Attachments = m.Attachments.Select(a => new ChatAttachmentDto {
-                AttachmentId = a.Id,
-                FileName = a.FileName,
-                FileUrl = a.FileUrl,
-                FileSize = a.FileSize,
-                FileType = a.FileType,
-                UploadedBy = a.UploadedBy,
-                CreatedAt = a.CreatedAt
-            }).ToList()
-        }).ToList();
+        var messageDtos = messages.ToDtos();
 
         return new PaginatedMessagesDto {
             Messages = messageDtos,
@@ -69,12 +54,17 @@ public class MessageService(AppDbContext db) {
         CreateMessageDto dto,
         CancellationToken ct = default) {
         
-        // Verify sender is part of chat
+        // Verify chat exists and sender is a participant
         var chat = await _db.Chats
             .FirstOrDefaultAsync(c => c.Id == chatId, ct);
         
         if (chat == null) {
             throw new InvalidOperationException("Chat not found");
+        }
+
+        // Verify sender is a participant in the chat
+        if (chat.TeacherId != senderId && chat.ParentId != senderId && chat.StudentId != senderId) {
+            throw new UnauthorizedAccessException("Sender is not a participant in this chat");
         }
 
         var message = new Database.Models.Message {
@@ -100,7 +90,7 @@ public class MessageService(AppDbContext db) {
             MessageId = message.Id,
             ChatId = message.ChatId,
             SenderId = message.SenderId,
-            SenderName = sender != null ? $"{sender.FirstName} {sender.LastName}" : "Unknown",
+            SenderName = sender != null ? sender.GetFullName() : "Unknown",
             SenderProfilePicture = sender?.ProfilePicture,
             Content = message.Content,
             CreatedAt = message.CreatedAt,
@@ -120,28 +110,12 @@ public class MessageService(AppDbContext db) {
             .Where(m => m.ChatId == chatId && m.Content.Contains(searchTerm))
             .Include(m => m.Sender)
             .Include(m => m.Attachments)
+                .ThenInclude(a => a.Uploader)
             .OrderBy(m => m.CreatedAt)
             .AsNoTracking()
             .ToListAsync(ct);
 
-        return messages.Select(m => new MessageDto {
-            MessageId = m.Id,
-            ChatId = m.ChatId,
-            SenderId = m.SenderId,
-            SenderName = $"{m.Sender.FirstName} {m.Sender.LastName}",
-            SenderProfilePicture = m.Sender.ProfilePicture,
-            Content = m.Content,
-            CreatedAt = m.CreatedAt,
-            Attachments = m.Attachments.Select(a => new ChatAttachmentDto {
-                AttachmentId = a.Id,
-                FileName = a.FileName,
-                FileUrl = a.FileUrl,
-                FileSize = a.FileSize,
-                FileType = a.FileType,
-                UploadedBy = a.UploadedBy,
-                CreatedAt = a.CreatedAt
-            }).ToList()
-        }).ToList();
+        return messages.ToDtos();
     }
 
     /// <summary>
@@ -156,30 +130,14 @@ public class MessageService(AppDbContext db) {
             .Where(m => m.ChatId == chatId)
             .Include(m => m.Sender)
             .Include(m => m.Attachments)
+                .ThenInclude(a => a.Uploader)
             .OrderByDescending(m => m.CreatedAt)
             .Take(limit)
             .AsNoTracking()
             .ToListAsync(ct);
 
         var reversedMessages = messages.AsEnumerable().Reverse();
-        return reversedMessages.Select(m => new MessageDto {
-            MessageId = m.Id,
-            ChatId = m.ChatId,
-            SenderId = m.SenderId,
-            SenderName = $"{m.Sender.FirstName} {m.Sender.LastName}",
-            SenderProfilePicture = m.Sender.ProfilePicture,
-            Content = m.Content,
-            CreatedAt = m.CreatedAt,
-            Attachments = m.Attachments.Select(a => new ChatAttachmentDto {
-                AttachmentId = a.Id,
-                FileName = a.FileName,
-                FileUrl = a.FileUrl,
-                FileSize = a.FileSize,
-                FileType = a.FileType,
-                UploadedBy = a.UploadedBy,
-                CreatedAt = a.CreatedAt
-            }).ToList()
-        }).ToList();
+        return reversedMessages.ToDtos();
     }
 
     /// <summary>

@@ -24,9 +24,11 @@ public class LocalFileStorageService : IFileStorageService {
     private readonly string _uploadBasePath;
     private readonly long _maxFileSizeMb;
     private readonly string[] _allowedExtensions;
+    private readonly ILogger<LocalFileStorageService> _logger;
     private const long MB_TO_BYTES = 1024 * 1024;
 
-    public LocalFileStorageService(IWebHostEnvironment env) {
+    public LocalFileStorageService(IWebHostEnvironment env, ILogger<LocalFileStorageService> logger) {
+        _logger = logger;
         var config = DotNetEnv.Env.Load();
         
         _uploadBasePath = Environment.GetEnvironmentVariable("FILE_STORAGE_LOCAL_PATH") ?? "uploads/chats";
@@ -93,8 +95,16 @@ public class LocalFileStorageService : IFileStorageService {
                 return await Task.FromResult(true);
             }
 
+            _logger.LogWarning($"File not found for deletion: {fileUrl}");
             return false;
-        } catch {
+        } catch (FileNotFoundException) {
+            _logger.LogWarning($"File not found: {fileUrl}");
+            return false;
+        } catch (UnauthorizedAccessException ex) {
+            _logger.LogError(ex, $"Access denied deleting file: {fileUrl}");
+            throw;
+        } catch (Exception ex) {
+            _logger.LogError(ex, $"Error deleting file: {fileUrl}");
             return false;
         }
     }

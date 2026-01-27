@@ -176,12 +176,11 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.chatService.sendMessage(this.selectedChat.chatId, { Content: messageContent }).subscribe({
       next: (message) => {
         if (this.selectedChat) {
-          this.selectedChat.messages.push(message);
           this.messageContent = '';
           this.loading = false;
           this.typingUsers.clear();
 
-          // Broadcast message via SignalR
+          // Broadcast message via SignalR (will add to messages for all users including sender)
           this.chatSignalRService.sendMessageToChat(this.selectedChat.chatId, message).catch(err => {
             console.error('Error sending message via SignalR:', err);
           });

@@ -294,10 +294,10 @@ public class ChatService(AppDbContext db) {
         string? participantPicture = null;
 
         if (chat.ChatType == ChatType.ParentChat && chat.Parent?.User != null) {
-            participantName = $"{chat.Parent.User.FirstName} {chat.Parent.User.LastName}";
+            participantName = chat.Parent.User.GetFullName();
             participantPicture = chat.Parent.User.ProfilePicture;
         } else if (chat.ChatType == ChatType.StudentChat && chat.Student?.User != null) {
-            participantName = $"{chat.Student.User.FirstName} {chat.Student.User.LastName}";
+            participantName = chat.Student.User.GetFullName();
             participantPicture = chat.Student.User.ProfilePicture;
         }
 

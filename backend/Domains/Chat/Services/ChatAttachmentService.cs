@@ -1,5 +1,6 @@
 using backend.Database;
 using backend.Database.Models;
+using backend.Domains.Chat.Mappers;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Domains.Chat;
@@ -37,19 +38,13 @@ public class ChatAttachmentService(AppDbContext db, IFileStorageService fileStor
         _db.ChatAttachments.Add(attachment);
         await _db.SaveChangesAsync(ct);
 
-        var uploader = await _db.Users
-            .FirstOrDefaultAsync(u => u.Id == uploadedBy, ct);
+        // Load uploader for DTO
+        var attachmentWithUploader = await _db.ChatAttachments
+            .Where(a => a.Id == attachment.Id)
+            .Include(a => a.Uploader)
+            .FirstOrDefaultAsync(ct);
 
-        return new ChatAttachmentDto {
-            AttachmentId = attachment.Id,
-            FileName = attachment.FileName,
-            FileUrl = attachment.FileUrl,
-            FileSize = attachment.FileSize,
-            FileType = attachment.FileType,
-            UploadedBy = attachment.UploadedBy,
-            UploadedByName = uploader != null ? $"{uploader.FirstName} {uploader.LastName}" : "Unknown",
-            CreatedAt = attachment.CreatedAt
-        };
+        return attachmentWithUploader?.ToDto() ?? new ChatAttachmentDto { AttachmentId = attachment.Id };
     }
 
     /// <summary>
@@ -80,19 +75,13 @@ public class ChatAttachmentService(AppDbContext db, IFileStorageService fileStor
         _db.ChatAttachments.Add(attachment);
         await _db.SaveChangesAsync(ct);
 
-        var uploader = await _db.Users
-            .FirstOrDefaultAsync(u => u.Id == uploadedBy, ct);
+        // Load uploader for DTO
+        var attachmentWithUploader = await _db.ChatAttachments
+            .Where(a => a.Id == attachment.Id)
+            .Include(a => a.Uploader)
+            .FirstOrDefaultAsync(ct);
 
-        return new ChatAttachmentDto {
-            AttachmentId = attachment.Id,
-            FileName = attachment.FileName,
-            FileUrl = attachment.FileUrl,
-            FileSize = attachment.FileSize,
-            FileType = attachment.FileType,
-            UploadedBy = attachment.UploadedBy,
-            UploadedByName = uploader != null ? $"{uploader.FirstName} {uploader.LastName}" : "Unknown",
-            CreatedAt = attachment.CreatedAt
-        };
+        return attachmentWithUploader?.ToDto() ?? new ChatAttachmentDto { AttachmentId = attachment.Id };
     }
 
     /// <summary>
@@ -109,16 +98,7 @@ public class ChatAttachmentService(AppDbContext db, IFileStorageService fileStor
             .AsNoTracking()
             .ToListAsync(ct);
 
-        return attachments.Select(a => new ChatAttachmentDto {
-            AttachmentId = a.Id,
-            FileName = a.FileName,
-            FileUrl = a.FileUrl,
-            FileSize = a.FileSize,
-            FileType = a.FileType,
-            UploadedBy = a.UploadedBy,
-            UploadedByName = a.Uploader != null ? $"{a.Uploader.FirstName} {a.Uploader.LastName}" : "Unknown",
-            CreatedAt = a.CreatedAt
-        }).ToList();
+        return attachments.ToDtos();
     }
 
     /// <summary>
@@ -135,16 +115,7 @@ public class ChatAttachmentService(AppDbContext db, IFileStorageService fileStor
             .AsNoTracking()
             .ToListAsync(ct);
 
-        return attachments.Select(a => new ChatAttachmentDto {
-            AttachmentId = a.Id,
-            FileName = a.FileName,
-            FileUrl = a.FileUrl,
-            FileSize = a.FileSize,
-            FileType = a.FileType,
-            UploadedBy = a.UploadedBy,
-            UploadedByName = a.Uploader != null ? $"{a.Uploader.FirstName} {a.Uploader.LastName}" : "Unknown",
-            CreatedAt = a.CreatedAt
-        }).ToList();
+        return attachments.ToDtos();
     }
 
     /// <summary>
@@ -161,16 +132,7 @@ public class ChatAttachmentService(AppDbContext db, IFileStorageService fileStor
             .AsNoTracking()
             .ToListAsync(ct);
 
-        return attachments.Select(a => new ChatAttachmentDto {
-            AttachmentId = a.Id,
-            FileName = a.FileName,
-            FileUrl = a.FileUrl,
-            FileSize = a.FileSize,
-            FileType = a.FileType,
-            UploadedBy = a.UploadedBy,
-            UploadedByName = a.Uploader != null ? $"{a.Uploader.FirstName} {a.Uploader.LastName}" : "Unknown",
-            CreatedAt = a.CreatedAt
-        }).ToList();
+        return attachments.ToDtos();
     }
 
     /// <summary>
