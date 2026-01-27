@@ -1,0 +1,113 @@
+<app-header theme="light"></app-header>
+
+<div class="search-page">
+  <section class="search-hero">
+    <div class="hero-content">
+      <div class="hero-copy">
+        <p class="eyebrow">Search</p>
+        <h1>Find the right teacher for your child</h1>
+        <p class="subtitle">
+          Filter by subject, level, and format. Compare profiles quickly and book with confidence.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="results-section">
+    <div class="results-header">
+      <div>
+        <h2>Teachers</h2>
+        <p class="results-count">{{ visibleTeachers.length }} profiles available</p>
+      </div>
+      <div class="search-inline">
+        <app-search-bar (search)="applySearch($event)"></app-search-bar>
+      </div>
+      <div class="results-controls">
+        
+        <div class="filter-row">
+          <button class="filter-pill" [class.active]="premiumOnly" (click)="togglePremium()">
+            Premium
+          </button>
+          <button class="filter-pill" [class.active]="verifiedOnly" (click)="toggleVerified()">
+            Verified
+          </button>
+          <button class="filter-pill" [class.active]="formatFilter === 'visio'" (click)="setFormat('visio')">
+            Visio
+          </button>
+          <button class="filter-pill" [class.active]="formatFilter === 'domicile'" (click)="setFormat('domicile')">
+            Domicile
+          </button>
+          <button class="filter-pill" [class.active]="formatFilter === 'hybride'" (click)="setFormat('hybride')">
+            Hybride
+          </button>
+          <button class="filter-clear" [disabled]="!hasActiveFilters" (click)="clearFilters()">
+            Reset
+          </button>
+        </div>
+
+        <div class="sort-control">
+          <span class="sort-label">Sort by</span>
+          <app-select
+            [options]="sortOptions"
+            [(value)]="sortValue"
+            (valueChange)="onSortChange()"
+            placeholder="Sort">
+          </app-select>
+        </div>
+      </div>
+    </div>
+
+    <div class="results-grid" *ngIf="visibleTeachers.length > 0; else emptyState">
+      <article class="teacher-card" *ngFor="let teacher of visibleTeachers">
+        <div class="card-top">
+          <div class="avatar" [style.background-color]="teacher.avatarColor">
+            {{ teacher.name.split(' ')[0].charAt(0) }}{{ teacher.name.split(' ')[1]?.charAt(0) || '' }}
+          </div>
+          <div class="title-block">
+            <h3>{{ teacher.name }}</h3>
+            <p>{{ teacher.city }} • {{ teacher.format }}</p>
+          </div>
+          <div class="price">
+            <span class="price-value">{{ teacher.pricePerHour }}€</span>
+            <span class="price-label">/h</span>
+          </div>
+        </div>
+
+        <div class="badge-row">
+          <span class="badge premium" *ngIf="teacher.isPremium">Premium</span>
+          <span class="badge verified" *ngIf="teacher.isVerified">Verified</span>
+          <span class="badge top" *ngIf="teacher.isTop">Top prof</span>
+        </div>
+
+        <p class="bio">{{ teacher.bio }}</p>
+
+        <div class="tag-row">
+          <span class="tag" *ngFor="let subject of teacher.subjects">{{ subject }}</span>
+        </div>
+
+        <div class="level-row">
+          <span class="level-pill" *ngFor="let level of teacher.levels">{{ level }}</span>
+        </div>
+
+        <div class="card-footer">
+          <div class="rating">
+            <span class="rating-score">{{ teacher.rating.toFixed(1) }}</span>
+            <span class="rating-meta">({{ teacher.reviews }} avis)</span>
+          </div>
+          <app-button variant="primary" size="small" [routerLink]="['/teachers', teacher.id]">
+            View profile
+          </app-button>
+        </div>
+      </article>
+    </div>
+
+    <ng-template #emptyState>
+      <div class="empty-state">
+        <h3>No teachers found</h3>
+        <p>Try adjusting filters or reset your search.</p>
+        <app-button variant="primary" (click)="clearFilters()">Reset filters</app-button>
+      </div>
+    </ng-template>
+  </section>
+</div>
