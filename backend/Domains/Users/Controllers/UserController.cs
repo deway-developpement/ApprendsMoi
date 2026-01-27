@@ -133,6 +133,16 @@ public class UsersController(
         }
     }
 
+    [HttpGet("teachers")]
+    [ParentOrAdmin]
+    [ProducesResponseType(typeof(List<TeacherDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<TeacherDto>>> GetTeachers([FromQuery] string? city, CancellationToken ct) {
+        var teachers = string.IsNullOrEmpty(city)
+            ? await _profileService.GetAllTeachersAsync(ct)
+            : await _profileService.GetTeachersByCityAsync(city, ct);
+        return Ok(teachers);
+    }
+
     [HttpDelete("{id:guid}")]
     [Authorize]
     public async Task<IActionResult> DeactivateUser(Guid id, CancellationToken ct) {
