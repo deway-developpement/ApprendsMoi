@@ -1,0 +1,155 @@
+<div class="chat-container">
+  <!-- Header -->
+  <div class="chat-header">
+    <h1>💬 Messages</h1>
+    <button 
+      *ngIf="currentUser?.profileType === ProfileType.Parent" 
+      (click)="openCreateChatModal()"
+      type="button"
+      class="btn-primary">
+      + Start New Chat
+    </button>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="alert alert-error">
+    {{ error }}
+    <button (click)="error = ''" class="close">×</button>
+  </div>
+
+  <div class="chat-layout">
+    <!-- Chat List -->
+    <div class="chat-list">
+      <div class="chat-list-header">
+        <h2>Chats</h2>
+        <span class="badge">{{ chats.length }}</span>
+      </div>
+      
+      <div *ngIf="chats.length === 0" class="empty-state">
+        <p>No chats yet</p>
+        <small *ngIf="currentUser?.profileType === ProfileType.Parent">
+          Start a conversation with a teacher by clicking the button above
+        </small>
+      </div>
+
+      <div 
+        *ngFor="let chat of chats" 
+        (click)="selectChat(chat)"
+        [class.active]="selectedChat?.chatId === chat.chatId"
+        class="chat-item">
+        <div class="chat-item-avatar">
+          {{ chat.participantName.charAt(0).toUpperCase() }}
+        </div>
+        <div class="chat-item-content">
+          <div class="chat-item-name">{{ chat.participantName }}</div>
+          <div class="chat-item-preview">
+            {{ chat.lastMessage || 'No messages yet' }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Detail -->
+    <div class="chat-detail">
+      <div *ngIf="!selectedChat" class="empty-state">
+        <p>📭 Select a chat to start messaging</p>
+      </div>
+
+      <div *ngIf="selectedChat" class="chat-window">
+        <!-- Chat Header -->
+        <div class="chat-window-header">
+          <div>
+            <h3>{{ selectedChat.participantName }}</h3>
+            <small>{{ selectedChat.chatType === ChatType.ParentChat ? 'Parent Chat' : 'Student Chat' }}</small>
+          </div>
+          <button (click)="archiveChat()" class="btn-icon" title="Archive chat">📦</button>
+        </div>
+
+        <!-- Messages -->
+        <div class="messages-container">
+          <div 
+            *ngFor="let message of selectedChat.messages" 
+            [class.own-message]="message.senderId === currentUser?.id"
+            class="message">
+            <div class="message-header">
+              <strong>{{ message.senderName }}</strong>
+              <small>{{ message.createdAt | date:'short' }}</small>
+            </div>
+            <div class="message-content">{{ message.content }}</div>
+            <div *ngIf="message.attachments.length > 0" class="message-attachments">
+              <a 
+                *ngFor="let attachment of message.attachments"
+                [href]="attachment.fileUrl"
+                target="_blank"
+                class="attachment-link">
+                📎 {{ attachment.fileName }}
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Message Input -->
+        <div class="message-input-area">
+          <textarea 
+            [(ngModel)]="messageContent"
+            (keyup.enter)="sendMessage()"
+            placeholder="Type a message... (Enter to send)"
+            rows="3">
+          </textarea>
+          <button 
+            (click)="sendMessage()"
+            [disabled]="!messageContent.trim() || loading"
+            class="btn-primary">
+            {{ loading ? 'Sending...' : 'Send' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Chat Modal -->
+  <div *ngIf="showCreateChatModal" class="modal-overlay" (click)="closeCreateModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Start New Chat</h2>
+        <button (click)="closeCreateModal()" class="close">×</button>
+      </div>
+      <div class="modal-body">
+        <label>Find a teacher</label>
+        <input 
+          [(ngModel)]="teacherSearchTerm"
+          (input)="applyTeacherFilter()"
+          type="text"
+          placeholder="Search by name, email, or city"
+          class="form-input">
+        <div class="teacher-list">
+          <div *ngIf="loadingTeachers" class="teacher-list-empty">Loading teachers...</div>
+          <div *ngIf="!loadingTeachers && filteredTeachers.length === 0" class="teacher-list-empty">
+            No teachers found
+          </div>
+          <button
+            type="button"
+            *ngFor="let teacher of filteredTeachers"
+            class="teacher-item"
+            [class.selected]="teacher.id === newChatTeacherId"
+            (click)="selectTeacher(teacher)">
+            <div class="teacher-name">{{ teacher.firstName }} {{ teacher.lastName }}</div>
+            <div class="teacher-meta">
+              <span>{{ teacher.email || 'No email' }}</span>
+              <span *ngIf="teacher.city">• {{ teacher.city }}</span>
+            </div>
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button (click)="closeCreateModal()" class="btn-secondary">Cancel</button>
+        <button 
+          (click)="createNewChat()"
+          [disabled]="!newChatTeacherId.trim() || loading"
+          class="btn-primary">
+          {{ loading ? 'Creating...' : 'Start Chat' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
