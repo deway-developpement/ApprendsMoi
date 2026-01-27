@@ -42,7 +42,6 @@ public class UsersController(
         var userId = JwtHelper.GetUserIdFromClaims(User);
         if (userId == null) return Unauthorized();
 
-        // Update base user fields (FirstName, LastName, ProfilePicture)
         var baseUpdateSuccess = await _profileService.UpdateUserAsync(
             userId.Value,
             request.FirstName,
@@ -53,7 +52,6 @@ public class UsersController(
 
         if (!baseUpdateSuccess) return NotFound(new { error = "User not found" });
 
-        // Update role-specific fields based on the request data
         if (request.TeacherProfile != null) {
             var teacherSuccess = await _profileService.UpdateTeacherProfileAsync(
                 userId.Value,
@@ -147,7 +145,6 @@ public class UsersController(
             return BadRequest(new { error = "Invalid request" });
         }
 
-        // Users can only deactivate their own account
         if (userId.Value != id) return Forbid();
 
         var success = await _managementService.DeactivateUserAsync(id, ct);
