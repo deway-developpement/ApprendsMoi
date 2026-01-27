@@ -4,6 +4,7 @@ import { HeaderComponent } from '../../components/Header/header.component';
 import { ButtonComponent } from '../../components/shared/Button/button.component';
 import { SmallIconComponent } from '../../components/shared/SmallIcon/small-icon.component';
 import { IconComponent } from '../../components/shared/Icon/icon.component';
+import { Router } from '@angular/router'; // Import Router
 
 // Interfaces pour les données du dashboard
 interface Kpi {
@@ -73,7 +74,7 @@ alerts: AlertItem[] = [
     { id: 104, description: 'Nouvel avis posté par Mme. Dubois (5/5)', time: 'Il y a 2h', icon: 'star' }
   ];
 
-  constructor() {}
+  constructor(private router: Router) {}
 
   ngOnInit(): void {}
 
@@ -101,5 +102,9 @@ alerts: AlertItem[] = [
     if (this.currentPage > 1) {
       this.currentPage--;
     }
+  }
+
+  navigateTo(path: string): void {
+    this.router.navigate([path]);
   }
 }

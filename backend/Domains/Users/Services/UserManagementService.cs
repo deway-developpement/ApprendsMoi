@@ -99,9 +99,54 @@ public class UserManagementService(AppDbContext db) {
     }
 
     public async Task<bool> DeactivateUserAsync(Guid userId, CancellationToken ct = default) {
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId, ct);
+        var user = await _db.Users
+            .Include(u => u.Teacher)
+            .Include(u => u.Student)
+            .Include(u => u.Parent)
+            .FirstOrDefaultAsync(u => u.Id == userId, ct);
         if (user == null) return false;
 
+        // Cascade delete related entities
+        if (user.Teacher != null) {
+            // Delete teacher-specific data
+            var teacherCourses = await _db.Courses.Where(c => c.TeacherId == userId).ToListAsync(ct);
+            _db.Courses.RemoveRange(teacherCourses);
+            
+            var teacherAvailabilities = await _db.Availabilities.Where(a => a.TeacherId == userId).ToListAsync(ct);
+            _db.Availabilities.RemoveRange(teacherAvailabilities);
+            
+            var teacherUnavailableSlots = await _db.UnavailableSlots.Where(u => u.TeacherId == userId).ToListAsync(ct);
+            _db.UnavailableSlots.RemoveRange(teacherUnavailableSlots);
+            
+            var teacherSubjects = await _db.TeacherSubjects.Where(ts => ts.TeacherId == userId).ToListAsync(ct);
+            _db.TeacherSubjects.RemoveRange(teacherSubjects);
+            
+            var teacherMeetings = await _db.Meetings.Where(m => m.TeacherId == userId).ToListAsync(ct);
+            _db.Meetings.RemoveRange(teacherMeetings);
+        }
+        
+        if (user.Student != null) {
+            // Delete student-specific data
+            var studentCourses = await _db.Courses.Where(c => c.StudentId == userId).ToListAsync(ct);
+            _db.Courses.RemoveRange(studentCourses);
+            
+            var studentMeetings = await _db.Meetings.Where(m => m.StudentId == userId).ToListAsync(ct);
+            _db.Meetings.RemoveRange(studentMeetings);
+        }
+        
+        if (user.Parent != null) {
+            // Delete all children of this parent
+            var children = await _db.Students.Where(s => s.ParentId == userId).ToListAsync(ct);
+            foreach (var child in children) {
+                // Recursively delete each child (this will handle their courses, meetings, etc.)
+                await DeactivateUserAsync(child.UserId, ct);
+            }
+        }
+
+        // Invalidate refresh token to prevent new access tokens
+        user.RefreshTokenHash = null;
+        user.RefreshTokenExpiry = null;
+        
         user.IsActive = false;
         user.DeletedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
@@ -110,7 +155,7 @@ public class UserManagementService(AppDbContext db) {
 
     public async Task<bool> ReactivateUserAsync(Guid userId, CancellationToken ct = default) {
         var user = await _db.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == userId, ct);
-        if (user == null) return false;
+        if (user == null || user.DeletedAt == null) return false;
 
         user.IsActive = true;
         user.DeletedAt = null;

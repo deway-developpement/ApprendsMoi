@@ -21,4 +21,3 @@ public class User {
     public Teacher? Teacher { get; set; }
     public Student? Student { get; set; }
 }
-

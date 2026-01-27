@@ -42,7 +42,6 @@ public class UsersController(
         var userId = JwtHelper.GetUserIdFromClaims(User);
         if (userId == null) return Unauthorized();
 
-        // Update base user fields (FirstName, LastName, ProfilePicture)
         var baseUpdateSuccess = await _profileService.UpdateUserAsync(
             userId.Value,
             request.FirstName,
@@ -53,7 +52,6 @@ public class UsersController(
 
         if (!baseUpdateSuccess) return NotFound(new { error = "User not found" });
 
-        // Update role-specific fields based on the request data
         if (request.TeacherProfile != null) {
             var teacherSuccess = await _profileService.UpdateTeacherProfileAsync(
                 userId.Value,
@@ -135,18 +133,74 @@ public class UsersController(
         }
     }
 
-    [HttpDelete("{id:guid}")]
+    [HttpGet("teachers")]
+    [ParentOrAdmin]
+    [ProducesResponseType(typeof(List<TeacherDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<TeacherDto>>> GetTeachers([FromQuery] string? city, CancellationToken ct) {
+        var teachers = string.IsNullOrEmpty(city)
+            ? await _profileService.GetAllTeachersAsync(ct)
+            : await _profileService.GetTeachersByCityAsync(city, ct);
+        return Ok(teachers);
+    }
+
+    [HttpDelete("{id:guid?}")]
     [Authorize]
-    public async Task<IActionResult> DeactivateUser(Guid id, CancellationToken ct) {
+    public async Task<IActionResult> DeactivateUser(Guid? id, CancellationToken ct) {
         var userId = JwtHelper.GetUserIdFromClaims(User);
         if (userId == null) return Unauthorized();
 
-        // Users can only deactivate their own account
-        if (userId.Value != id) return Forbid();
+        var userProfile = JwtHelper.GetUserProfileFromClaims(User);
+
+        Guid targetUserId;
+
+        if (userProfile == ProfileType.Admin) {
+            if (id == null) return BadRequest(new { error = "User ID is required for admin deletions" });
+            targetUserId = id.Value;
+        }
+        else if (userProfile == ProfileType.Teacher || userProfile == ProfileType.Parent) {
+            targetUserId = userId.Value;
+        }
+        else {
+            return BadRequest(new { error = "Invalid request" });
+        }
+
+        var success = await _managementService.DeactivateUserAsync(targetUserId, ct);
+        if (!success) return NotFound(new { error = "User not found" });
+        return Ok(new { message = "Account deactivated successfully" });
+    }
+
+    [HttpDelete("students/{id:guid}")]
+    [ParentOrAdmin]
+    public async Task<IActionResult> DeleteStudent(Guid id, CancellationToken ct) {
+        var userId = JwtHelper.GetUserIdFromClaims(User);
+        if (userId == null) return Unauthorized();
+
+        var userProfile = JwtHelper.GetUserProfileFromClaims(User);
+
+        var targetUser = await _profileService.GetUserByIdAsync(id, ct);
+        if (targetUser == null) return NotFound(new { error = "User not found" });
+        if (targetUser.Profile != ProfileType.Student) {
+            return BadRequest(new { error = "User is not a student" });
+        }
+
+        if (userProfile == ProfileType.Parent) {
+            var students = await _profileService.GetStudentsByParentIdAsync(userId.Value, ct);
+            if (!students.Any(s => s.Id == id)) {
+                return Forbid();
+            }
+        }
 
         var success = await _managementService.DeactivateUserAsync(id, ct);
         if (!success) return NotFound(new { error = "User not found" });
-        return Ok(new { message = "Account deactivated successfully" });
+        return Ok(new { message = "Student account deactivated successfully" });
+    }
+
+    [HttpPut("{id:guid}/reactivate")]
+    [AdminOnly]
+    public async Task<IActionResult> ReactivateUser(Guid id, CancellationToken ct) {
+        var success = await _managementService.ReactivateUserAsync(id, ct);
+        if (!success) return NotFound(new { error = "User not found" });
+        return Ok(new { message = "User account reactivated successfully" });
     }
 }
 

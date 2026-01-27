@@ -17,6 +17,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Course> Courses { get; set; } = null!;
     
     public DbSet<Meeting> Meetings { get; set; } = null!;
+    
+    public DbSet<Chat> Chats { get; set; } = null!;
+    public DbSet<Message> Messages { get; set; } = null!;
+    public DbSet<ChatAttachment> ChatAttachments { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
         ConfigureUsers(modelBuilder);
@@ -30,6 +34,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         ConfigureUnavailableSlots(modelBuilder);
         ConfigureCourses(modelBuilder);
         ConfigureMeetings(modelBuilder);
+        ConfigureChats(modelBuilder);
+        ConfigureMessages(modelBuilder);
+        ConfigureChatAttachments(modelBuilder);
     }
 
     private void ConfigureUsers(ModelBuilder modelBuilder) {
@@ -285,6 +292,109 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             b.HasOne(m => m.Student)
                 .WithMany()
                 .HasForeignKey(m => m.StudentId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    private void ConfigureChats(ModelBuilder modelBuilder) {
+        modelBuilder.Entity<Chat>(b => {
+            b.ToTable("chats");
+            b.HasKey(e => e.Id);
+            
+            b.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
+            b.Property(e => e.ChatType).HasColumnName("chat_type").IsRequired();
+            b.Property(e => e.TeacherId).HasColumnName("teacher_id").IsRequired();
+            b.Property(e => e.ParentId).HasColumnName("parent_id");
+            b.Property(e => e.StudentId).HasColumnName("student_id");
+            b.Property(e => e.TeacherLastReadAt).HasColumnName("teacher_last_read_at");
+            b.Property(e => e.ParentLastReadAt).HasColumnName("parent_last_read_at");
+            b.Property(e => e.StudentLastReadAt).HasColumnName("student_last_read_at");
+            b.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            b.Property(e => e.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            b.Property(e => e.IsActive).HasColumnName("is_active").HasDefaultValue(true);
+            
+            b.HasIndex(e => e.TeacherId);
+            b.HasIndex(e => e.ParentId);
+            b.HasIndex(e => e.StudentId);
+            b.HasIndex(e => new { e.TeacherId, e.ParentId }).IsUnique(false);
+            b.HasIndex(e => new { e.TeacherId, e.StudentId }).IsUnique(false);
+            
+            b.HasOne(c => c.Teacher)
+                .WithMany()
+                .HasForeignKey(c => c.TeacherId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            b.HasOne(c => c.Parent)
+                .WithMany()
+                .HasForeignKey(c => c.ParentId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            b.HasOne(c => c.Student)
+                .WithMany()
+                .HasForeignKey(c => c.StudentId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private void ConfigureMessages(ModelBuilder modelBuilder) {
+        modelBuilder.Entity<Message>(b => {
+            b.ToTable("messages");
+            b.HasKey(e => e.Id);
+            
+            b.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
+            b.Property(e => e.ChatId).HasColumnName("chat_id").IsRequired();
+            b.Property(e => e.SenderId).HasColumnName("sender_id").IsRequired();
+            b.Property(e => e.Content).HasColumnName("content").IsRequired();
+            b.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            
+            b.HasIndex(e => e.ChatId);
+            b.HasIndex(e => e.SenderId);
+            b.HasIndex(e => e.CreatedAt);
+            
+            b.HasOne(m => m.Chat)
+                .WithMany(c => c.Messages)
+                .HasForeignKey(m => m.ChatId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            b.HasOne(m => m.Sender)
+                .WithMany()
+                .HasForeignKey(m => m.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    private void ConfigureChatAttachments(ModelBuilder modelBuilder) {
+        modelBuilder.Entity<ChatAttachment>(b => {
+            b.ToTable("chat_attachments");
+            b.HasKey(e => e.Id);
+            
+            b.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
+            b.Property(e => e.MessageId).HasColumnName("message_id");
+            b.Property(e => e.ChatId).HasColumnName("chat_id");
+            b.Property(e => e.FileName).HasColumnName("file_name").IsRequired();
+            b.Property(e => e.FileUrl).HasColumnName("file_url").IsRequired();
+            b.Property(e => e.FileSize).HasColumnName("file_size").IsRequired();
+            b.Property(e => e.FileType).HasColumnName("file_type").IsRequired();
+            b.Property(e => e.UploadedBy).HasColumnName("uploaded_by").IsRequired();
+            b.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            
+            b.HasIndex(e => e.ChatId);
+            b.HasIndex(e => e.MessageId);
+            b.HasIndex(e => e.UploadedBy);
+            
+            b.HasOne(ca => ca.Message)
+                .WithMany(m => m.Attachments)
+                .HasForeignKey(ca => ca.MessageId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            b.HasOne(ca => ca.Chat)
+                .WithMany(c => c.Attachments)
+                .HasForeignKey(ca => ca.ChatId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            b.HasOne(ca => ca.Uploader)
+                .WithMany()
+                .HasForeignKey(ca => ca.UploadedBy)
                 .OnDelete(DeleteBehavior.Restrict);
         });
     }

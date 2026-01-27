@@ -3,6 +3,7 @@ using backend.Database;
 using backend.Domains.Users;
 using backend.Domains.Zoom;
 using backend.Domains.Availabilities;
+using backend.Domains.Chat;
 using backend.Helpers;
 using FluentMigrator.Runner;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -93,6 +94,15 @@ builder.Services.AddScoped<AvailabilityService>();
 builder.Services.AddScoped<AvailabilityQueryService>();
 builder.Services.AddScoped<UnavailableSlotService>();
 
+// Chat services
+builder.Services.AddScoped<ChatService>();
+builder.Services.AddScoped<MessageService>();
+builder.Services.AddScoped<ChatAttachmentService>();
+builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
+
+// SignalR for real-time chat
+builder.Services.AddSignalR();
+
 // Register FluentMigrator services
 builder.Services.AddFluentMigratorCore()
     .ConfigureRunner(rb => rb
@@ -169,5 +179,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// SignalR hubs
+app.MapHub<ChatHub>("/hubs/chat").RequireAuthorization();
 
 app.Run();

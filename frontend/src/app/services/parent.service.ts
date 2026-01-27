@@ -26,7 +26,7 @@ export interface CreateChildRequest {
 
 // --- INTERFACES API (Ce que Swagger renvoie) ---
 
-interface StudentDto {
+export interface StudentDto {
   id: string;
   firstName: string;
   lastName: string;
@@ -133,7 +133,7 @@ export class ParentService {
   /**
    * Convertit l'enum (0, 1, 2) en libellé lisible (CP, CE1...)
    */
-  private getGradeLabel(grade: GradeLevel): string {
+  getGradeLabel(grade: GradeLevel): string {
     const labels: Record<number, string> = {
       [GradeLevel.CP]: 'CP',
       [GradeLevel.CE1]: 'CE1',
