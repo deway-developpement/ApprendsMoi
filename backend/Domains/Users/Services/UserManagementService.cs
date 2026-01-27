@@ -110,7 +110,7 @@ public class UserManagementService(AppDbContext db) {
 
     public async Task<bool> ReactivateUserAsync(Guid userId, CancellationToken ct = default) {
         var user = await _db.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == userId, ct);
-        if (user == null) return false;
+        if (user == null || user.DeletedAt == null) return false;
 
         user.IsActive = true;
         user.DeletedAt = null;
