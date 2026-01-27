@@ -40,3 +40,26 @@ public enum CourseFormat {
     HOME,
     VISIO
 }
+
+public enum InvoiceStatus {
+    PENDING,
+    PAID,
+    CANCELLED,
+    REFUNDED
+}
+
+public enum PaymentStatus {
+    PENDING,
+    PROCESSING,
+    SUCCEEDED,
+    FAILED,
+    CANCELLED,
+    REFUNDED
+}
+
+public enum PaymentMethod {
+    CARD,
+    BANK_TRANSFER,
+    PAYPAL,
+    OTHER
+}
