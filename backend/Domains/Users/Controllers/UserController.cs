@@ -141,12 +141,58 @@ public class UsersController(
         var userId = JwtHelper.GetUserIdFromClaims(User);
         if (userId == null) return Unauthorized();
 
+        var userProfile = JwtHelper.GetUserProfileFromClaims(User);
+
+        if (userProfile != ProfileType.Teacher && userProfile != ProfileType.Parent) {
+            return BadRequest(new { error = "Invalid request" });
+        }
+
         // Users can only deactivate their own account
         if (userId.Value != id) return Forbid();
 
         var success = await _managementService.DeactivateUserAsync(id, ct);
         if (!success) return NotFound(new { error = "User not found" });
         return Ok(new { message = "Account deactivated successfully" });
+    }
+
+    [HttpDelete("students/{id:guid}")]
+    [ParentOrAdmin]
+    public async Task<IActionResult> DeleteStudent(Guid id, [FromBody] DeleteStudentRequest? request, CancellationToken ct) {
+        var userId = JwtHelper.GetUserIdFromClaims(User);
+        if (userId == null) return Unauthorized();
+
+        var userProfile = JwtHelper.GetUserProfileFromClaims(User);
+
+        var targetUser = await _profileService.GetUserByIdAsync(id, ct);
+        if (targetUser == null) return NotFound(new { error = "User not found" });
+        if (targetUser.Profile != ProfileType.Student) {
+            return BadRequest(new { error = "User is not a student" });
+        }
+
+        if (userProfile == ProfileType.Admin) {
+            if (request?.ParentId == null) {
+                return BadRequest(new { error = "Parent ID is required" });
+            }
+        } else if (userProfile == ProfileType.Parent) {
+            var students = await _profileService.GetStudentsByParentIdAsync(userId.Value, ct);
+            if (!students.Any(s => s.Id == id)) {
+                return Forbid();
+            }
+        } else {
+            return Forbid();
+        }
+
+        var success = await _managementService.DeactivateUserAsync(id, ct);
+        if (!success) return NotFound(new { error = "User not found" });
+        return Ok(new { message = "Student account deactivated successfully" });
+    }
+
+    [HttpPut("{id:guid}/reactivate")]
+    [AdminOnly]
+    public async Task<IActionResult> ReactivateUser(Guid id, CancellationToken ct) {
+        var success = await _managementService.ReactivateUserAsync(id, ct);
+        if (!success) return NotFound(new { error = "User not found" });
+        return Ok(new { message = "User account reactivated successfully" });
     }
 }
 
@@ -163,3 +209,4 @@ public record TeacherProfileUpdate(string? Bio, string? PhoneNumber, string? Cit
 public record ParentProfileUpdate(string? PhoneNumber);
 public record StudentProfileUpdate(GradeLevel? GradeLevel, DateOnly? BirthDate);
 public record UpdatePasswordRequest(string CurrentPassword, string NewPassword);
+public record DeleteStudentRequest(Guid? ParentId);
