@@ -133,6 +133,21 @@ public class UsersController(
         }
     }
 
+    [HttpGet("parent/student/{studentId:guid}")]
+    [Authorize]
+    [ProducesResponseType(typeof(ParentDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ParentDto>> GetParentByStudentId(Guid studentId, CancellationToken ct) {
+        try {
+            var parent = await _profileService.GetParentByStudentIdAsync(studentId, ct);
+            if (parent == null) return NotFound(new { error = "Parent not found for this student" });
+            return Ok(parent);
+        }
+        catch (Exception ex) {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
     [HttpGet("teachers")]
     [ParentOrAdmin]
     [ProducesResponseType(typeof(List<TeacherDto>), StatusCodes.Status200OK)]
