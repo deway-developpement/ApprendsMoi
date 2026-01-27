@@ -38,6 +38,8 @@ export class UsersListComponent implements OnInit {
   filteredUsers: UserDto[] = [];
   isLoading = true;
 
+  ProfileType = ProfileType;
+
   // Filters
   searchQuery: string = '';
   selectedRole: string | number = 'all';

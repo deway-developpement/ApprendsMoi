@@ -107,7 +107,7 @@
                 <app-small-icon icon="assets/icons/email 2 1.svg" [size]=32 ></app-small-icon>
               </button>
 
-              <button class="action-btn view" title="Voir profil" (click)="viewUser(user.id)">
+              <button *ngIf="user.profileType !== ProfileType.Admin" class="action-btn view" title="Voir profil" (click)="viewUser(user.id)">
                 <app-small-icon icon="assets/icons/eye.svg"[size]=32 ></app-small-icon>
               </button>
               
