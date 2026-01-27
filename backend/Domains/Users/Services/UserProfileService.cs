@@ -150,6 +150,59 @@ public class UserProfileService(AppDbContext db) {
         }).ToList();
     }
 
+    public async Task<List<TeacherDto>> GetAllTeachersAsync(CancellationToken ct = default) {
+        var teachers = await _db.Teachers
+            .AsNoTracking()
+            .Include(t => t.User)
+            .ToListAsync(ct);
+
+        return teachers.Select(t => new TeacherDto {
+            Id = t.User.Id,
+            Email = t.Email,
+            FirstName = t.User.FirstName,
+            LastName = t.User.LastName,
+            ProfilePicture = t.User.ProfilePicture,
+            Profile = t.User.Profile,
+            
+            IsActive = t.User.IsActive,
+            CreatedAt = t.User.CreatedAt,
+            LastLoginAt = t.User.LastLoginAt,
+            Bio = t.Bio,
+            PhoneNumber = t.PhoneNumber,
+            VerificationStatus = t.VerificationStatus,
+            IsPremium = t.IsPremium,
+            City = t.City,
+            TravelRadiusKm = t.TravelRadiusKm
+        }).ToList();
+    }
+
+    public async Task<List<TeacherDto>> GetTeachersByCityAsync(string city, CancellationToken ct = default) {
+        var teachers = await _db.Teachers
+            .AsNoTracking()
+            .Include(t => t.User)
+            .Where(t => t.City != null && t.City.ToLower() == city.ToLower())
+            .ToListAsync(ct);
+
+        return teachers.Select(t => new TeacherDto {
+            Id = t.User.Id,
+            Email = t.Email,
+            FirstName = t.User.FirstName,
+            LastName = t.User.LastName,
+            ProfilePicture = t.User.ProfilePicture,
+            Profile = t.User.Profile,
+            
+            IsActive = t.User.IsActive,
+            CreatedAt = t.User.CreatedAt,
+            LastLoginAt = t.User.LastLoginAt,
+            Bio = t.Bio,
+            PhoneNumber = t.PhoneNumber,
+            VerificationStatus = t.VerificationStatus,
+            IsPremium = t.IsPremium,
+            City = t.City,
+            TravelRadiusKm = t.TravelRadiusKm
+        }).ToList();
+    }
+
     private static UserDto MapToDto(User user) {
         string? email = null;
         string? username = null;
