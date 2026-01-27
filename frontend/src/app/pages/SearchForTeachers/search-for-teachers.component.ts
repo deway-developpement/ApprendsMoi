@@ -1,16 +1,32 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 
 import { HeaderComponent } from '../../components/Header/header.component';
 import { SearchBarComponent } from '../Home/HomeHeader/SearchBar/search-bar.component';
 import { ButtonComponent } from '../../components/shared/Button/button.component';
 import { SelectComponent, SelectOption } from '../../components/shared/Select/select.component';
+import { ToastService } from '../../services/toast.service';
+import { environment } from '../../environments/environment';
 
 interface SearchCriteria {
   subject: string | number | null;
   level: string | number | null;
   location: string;
+}
+
+interface TeacherDto {
+  id: string;
+  firstName: string;
+  lastName: string;
+  profilePicture?: string | null;
+  bio?: string | null;
+  verificationStatus: number;
+  isPremium: boolean;
+  city?: string | null;
+  travelRadiusKm?: number | null;
 }
 
 interface TeacherCard {
@@ -46,65 +62,14 @@ interface TeacherCard {
   templateUrl: './search-for-teachers.component.html',
   styleUrls: ['./search-for-teachers.component.scss']
 })
-export class SearchForTeachersComponent {
-  teachers: TeacherCard[] = [
-    {
-      id: '019bfc6d-893d-782a-87db-da528377e1b6',
-      name: 'Camille Robert',
-      city: 'Paris',
-      format: 'Hybride',
-      pricePerHour: 32,
-      rating: 4.9,
-      reviews: 56,
-      bio: 'Specialiste en maths et physique. Methode claire et progressive.',
-      subjects: ['Mathematiques', 'Physique-Chimie'],
-      subjectSlugs: ['maths', 'physique-chimie'],
-      levels: ['Troisieme', 'Seconde', 'Premiere'],
-      levelSlugs: ['troisieme', 'seconde', 'premiere'],
-      isPremium: true,
-      isVerified: true,
-      isTop: false,
-      avatarColor: '#1a365d'
-    },
-    {
-      id: '019bfc6d-8a81-792f-a9e9-6129d53afd7f',
-      name: 'Noah Petit',
-      city: 'Lyon',
-      format: 'Visio',
-      pricePerHour: 26,
-      rating: 4.7,
-      reviews: 41,
-      bio: 'Cours dynamiques en anglais, preparation aux examens.',
-      subjects: ['Anglais'],
-      subjectSlugs: ['anglais'],
-      levels: ['Quatrieme', 'Troisieme', 'Seconde'],
-      levelSlugs: ['quatrieme', 'troisieme', 'seconde'],
-      isPremium: false,
-      isVerified: true,
-      isTop: false,
-      avatarColor: '#f97316'
-    },
-    {
-      id: '019bfc70-9e81-7d6e-aad5-77797653a390',
-      name: 'Lea Benali',
-      city: 'Bordeaux',
-      format: 'Domicile',
-      pricePerHour: 30,
-      rating: 5.0,
-      reviews: 22,
-      bio: 'Francais et histoire-geo avec une approche creative.',
-      subjects: ['Francais', 'Histoire-Geographie'],
-      subjectSlugs: ['francais', 'histoire-geo'],
-      levels: ['Sixieme', 'Cinquieme', 'Quatrieme'],
-      levelSlugs: ['sixieme', 'cinquieme', 'quatrieme'],
-      isPremium: true,
-      isVerified: true,
-      isTop: true,
-      avatarColor: '#4EE381'
-    }
-  ];
+export class SearchForTeachersComponent implements OnInit {
+  private readonly http = inject(HttpClient);
+  private readonly toastService = inject(ToastService);
+  private readonly apiUrl = `${environment.apiUrl}/api/Users/teachers`;
 
-  visibleTeachers: TeacherCard[] = [...this.teachers];
+  teachers: TeacherCard[] = [];
+  visibleTeachers: TeacherCard[] = [];
+  isLoading = false;
 
   searchCriteria: SearchCriteria = {
     subject: null,
@@ -124,9 +89,13 @@ export class SearchForTeachersComponent {
     { label: 'Prix decroissant', value: 'price_desc' }
   ];
 
+  ngOnInit(): void {
+    this.fetchTeachers();
+  }
+
   applySearch(criteria: SearchCriteria) {
     this.searchCriteria = { ...criteria };
-    this.updateResults();
+    this.fetchTeachers();
   }
 
   togglePremium() {
@@ -140,7 +109,7 @@ export class SearchForTeachersComponent {
   }
 
   setFormat(filter: 'all' | 'visio' | 'domicile' | 'hybride') {
-    this.formatFilter = filter;
+    this.formatFilter = this.formatFilter === filter ? 'all' : filter;
     this.updateResults();
   }
 
@@ -150,7 +119,7 @@ export class SearchForTeachersComponent {
     this.verifiedOnly = false;
     this.formatFilter = 'all';
     this.sortValue = 'relevance';
-    this.visibleTeachers = [...this.teachers];
+    this.fetchTeachers();
   }
 
   get hasActiveFilters(): boolean {
@@ -178,23 +147,26 @@ export class SearchForTeachersComponent {
     this.updateResults();
   }
 
+  private async fetchTeachers(): Promise<void> {
+    this.isLoading = true;
+    const city = this.searchCriteria.location?.trim();
+    const url = city ? `${this.apiUrl}?city=${encodeURIComponent(city)}` : this.apiUrl;
+
+    try {
+      const data = await firstValueFrom(this.http.get<TeacherDto[]>(url));
+      this.teachers = (data ?? []).map((teacher) => this.mapTeacherCard(teacher));
+      this.updateResults();
+    } catch (err) {
+      this.toastService.error(this.getErrorMessage(err, 'Unable to load teachers.'));
+      this.teachers = [];
+      this.visibleTeachers = [];
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
   private updateResults() {
     let result = [...this.teachers];
-
-    if (this.searchCriteria.subject) {
-      const subject = String(this.searchCriteria.subject);
-      result = result.filter(teacher => teacher.subjectSlugs.includes(subject));
-    }
-
-    if (this.searchCriteria.level) {
-      const level = String(this.searchCriteria.level);
-      result = result.filter(teacher => teacher.levelSlugs.includes(level));
-    }
-
-    if (this.searchCriteria.location) {
-      const query = this.searchCriteria.location.toLowerCase();
-      result = result.filter(teacher => teacher.city.toLowerCase().includes(query));
-    }
 
     if (this.premiumOnly) {
       result = result.filter(teacher => teacher.isPremium);
@@ -230,6 +202,53 @@ export class SearchForTeachersComponent {
     }
 
     return sorted;
+  }
+
+  private mapTeacherCard(teacher: TeacherDto): TeacherCard {
+    const fullName = `${teacher.firstName} ${teacher.lastName}`.trim();
+    const city = teacher.city || 'Ville inconnue';
+    const travelRadius = teacher.travelRadiusKm ?? 0;
+    const format = travelRadius >= 10 ? 'Hybride' : travelRadius > 0 ? 'Domicile' : 'Visio';
+
+    return {
+      id: teacher.id,
+      name: fullName || 'Professeur',
+      city,
+      format,
+      pricePerHour: 30,
+      rating: 4.8,
+      reviews: 20,
+      bio: teacher.bio || 'Profil en cours de mise a jour.',
+      subjects: ['Toutes matieres'],
+      subjectSlugs: ['all'],
+      levels: ['Tous niveaux'],
+      levelSlugs: ['all'],
+      isPremium: teacher.isPremium,
+      isVerified: teacher.verificationStatus === 1,
+      isTop: teacher.isPremium,
+      avatarColor: this.pickAvatarColor(teacher.id)
+    };
+  }
+
+  private pickAvatarColor(seed: string): string {
+    const colors = ['#1a365d', '#f97316', '#4EE381', '#3b82f6', '#8b5cf6'];
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) {
+      hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash % colors.length);
+    return colors[index];
+  }
+
+  private getErrorMessage(err: unknown, fallback: string): string {
+    if (err instanceof HttpErrorResponse) {
+      if (typeof err.error === 'string') return err.error;
+      if (err.error?.error) return err.error.error;
+      return err.message || fallback;
+    }
+
+    if (err instanceof Error) return err.message;
+    return fallback;
   }
 
   formatLabel(value: 'all' | 'visio' | 'domicile' | 'hybride'): string {

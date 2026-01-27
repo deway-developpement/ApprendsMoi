@@ -150,11 +150,16 @@
             <div class="booking-grid">
               <div class="field">
                 <label>Duration</label>
-                <app-select
-                  [options]="durationOptions"
-                  [(value)]="bookingDuration"
-                  placeholder="Duration">
-                </app-select>
+                <div class="fixed-duration" *ngIf="needsStudentSelection; else durationSelect">
+                  60 min
+                </div>
+                <ng-template #durationSelect>
+                  <app-select
+                    [options]="durationOptions"
+                    [(value)]="bookingDuration"
+                    placeholder="Duration">
+                  </app-select>
+                </ng-template>
               </div>
               <div class="field" *ngIf="needsStudentSelection">
                 <label>Student</label>

@@ -1,21 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { HeaderComponent } from '../../components/Header/header.component';
 import { ButtonComponent } from '../../components/shared/Button/button.component';
 import { SmallIconComponent } from '../../components/shared/SmallIcon/small-icon.component';
-import { CoursesScheduleComponent } from '../../components/shared/CoursesSchedule/courses-schedule.component';
-
-// Interfaces (Adapted for Teacher context)
-interface Course {
-  id: number;
-  date: Date;
-  tutorName: string; // In this case, it's "Me" but kept for compatibility
-  childName: string; // The student's name
-  subject: string;
-  mode: 'Domicile' | 'Visio';
-  status: 'Confirmé' | 'En attente' | 'Annulé' | 'Terminé';
-  price: number; // Important for revenue calculation
-}
+import { CoursesScheduleComponent, Course } from '../../components/shared/CoursesSchedule/courses-schedule.component';
+import { AuthService, UserDto } from '../../services/auth.service';
+import { ToastService } from '../../services/toast.service';
+import { environment } from '../../environments/environment';
 
 interface BookingRequest {
   id: number;
@@ -24,10 +17,21 @@ interface BookingRequest {
   date: Date;
 }
 
+interface MeetingResponse {
+  id: number;
+  meetingId: number;
+  topic?: string | null;
+  createdAt: string;
+  scheduledStartTime?: string | null;
+  duration: number;
+  teacherId: string;
+  studentId: string;
+}
+
 @Component({
   selector: 'app-home-teacher',
   templateUrl: './home-teacher.component.html',
-  styleUrls: ['./home-teacher.component.scss'], // You might want to share the SCSS with student or create a shared dashboard.scss
+  styleUrls: ['./home-teacher.component.scss'],
   standalone: true,
   imports: [
     CommonModule,
@@ -38,51 +42,147 @@ interface BookingRequest {
   ]
 })
 export class HomeTeacherComponent implements OnInit {
-  teacherName = 'Marc';
-  
+  private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
+  private readonly toastService = inject(ToastService);
+  private readonly apiBaseUrl = `${environment.apiUrl}/api/zoom`;
+  private readonly usersBaseUrl = `${environment.apiUrl}/api/Users`;
+  private readonly userCache = new Map<string, UserDto>();
+
+  teacherName = 'Professeur';
+  currentUserId: string | null = null;
+
   // Data
   nextCourse: Course | null = null;
   courses: Course[] = [];
   pendingRequests: BookingRequest[] = [];
-  
+
   // KPI Data
   currentMonthRevenue: number = 0;
   pendingRevenue: number = 0;
 
-  constructor() {}
+  async ngOnInit(): Promise<void> {
+    await this.loadUser();
+    await this.loadMeetings();
+  }
 
-  ngOnInit(): void {
-    // 1. Load Courses (Mock Data)
-    this.courses = [
-      { id: 201, date: new Date('2023-11-15T14:00:00'), tutorName: 'Moi', subject: 'Maths', childName: 'Léo D.', mode: 'Domicile', status: 'Confirmé', price: 35 },
-      { id: 202, date: new Date('2023-11-16T10:00:00'), tutorName: 'Moi', subject: 'Maths', childName: 'Sarah M.', mode: 'Visio', status: 'Confirmé', price: 30 },
-      { id: 203, date: new Date('2023-11-14T09:00:00'), tutorName: 'Moi', subject: 'Physique', childName: 'Tom P.', mode: 'Domicile', status: 'Terminé', price: 35 },
-      { id: 204, date: new Date('2023-11-20T17:00:00'), tutorName: 'Moi', subject: 'Maths', childName: 'Léo D.', mode: 'Domicile', status: 'Confirmé', price: 35 },
-    ];
+  private async loadUser(): Promise<void> {
+    let user: UserDto | null = null;
 
-    // 2. Find Next Course
-    this.nextCourse = this.courses.find(c => 
-      c.status === 'Confirmé' && new Date(c.date) > new Date()
-    ) || null;
+    user = await firstValueFrom(this.authService.currentUser$);
+    if (!user) {
+      try {
+        user = await firstValueFrom(this.authService.fetchMe());
+      } catch (err) {
+        this.toastService.error(this.getErrorMessage(err, 'Unable to load user.'));
+        return;
+      }
+    }
 
-    // 3. Mock Pending Requests (Section 5.2 - Réservations en attente)
-    this.pendingRequests = [
-      { id: 1, parentName: 'Mme. Dupont', subject: 'Maths (Terminale)', date: new Date('2023-11-18T18:00:00') }
-    ];
+    if (!user) {
+      return;
+    }
 
-    // 4. Calculate Revenue (Simple Mock logic)
-    this.calculateRevenue();
+    this.currentUserId = user.id;
+    this.userCache.set(user.id, user);
+    const displayName = this.formatUserName(user);
+    if (displayName) {
+      this.teacherName = displayName;
+    }
+  }
+
+  private async loadMeetings(): Promise<void> {
+    try {
+      const meetings = await firstValueFrom(
+        this.http.get<MeetingResponse[]>(`${this.apiBaseUrl}/meetings`)
+      );
+
+      const courses = await Promise.all(
+        (meetings ?? []).map(async (meeting) => {
+          const dateValue = meeting.scheduledStartTime ?? meeting.createdAt;
+          const courseDate = this.parseUtcDate(dateValue);
+          const safeDate = Number.isNaN(courseDate.getTime()) ? new Date() : courseDate;
+          const isFuture = safeDate > new Date();
+          const childName = await this.getUserName(meeting.studentId, 'Eleve');
+          const subject = meeting.topic?.trim() || 'Session';
+
+          return {
+            id: meeting.id,
+            date: safeDate,
+            tutorName: this.teacherName || 'Moi',
+            childName,
+            subject,
+            mode: 'Visio',
+            status: isFuture ? 'Confirmé' : 'Terminé',
+            price: 0
+          } as Course;
+        })
+      );
+
+      this.courses = courses.sort((a, b) => a.date.getTime() - b.date.getTime());
+      this.nextCourse =
+        this.courses.find(c => c.status === 'Confirmé' && c.date > new Date()) ?? null;
+
+      this.calculateRevenue();
+    } catch (err) {
+      this.toastService.error(this.getErrorMessage(err, 'Unable to load appointments.'));
+    }
+  }
+
+  private async getUserName(userId: string, fallback: string): Promise<string> {
+    if (!userId) {
+      return fallback;
+    }
+
+    const cached = this.userCache.get(userId);
+    if (cached) {
+      return this.formatUserName(cached) || fallback;
+    }
+
+    try {
+      const user = await firstValueFrom(this.http.get<UserDto>(`${this.usersBaseUrl}/${userId}`));
+      this.userCache.set(userId, user);
+      return this.formatUserName(user) || fallback;
+    } catch (err) {
+      return fallback;
+    }
+  }
+
+  private formatUserName(user: UserDto): string {
+    const fullName = `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim();
+    if (fullName) {
+      return fullName;
+    }
+    return user.username || '';
   }
 
   private calculateRevenue(): void {
-    // Logic: Sum of 'Terminé' courses for current month
     this.currentMonthRevenue = this.courses
-      .filter(c => c.status === 'Terminé') // In a real app, verify month matches
+      .filter(c => c.status === 'Terminé')
       .reduce((acc, curr) => acc + curr.price, 0);
 
-    // Logic: Sum of 'Confirmé' courses (future revenue)
     this.pendingRevenue = this.courses
       .filter(c => c.status === 'Confirmé')
       .reduce((acc, curr) => acc + curr.price, 0);
+  }
+
+  private parseUtcDate(dateString: string | null | undefined): Date {
+    if (!dateString) {
+      return new Date(NaN);
+    }
+    const hasTimeZone = /[zZ]|[+-]\d{2}:\d{2}$/.test(dateString);
+    const normalized = hasTimeZone ? dateString : `${dateString}Z`;
+    return new Date(normalized);
+  }
+
+  private getErrorMessage(err: unknown, fallback: string): string {
+    if (err instanceof HttpErrorResponse) {
+      if (typeof err.error === 'string') return err.error;
+      if (err.error?.error) return err.error.error;
+      return err.message || fallback;
+    }
+
+    if (err instanceof Error) return err.message;
+    return fallback;
   }
 }

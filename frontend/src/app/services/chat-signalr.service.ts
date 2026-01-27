@@ -42,7 +42,7 @@ export class ChatSignalRService {
         transport: signalR.HttpTransportType.WebSockets | signalR.HttpTransportType.LongPolling
       })
       .withAutomaticReconnect({
-        nextRetryDelayInMilliseconds: retryContext => {
+        nextRetryDelayInMilliseconds: (retryContext: signalR.RetryContext) => {
           if (retryContext.previousRetryCount === 0) {
             return 0; // Retry immediately on first attempt
           } else if (retryContext.previousRetryCount < 5) {
@@ -101,7 +101,7 @@ export class ChatSignalRService {
         console.log('SignalR connected');
         this.connectionStatusSubject.next(true);
       })
-      .catch(err => {
+      .catch((err: unknown) => {
         console.error('SignalR connection error:', err);
         return Promise.reject(err);
       });
@@ -120,7 +120,7 @@ export class ChatSignalRService {
         console.log('SignalR disconnected');
         this.connectionStatusSubject.next(false);
       })
-      .catch(err => {
+      .catch((err: unknown) => {
         console.error('SignalR disconnection error:', err);
         return Promise.reject(err);
       });
@@ -135,7 +135,7 @@ export class ChatSignalRService {
     }
 
     return this.hubConnection.invoke('JoinChat', chatId)
-      .catch(err => {
+      .catch((err: unknown) => {
         console.error(`Error joining chat ${chatId}:`, err);
         return Promise.reject(err);
       });
@@ -150,7 +150,7 @@ export class ChatSignalRService {
     }
 
     return this.hubConnection.invoke('LeaveChat', chatId)
-      .catch(err => {
+      .catch((err: unknown) => {
         console.error(`Error leaving chat ${chatId}:`, err);
         return Promise.reject(err);
       });
@@ -165,7 +165,7 @@ export class ChatSignalRService {
     }
 
     return this.hubConnection.invoke('SendMessageToChat', chatId, message)
-      .catch(err => {
+      .catch((err: unknown) => {
         console.error(`Error sending message to chat ${chatId}:`, err);
         return Promise.reject(err);
       });
@@ -180,7 +180,7 @@ export class ChatSignalRService {
     }
 
     return this.hubConnection.invoke('UserTyping', chatId, userName)
-      .catch(err => {
+      .catch((err: unknown) => {
         console.error(`Error notifying typing in chat ${chatId}:`, err);
         return Promise.reject(err);
       });
@@ -195,7 +195,7 @@ export class ChatSignalRService {
     }
 
     return this.hubConnection.invoke('UserStoppedTyping', chatId)
-      .catch(err => {
+      .catch((err: unknown) => {
         console.error(`Error notifying stopped typing in chat ${chatId}:`, err);
         return Promise.reject(err);
       });

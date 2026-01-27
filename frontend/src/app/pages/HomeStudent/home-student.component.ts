@@ -1,26 +1,30 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { HeaderComponent } from '../../components/Header/header.component';
 import { ButtonComponent } from '../../components/shared/Button/button.component';
 import { SmallIconComponent } from '../../components/shared/SmallIcon/small-icon.component';
-import { CoursesScheduleComponent } from '../../components/shared/CoursesSchedule/courses-schedule.component';
-
-// Interfaces (Simplified for Student context)
-interface Course {
-  id: number;
-  date: Date;
-  tutorName: string;
-  subject: string;
-  childName: string; // Even if it's the student, we keep the prop for compatibility with the shared component
-  mode: 'Domicile' | 'Visio';
-  status: 'Confirmé' | 'En attente' | 'Annulé' | 'Terminé';
-  price: number;
-}
+import { CoursesScheduleComponent, Course } from '../../components/shared/CoursesSchedule/courses-schedule.component';
+import { AuthService, UserDto } from '../../services/auth.service';
+import { ToastService } from '../../services/toast.service';
+import { environment } from '../../environments/environment';
 
 interface Message {
   sender: string;
   preview: string;
   date: Date;
+}
+
+interface MeetingResponse {
+  id: number;
+  meetingId: number;
+  topic?: string | null;
+  createdAt: string;
+  scheduledStartTime?: string | null;
+  duration: number;
+  teacherId: string;
+  studentId: string;
 }
 
 @Component({
@@ -37,30 +41,137 @@ interface Message {
   ]
 })
 export class HomeStudentComponent implements OnInit {
-  userName = 'Léa';
-  
+  private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
+  private readonly toastService = inject(ToastService);
+  private readonly apiBaseUrl = `${environment.apiUrl}/api/zoom`;
+  private readonly usersBaseUrl = `${environment.apiUrl}/api/Users`;
+  private readonly userCache = new Map<string, UserDto>();
+
+  userName = 'Eleve';
+  currentUserId: string | null = null;
+
   // Data
   nextCourse: Course | null = null;
   lastMessage: Message | null = null;
+  courses: Course[] = [];
 
-  courses: Course[] = [
-    { id: 101, date: new Date('2023-11-15T14:00:00'), tutorName: 'Julie B.', subject: 'Maths', childName: 'Moi', mode: 'Domicile', status: 'Confirmé', price: 0 },
-    { id: 103, date: new Date('2023-11-01T16:00:00'), tutorName: 'Julie B.', subject: 'Physique', childName: 'Moi', mode: 'Domicile', status: 'Terminé', price: 0 },
-    { id: 104, date: new Date('2023-11-20T17:00:00'), tutorName: 'Marc D.', subject: 'Anglais', childName: 'Moi', mode: 'Visio', status: 'Confirmé', price: 0 },
-  ];
+  async ngOnInit(): Promise<void> {
+    await this.loadUser();
+    await this.loadMeetings();
 
-  constructor() {}
-
-  ngOnInit(): void {
-    // Find next confirmed course
-    this.nextCourse = this.courses.find(c => 
-      (c.status === 'Confirmé' || c.status === 'En attente') && new Date(c.date) > new Date()
-    ) || this.courses[0]; // Fallback for demo
-    
     this.lastMessage = {
       sender: 'Julie B.',
       preview: 'N\'oublie pas de faire l\'exercice 3 page 12 pour demain !',
       date: new Date()
     };
+  }
+
+  private async loadUser(): Promise<void> {
+    let user: UserDto | null = null;
+
+    user = await firstValueFrom(this.authService.currentUser$);
+    if (!user) {
+      try {
+        user = await firstValueFrom(this.authService.fetchMe());
+      } catch (err) {
+        this.toastService.error(this.getErrorMessage(err, 'Unable to load user.'));
+        return;
+      }
+    }
+
+    if (!user) {
+      return;
+    }
+
+    this.currentUserId = user.id;
+    this.userCache.set(user.id, user);
+    const displayName = this.formatUserName(user);
+    if (displayName) {
+      this.userName = displayName;
+    }
+  }
+
+  private async loadMeetings(): Promise<void> {
+    try {
+      const meetings = await firstValueFrom(
+        this.http.get<MeetingResponse[]>(`${this.apiBaseUrl}/meetings`)
+      );
+
+      const courses = await Promise.all(
+        (meetings ?? []).map(async (meeting) => {
+          const dateValue = meeting.scheduledStartTime ?? meeting.createdAt;
+          const courseDate = this.parseUtcDate(dateValue);
+          const safeDate = Number.isNaN(courseDate.getTime()) ? new Date() : courseDate;
+          const isFuture = safeDate > new Date();
+          const tutorName = await this.getUserName(meeting.teacherId, 'Professeur');
+          const subject = meeting.topic?.trim() || 'Session';
+
+          return {
+            id: meeting.id,
+            date: safeDate,
+            tutorName,
+            subject,
+            childName: this.userName || 'Moi',
+            mode: 'Visio',
+            status: isFuture ? 'Confirmé' : 'Terminé',
+            price: 0
+          } as Course;
+        })
+      );
+
+      this.courses = courses.sort((a, b) => a.date.getTime() - b.date.getTime());
+      this.nextCourse =
+        this.courses.find(c => c.status === 'Confirmé' && c.date > new Date()) ?? null;
+    } catch (err) {
+      this.toastService.error(this.getErrorMessage(err, 'Unable to load appointments.'));
+    }
+  }
+
+  private async getUserName(userId: string, fallback: string): Promise<string> {
+    if (!userId) {
+      return fallback;
+    }
+
+    const cached = this.userCache.get(userId);
+    if (cached) {
+      return this.formatUserName(cached) || fallback;
+    }
+
+    try {
+      const user = await firstValueFrom(this.http.get<UserDto>(`${this.usersBaseUrl}/${userId}`));
+      this.userCache.set(userId, user);
+      return this.formatUserName(user) || fallback;
+    } catch (err) {
+      return fallback;
+    }
+  }
+
+  private formatUserName(user: UserDto): string {
+    const fullName = `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim();
+    if (fullName) {
+      return fullName;
+    }
+    return user.username || '';
+  }
+
+  private parseUtcDate(dateString: string | null | undefined): Date {
+    if (!dateString) {
+      return new Date(NaN);
+    }
+    const hasTimeZone = /[zZ]|[+-]\d{2}:\d{2}$/.test(dateString);
+    const normalized = hasTimeZone ? dateString : `${dateString}Z`;
+    return new Date(normalized);
+  }
+
+  private getErrorMessage(err: unknown, fallback: string): string {
+    if (err instanceof HttpErrorResponse) {
+      if (typeof err.error === 'string') return err.error;
+      if (err.error?.error) return err.error.error;
+      return err.message || fallback;
+    }
+
+    if (err instanceof Error) return err.message;
+    return fallback;
   }
 }

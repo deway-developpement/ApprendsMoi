@@ -87,6 +87,18 @@ interface TeacherProfile {
   isTop: boolean;
 }
 
+interface TeacherDto {
+  id: string;
+  firstName: string;
+  lastName: string;
+  profilePicture?: string | null;
+  bio?: string | null;
+  verificationStatus: number;
+  isPremium: boolean;
+  city?: string | null;
+  travelRadiusKm?: number | null;
+}
+
 interface CreateMeetingResponse {
   id: number;
 }
@@ -143,10 +155,7 @@ export class TeacherProfileComponent implements OnInit {
   selectedStudentId: string | number | null = null;
 
   durationOptions: SelectOption[] = [
-    { label: '30 min', value: 30 },
-    { label: '45 min', value: 45 },
-    { label: '60 min', value: 60 },
-    { label: '90 min', value: 90 }
+    { label: '60 min', value: 60 }
   ];
 
   private readonly teachers: TeacherProfile[] = [
@@ -252,6 +261,7 @@ export class TeacherProfileComponent implements OnInit {
     this.buildCalendar();
     if (this.teacherId) {
       this.loadAvailabilities();
+      this.loadTeacherDetails();
     }
     this.loadUser();
   }
@@ -292,7 +302,8 @@ export class TeacherProfileComponent implements OnInit {
       return;
     }
 
-    const duration = Number(this.bookingDuration) || 60;
+    const duration =
+      this.userProfile === ProfileType.Parent ? 60 : (Number(this.bookingDuration) || 60);
     const topic = this.bookingTopic?.trim() || `Session with ${this.teacher?.name ?? 'teacher'}`;
 
     this.isBooking = true;
@@ -369,6 +380,61 @@ export class TeacherProfileComponent implements OnInit {
     if (this.userProfile === ProfileType.Student) {
       this.selectedStudentId = user.id;
     }
+  }
+
+  private async loadTeacherDetails(): Promise<void> {
+    if (!this.teacherId) return;
+
+    try {
+      const dto = await firstValueFrom(
+        this.http.get<TeacherDto>(`${environment.apiUrl}/api/Users/${this.teacherId}`)
+      );
+      if (dto && dto.id) {
+        this.teacher = this.mapTeacherProfile(dto);
+      }
+    } catch (err) {
+      // Keep fallback data if the API fails
+      console.warn('Unable to load teacher profile from API', err);
+    }
+  }
+
+  private mapTeacherProfile(dto: TeacherDto): TeacherProfile {
+    const name = `${dto.firstName} ${dto.lastName}`.trim();
+    const city = dto.city || 'Ville inconnue';
+    const travelRadius = dto.travelRadiusKm ?? 0;
+    const headline = dto.bio
+      ? dto.bio
+      : 'Profil en cours de mise a jour.';
+
+    return {
+      id: dto.id,
+      name: name || 'Professeur',
+      city,
+      headline,
+      rating: 4.8,
+      reviews: 20,
+      pricePerHour: 30,
+      subjects: ['Toutes matieres'],
+      levels: ['Tous niveaux'],
+      bio: dto.bio || 'Profil en cours de mise a jour.',
+      specialties: ['Suivi personnalise', 'Revision', 'Methodologie'],
+      highlights: [
+        { label: 'Students helped', value: '80+' },
+        { label: 'Response time', value: '< 2h' },
+        { label: 'Lessons completed', value: '300+' }
+      ],
+      availability: [
+        { label: 'Mon', time: '18:00 - 19:00', format: travelRadius > 0 ? 'Domicile' : 'Visio' },
+        { label: 'Thu', time: '19:00 - 20:00', format: travelRadius > 0 ? 'Hybride' : 'Visio' }
+      ],
+      languages: ['Francais'],
+      education: ['Profil enseignant'],
+      certifications: ['En cours'],
+      avatarColor: dto.isPremium ? '#fbbf24' : '#1a365d',
+      isPremium: dto.isPremium,
+      isVerified: dto.verificationStatus === 1,
+      isTop: dto.isPremium
+    };
   }
 
   private loadChildren(): void {
