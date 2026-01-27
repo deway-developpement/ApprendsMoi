@@ -116,6 +116,11 @@ export class ChatService {
     return this.http.post<void>(`${this.apiUrl}/chats/${chatId}/archive`, {});
   }
 
+  // Mark chat as read
+  markChatAsRead(chatId: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/chats/${chatId}/read`, {});
+  }
+
   // Get messages with pagination
   getMessages(chatId: string, pageNumber: number = 1, pageSize: number = 20): Observable<PaginatedMessagesDto> {
     return this.http.get<PaginatedMessagesDto>(

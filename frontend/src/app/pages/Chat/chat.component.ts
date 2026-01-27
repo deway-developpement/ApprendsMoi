@@ -43,17 +43,35 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
       if (user) {
-        this.loadChats();
-        // Connect to SignalR when user is authenticated
-        this.chatSignalRService.connect().catch(err => {
-          console.error('Failed to connect to SignalR:', err);
-        });
+        // Connect first, then load chats so joins succeed
+        this.chatSignalRService.connect()
+          .then(() => this.loadChats())
+          .catch(err => {
+            console.error('Failed to connect to SignalR:', err);
+            this.loadChats(); // fallback to at least fetch data
+          });
       }
     });
 
     // Subscribe to incoming messages
     this.chatSignalRService.messageReceived$.subscribe(message => {
-      if (message && this.selectedChat && message.chatId === this.selectedChat.chatId) {
+      if (!message) return;
+
+      // Update chat list last message + unread count
+      const idx = this.chats.findIndex(c => c.chatId === message.chatId);
+      if (idx >= 0) {
+        const chat = this.chats[idx];
+        const isActiveChat = this.selectedChat && this.selectedChat.chatId === message.chatId;
+        const unread = isActiveChat ? 0 : (chat.unreadCount ?? 0) + 1;
+        this.chats[idx] = {
+          ...chat,
+          lastMessage: message.content,
+          lastMessageTime: message.createdAt,
+          unreadCount: unread
+        } as ChatDto;
+      }
+
+      if (this.selectedChat && message.chatId === this.selectedChat.chatId) {
         // Add message to current chat
         this.selectedChat.messages.push(message);
       }
@@ -73,6 +91,15 @@ export class ChatComponent implements OnInit, OnDestroy {
     // Subscribe to connection status
     this.chatSignalRService.connectionStatus$.subscribe(status => {
       this.isSignalRConnected = status;
+
+      // On reconnect, rejoin all chats to receive messages
+      if (status) {
+        this.chats.forEach(c => {
+          this.chatSignalRService.joinChat(c.chatId).catch(err => {
+            console.error('Error rejoining chat group', c.chatId, err);
+          });
+        });
+      }
     });
   }
 
@@ -103,6 +130,13 @@ export class ChatComponent implements OnInit, OnDestroy {
       next: (chats) => {
         this.chats = chats;
         this.loading = false;
+
+        // Join all chat groups so incoming messages arrive even when not selected
+        chats.forEach(c => {
+          this.chatSignalRService.joinChat(c.chatId).catch(err => {
+            console.error('Error joining chat group', c.chatId, err);
+          });
+        });
       },
       error: (err) => {
         this.error = 'Failed to load chats';
@@ -153,6 +187,17 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.loading = false;
         this.typingUsers.clear();
 
+        // reset unread locally
+        const idx = this.chats.findIndex(c => c.chatId === chat.chatId);
+        if (idx >= 0) {
+          this.chats[idx].unreadCount = 0;
+        }
+
+        // mark as read server-side
+        this.chatService.markChatAsRead(chat.chatId).subscribe({
+          error: (err) => console.error('Failed to mark chat as read', err)
+        });
+
         // Join chat group via SignalR
         this.chatSignalRService.joinChat(chatDetail.chatId).catch(err => {
           console.error('Error joining chat:', err);
@@ -179,6 +224,17 @@ export class ChatComponent implements OnInit, OnDestroy {
           this.messageContent = '';
           this.loading = false;
           this.typingUsers.clear();
+
+          // update last message + reset unread for this chat in list
+          const idx = this.chats.findIndex(c => c.chatId === this.selectedChat!.chatId);
+          if (idx >= 0) {
+            this.chats[idx] = {
+              ...this.chats[idx],
+              lastMessage: message.content,
+              lastMessageTime: message.createdAt,
+              unreadCount: 0
+            } as ChatDto;
+          }
 
           // Broadcast message via SignalR (will add to messages for all users including sender)
           this.chatSignalRService.sendMessageToChat(this.selectedChat.chatId, message).catch(err => {

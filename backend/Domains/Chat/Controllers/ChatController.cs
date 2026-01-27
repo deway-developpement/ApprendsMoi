@@ -156,4 +156,26 @@ public class ChatController(ChatService chatService, MessageService messageServi
 
         return NoContent();
     }
+
+    /// <summary>
+    /// Mark all messages in a chat as read for the current user
+    /// </summary>
+    [HttpPost("{chatId}/read")]
+    public async Task<IActionResult> MarkAsRead(Guid chatId, CancellationToken ct = default) {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid)) {
+            return Unauthorized();
+        }
+
+        // Verify user has access to this chat
+        var hasAccess = await _chatService.UserHasAccessToChatAsync(chatId, userGuid, ct);
+        if (!hasAccess) {
+            return Forbid();
+        }
+
+        var updated = await _chatService.MarkChatAsReadAsync(chatId, userGuid, ct);
+        if (!updated) return NotFound();
+
+        return NoContent();
+    }
 }

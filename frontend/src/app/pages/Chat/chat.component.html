@@ -56,6 +56,7 @@
             {{ chat.lastMessage || 'No messages yet' }}
           </div>
         </div>
+        <span class="unread-badge" *ngIf="chat.unreadCount > 0">{{ chat.unreadCount }}</span>
       </div>
     </div>
 

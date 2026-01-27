@@ -306,6 +306,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             b.Property(e => e.TeacherId).HasColumnName("teacher_id").IsRequired();
             b.Property(e => e.ParentId).HasColumnName("parent_id");
             b.Property(e => e.StudentId).HasColumnName("student_id");
+            b.Property(e => e.TeacherLastReadAt).HasColumnName("teacher_last_read_at");
+            b.Property(e => e.ParentLastReadAt).HasColumnName("parent_last_read_at");
+            b.Property(e => e.StudentLastReadAt).HasColumnName("student_last_read_at");
             b.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
             b.Property(e => e.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
             b.Property(e => e.IsActive).HasColumnName("is_active").HasDefaultValue(true);

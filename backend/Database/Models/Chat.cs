@@ -12,6 +12,11 @@ public class Chat {
     
     public Guid? StudentId { get; set; }
     public Student? Student { get; set; }
+
+    // Per-participant read tracking
+    public DateTime? TeacherLastReadAt { get; set; }
+    public DateTime? ParentLastReadAt { get; set; }
+    public DateTime? StudentLastReadAt { get; set; }
     
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

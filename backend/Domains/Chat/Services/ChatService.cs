@@ -22,7 +22,8 @@ public class ChatService(AppDbContext db) {
 
         var chatDtos = new List<ChatDto>();
         foreach (var chat in chats) {
-            chatDtos.Add(MapChatToDto(chat));
+            var unread = await GetUnreadCountAsync(chat, teacherId, ct);
+            chatDtos.Add(MapChatToDto(chat, unread));
         }
 
         return chatDtos;
@@ -42,7 +43,8 @@ public class ChatService(AppDbContext db) {
 
         var chatDtos = new List<ChatDto>();
         foreach (var chat in chats) {
-            chatDtos.Add(MapChatToDto(chat));
+            var unread = await GetUnreadCountAsync(chat, parentId, ct);
+            chatDtos.Add(MapChatToDto(chat, unread));
         }
 
         return chatDtos;
@@ -62,7 +64,8 @@ public class ChatService(AppDbContext db) {
 
         var chatDtos = new List<ChatDto>();
         foreach (var chat in chats) {
-            chatDtos.Add(MapChatToDto(chat));
+            var unread = await GetUnreadCountAsync(chat, studentId, ct);
+            chatDtos.Add(MapChatToDto(chat, unread));
         }
 
         return chatDtos;
@@ -86,7 +89,7 @@ public class ChatService(AppDbContext db) {
 
         if (chat == null) return null;
 
-        var chatDto = MapChatToDto(chat);
+        var chatDto = MapChatToDto(chat, 0);
         var detailDto = new ChatDetailDto {
             ChatId = chatDto.ChatId,
             ChatType = chatDto.ChatType,
@@ -122,6 +125,25 @@ public class ChatService(AppDbContext db) {
         };
 
         return detailDto;
+    }
+
+    public async Task<bool> MarkChatAsReadAsync(Guid chatId, Guid userId, CancellationToken ct = default) {
+        var chat = await _db.Chats.FirstOrDefaultAsync(c => c.Id == chatId, ct);
+        if (chat == null) return false;
+
+        if (chat.TeacherId == userId) {
+            chat.TeacherLastReadAt = DateTime.UtcNow;
+        } else if (chat.ParentId == userId) {
+            chat.ParentLastReadAt = DateTime.UtcNow;
+        } else if (chat.StudentId == userId) {
+            chat.StudentLastReadAt = DateTime.UtcNow;
+        } else {
+            return false;
+        }
+
+        chat.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync(ct);
+        return true;
     }
 
     /// <summary>
@@ -289,7 +311,7 @@ public class ChatService(AppDbContext db) {
         return MapChatToDto(chat);
     }
 
-    private ChatDto MapChatToDto(Database.Models.Chat chat) {
+    private ChatDto MapChatToDto(Database.Models.Chat chat, int unreadCount = 0) {
         string participantName = string.Empty;
         string? participantPicture = null;
 
@@ -313,10 +335,32 @@ public class ChatService(AppDbContext db) {
             ParticipantProfilePicture = participantPicture,
             LastMessage = lastMessage?.Content ?? null,
             LastMessageTime = lastMessage?.CreatedAt,
-            UnreadCount = 0, // TODO: Implement read/unread status
+            UnreadCount = unreadCount,
             CreatedAt = chat.CreatedAt,
             UpdatedAt = chat.UpdatedAt,
             IsActive = chat.IsActive
         };
+    }
+
+    private async Task<int> GetUnreadCountAsync(Database.Models.Chat chat, Guid userId, CancellationToken ct) {
+        DateTime? lastRead = null;
+
+        if (chat.TeacherId == userId) {
+            lastRead = chat.TeacherLastReadAt;
+        } else if (chat.ParentId == userId) {
+            lastRead = chat.ParentLastReadAt;
+        } else if (chat.StudentId == userId) {
+            lastRead = chat.StudentLastReadAt;
+        } else {
+            return 0;
+        }
+
+        var query = _db.Messages.Where(m => m.ChatId == chat.Id && m.SenderId != userId);
+        if (lastRead.HasValue) {
+            var lastReadUtc = DateTime.SpecifyKind(lastRead.Value, DateTimeKind.Utc);
+            query = query.Where(m => m.CreatedAt > lastReadUtc);
+        }
+
+        return await query.CountAsync(ct);
     }
 }
