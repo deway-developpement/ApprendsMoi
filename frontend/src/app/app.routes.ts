@@ -9,8 +9,14 @@ import { ChatComponent } from './pages/Chat/chat.component';
 export const routes: Routes = [
   { path: '', component: HomeRouterComponent },
   { path: 'visio', component: PlanningComponent },
-  { path: 'visio/:id', component: Visio },
+  { 
+    path: 'visio/:id', 
+    component: Visio,
+    data: { getPrerenderParams: () => [] }
+  },
   { path: 'login', component: ConnexionComponent},
   { path: 'register', component: InscriptionComponent },
   { path: 'chat', component: ChatComponent }
 ];
+
+

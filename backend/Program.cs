@@ -100,6 +100,9 @@ builder.Services.AddScoped<MessageService>();
 builder.Services.AddScoped<ChatAttachmentService>();
 builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
 
+// SignalR for real-time chat
+builder.Services.AddSignalR();
+
 // Register FluentMigrator services
 builder.Services.AddFluentMigratorCore()
     .ConfigureRunner(rb => rb
@@ -176,5 +179,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// SignalR hubs
+app.MapHub<ChatHub>("/hubs/chat");
 
 app.Run();

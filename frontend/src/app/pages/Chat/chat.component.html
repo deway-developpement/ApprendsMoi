@@ -1,7 +1,17 @@
 <div class="chat-container">
   <!-- Header -->
   <div class="chat-header">
-    <h1>💬 Messages</h1>
+    <div class="header-left">
+      <h1>💬 Messages</h1>
+      <div 
+        class="connection-status"
+        [class.connected]="isSignalRConnected"
+        [class.disconnected]="!isSignalRConnected"
+        [title]="isSignalRConnected ? 'Connected to real-time chat' : 'Disconnected from real-time chat'">
+        <span class="status-dot"></span>
+        <span class="status-text">{{ isSignalRConnected ? 'Live' : 'Offline' }}</span>
+      </div>
+    </div>
     <button 
       *ngIf="currentUser?.profileType === ProfileType.Parent" 
       (click)="openCreateChatModal()"
@@ -86,6 +96,9 @@
               </a>
             </div>
           </div>
+          <div *ngIf="typingUsers.size > 0" class="typing-indicator">
+            <span>{{ Array.from(typingUsers).join(', ') }} is typing...</span>
+          </div>
         </div>
 
         <!-- Message Input -->
@@ -93,6 +106,7 @@
           <textarea 
             [(ngModel)]="messageContent"
             (keyup.enter)="sendMessage()"
+            (keyup)="onMessageInput()"
             placeholder="Type a message... (Enter to send)"
             rows="3">
           </textarea>
