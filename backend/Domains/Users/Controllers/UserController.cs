@@ -143,28 +143,35 @@ public class UsersController(
         return Ok(teachers);
     }
 
-    [HttpDelete("{id:guid}")]
+    [HttpDelete("{id:guid?}")]
     [Authorize]
-    public async Task<IActionResult> DeactivateUser(Guid id, CancellationToken ct) {
+    public async Task<IActionResult> DeactivateUser(Guid? id, CancellationToken ct) {
         var userId = JwtHelper.GetUserIdFromClaims(User);
         if (userId == null) return Unauthorized();
 
         var userProfile = JwtHelper.GetUserProfileFromClaims(User);
 
-        if (userProfile != ProfileType.Teacher && userProfile != ProfileType.Parent) {
+        Guid targetUserId;
+
+        if (userProfile == ProfileType.Admin) {
+            if (id == null) return BadRequest(new { error = "User ID is required for admin deletions" });
+            targetUserId = id.Value;
+        }
+        else if (userProfile == ProfileType.Teacher || userProfile == ProfileType.Parent) {
+            targetUserId = userId.Value;
+        }
+        else {
             return BadRequest(new { error = "Invalid request" });
         }
 
-        if (userId.Value != id) return Forbid();
-
-        var success = await _managementService.DeactivateUserAsync(id, ct);
+        var success = await _managementService.DeactivateUserAsync(targetUserId, ct);
         if (!success) return NotFound(new { error = "User not found" });
         return Ok(new { message = "Account deactivated successfully" });
     }
 
     [HttpDelete("students/{id:guid}")]
     [ParentOrAdmin]
-    public async Task<IActionResult> DeleteStudent(Guid id, [FromBody] DeleteStudentRequest? request, CancellationToken ct) {
+    public async Task<IActionResult> DeleteStudent(Guid id, CancellationToken ct) {
         var userId = JwtHelper.GetUserIdFromClaims(User);
         if (userId == null) return Unauthorized();
 
@@ -176,17 +183,11 @@ public class UsersController(
             return BadRequest(new { error = "User is not a student" });
         }
 
-        if (userProfile == ProfileType.Admin) {
-            if (request?.ParentId == null) {
-                return BadRequest(new { error = "Parent ID is required" });
-            }
-        } else if (userProfile == ProfileType.Parent) {
+        if (userProfile == ProfileType.Parent) {
             var students = await _profileService.GetStudentsByParentIdAsync(userId.Value, ct);
             if (!students.Any(s => s.Id == id)) {
                 return Forbid();
             }
-        } else {
-            return Forbid();
         }
 
         var success = await _managementService.DeactivateUserAsync(id, ct);
@@ -216,4 +217,3 @@ public record TeacherProfileUpdate(string? Bio, string? PhoneNumber, string? Cit
 public record ParentProfileUpdate(string? PhoneNumber);
 public record StudentProfileUpdate(GradeLevel? GradeLevel, DateOnly? BirthDate);
 public record UpdatePasswordRequest(string CurrentPassword, string NewPassword);
-public record DeleteStudentRequest(Guid? ParentId);
