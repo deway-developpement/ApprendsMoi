@@ -95,13 +95,24 @@ public class CoursesController : ControllerBase {
     [HttpGet("student/{studentId}")]
     public async Task<ActionResult<IEnumerable<CourseDto>>> GetCoursesByStudent(Guid studentId) {
         try {
-            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-            var userProfile = User.FindFirst("profile")?.Value;
+            var userId = JwtHelper.GetUserIdFromClaims(User);
+            var userProfile = JwtHelper.GetUserProfileFromClaims(User);
+
+            if (userId == null || userProfile == null) {
+                return Unauthorized();
+            }
 
             // Students can see their own, parents can see their children's, admins can see all
-            if (userProfile != ProfileType.Admin.ToString() && studentId != userId) {
-                // TODO: Check if user is parent of student
-                return Forbid();
+            if (userProfile != ProfileType.Admin && studentId != userId) {
+                // Check if user is parent of this student
+                var student = await _courseService.GetStudentWithParentAsync(studentId);
+                if (student == null) {
+                    return NotFound(new { message = "Student not found" });
+                }
+                
+                if (userProfile != ProfileType.Parent || student.ParentId != userId) {
+                    return Forbid();
+                }
             }
 
             var courses = await _courseService.GetCoursesByStudentIdAsync(studentId);
@@ -154,37 +165,27 @@ public class CoursesController : ControllerBase {
         }
     }
 
-    [HttpPost("{id}/attendance")]
-    [RequireRole(ProfileType.Admin, ProfileType.Teacher)]
-    public async Task<ActionResult<CourseDto>> MarkAttendance(Guid id, [FromBody] MarkAttendanceDto dto) {
-        try {
-            var course = await _courseService.GetCourseByIdAsync(id);
-            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-            var userProfile = User.FindFirst("profile")?.Value;
-
-            // Teachers can only mark attendance for their own courses
-            if (userProfile != ProfileType.Admin.ToString() && course.TeacherId != userId) {
-                return Forbid();
-            }
-
-            var updatedCourse = await _courseService.MarkAttendanceAsync(id, dto);
-            return Ok(updatedCourse);
-        }
-        catch (Exception ex) {
-            return BadRequest(new { message = ex.Message });
-        }
-    }
-
     [HttpGet("stats/student/{studentId}")]
     public async Task<ActionResult<CourseStatsDto>> GetStudentStats(Guid studentId) {
         try {
-            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-            var userProfile = User.FindFirst("profile")?.Value;
+            var userId = JwtHelper.GetUserIdFromClaims(User);
+            var userProfile = JwtHelper.GetUserProfileFromClaims(User);
+
+            if (userId == null || userProfile == null) {
+                return Unauthorized();
+            }
 
             // Students can see their own, parents can see their children's, admins can see all
-            if (userProfile != ProfileType.Admin.ToString() && studentId != userId) {
-                // TODO: Check if user is parent of student
-                return Forbid();
+            if (userProfile != ProfileType.Admin && studentId != userId) {
+                // Check if user is parent of this student
+                var student = await _courseService.GetStudentWithParentAsync(studentId);
+                if (student == null) {
+                    return NotFound(new { message = "Student not found" });
+                }
+                
+                if (userProfile != ProfileType.Parent || student.ParentId != userId) {
+                    return Forbid();
+                }
             }
 
             var stats = await _courseService.GetStudentStatsAsync(studentId);
