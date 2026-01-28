@@ -107,6 +107,7 @@ builder.Services.AddScoped<ICourseService, CourseService>();
 
 // Payment services
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IInvoicePdfService, InvoicePdfService>();
 
 // Rating services
 builder.Services.AddScoped<IRatingService, RatingService>();

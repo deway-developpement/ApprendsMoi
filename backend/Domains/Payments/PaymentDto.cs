@@ -1,6 +1,6 @@
 namespace backend.Domains.Payments;
 
-public class InvoiceDto {
+public class BillingDto {
     public Guid Id { get; set; }
     public Guid CourseId { get; set; }
     public string CourseName { get; set; } = string.Empty;
@@ -35,7 +35,7 @@ public class CreatePaymentDto {
 }
 
 public class PaymentHistoryDto {
-    public List<InvoiceDto> Invoices { get; set; } = new();
+    public List<BillingDto> Billings { get; set; } = new();
     public List<PaymentDto> Payments { get; set; } = new();
     public decimal TotalPaid { get; set; }
     public decimal TotalPending { get; set; }
