@@ -308,6 +308,47 @@ public class AvailabilityController : ControllerBase
     }
 
     /// <summary>
+    /// Deletes an availability slot
+    /// </summary>
+    [HttpDelete("{availabilityId}")]
+    [RequireRole(ProfileType.Teacher)]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> DeleteAvailability(Guid availabilityId)
+    {
+        try
+        {
+            var currentUserId = JwtHelper.GetUserIdFromClaims(User);
+            if (currentUserId == null)
+            {
+                return Unauthorized(new { error = "Invalid token" });
+            }
+
+            var removed = await _availabilityService.DeleteAvailabilityAsync(availabilityId, currentUserId.Value);
+
+            if (!removed)
+            {
+                return NotFound(new { error = "Availability not found" });
+            }
+
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Unauthorized attempt to delete availability.");
+            return Forbid();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred while deleting availability.");
+            return StatusCode(500, new { error = "An unexpected error occurred." });
+        }
+    }
+
+    /// <summary>
     /// Gets blocked time slots for a specific teacher (mirrors availability endpoint behavior)
     /// </summary>
     [HttpGet("block/teacher/{teacherId}")]

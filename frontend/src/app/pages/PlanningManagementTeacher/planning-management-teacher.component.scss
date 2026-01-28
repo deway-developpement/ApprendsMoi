@@ -1,0 +1,286 @@
+@import "variables";
+
+.planning-page {
+  min-height: 100vh;
+  margin-top: 3rem;
+  color: $PrimaryColor;
+}
+
+.planning-hero {
+  background: linear-gradient(120deg, $backgroundColor, rgba($PrimaryColor, 0.08));
+  padding: 3rem $paddingMedium 4rem;
+}
+
+.hero-content {
+  max-width: $maxContentWidth;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.8rem;
+  color: $PrimaryColorHover;
+}
+
+h1 {
+  margin: 0;
+  font-size: 2.6rem;
+}
+
+.subtitle {
+  margin: 0;
+  color: $PrimaryColorHover;
+  max-width: 720px;
+}
+
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.meta-card {
+  background: white;
+  border-radius: $borderRadius;
+  padding: 0.5rem 0.9rem;
+  box-shadow: $boxShadow;
+  font-weight: 500;
+  color: $PrimaryColor;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+
+.planning-body {
+  max-width: $maxContentWidth;
+  margin: -2rem auto 2rem;
+  padding: 0 0 $paddingLarge;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.calendar-card {
+  background: white;
+  border-radius: $borderRadiusLarge;
+  box-shadow: $boxShadow;
+  padding: 1.5rem;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.card-subtitle {
+  margin: 0.35rem 0 0;
+  color: $PrimaryColorHover;
+  font-size: 0.95rem;
+}
+
+.legend {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: $PrimaryColorHover;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba($PrimaryColor, 0.08);
+  border: 1px solid rgba($PrimaryColor, 0.2);
+}
+
+.legend-dot.is-active {
+  background: $PrimaryActive;
+  border-color: $PrimaryActive;
+}
+
+.legend-dot.is-booked {
+  background: $SecondaryColor;
+  border-color: $SecondaryColor;
+}
+
+.calendar-scroll {
+  overflow-x: hidden;
+  padding-bottom: 0.5rem;
+}
+
+.calendar-grid {
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.calendar-header {
+  display: grid;
+  grid-template-columns: 72px repeat(7, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.calendar-corner {
+  height: 48px;
+}
+
+.calendar-day {
+  background: $PrimaryColor;
+  border-radius: $borderRadius;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid $PrimaryColor;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.day-name {
+  font-weight: 600;
+  color: #fff;
+}
+
+.day-date {
+  font-size: 0.85rem;
+  color: rgba(#fff, 0.8);
+}
+
+.calendar-body {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 0.4rem;
+}
+
+.time-column {
+  display: grid;
+  grid-template-rows: repeat(12, 56px);
+  gap: 0.4rem;
+}
+
+.time-label {
+  font-size: 0.85rem;
+  color: $PrimaryColorHover;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 0.5rem;
+}
+
+.day-columns {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.day-column {
+  display: grid;
+  grid-template-rows: repeat(12, 56px);
+  gap: 0.4rem;
+}
+
+.slot {
+  height: 56px;
+  border-radius: 12px;
+  border: 1px dashed rgba($PrimaryColor, 0.25);
+  background: rgba($PrimaryColor, 0.03);
+  color: $PrimaryColor;
+  font-size: 0.82rem;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  cursor: pointer;
+  transition: $transitionFast;
+  position: relative;
+  overflow: hidden;
+}
+
+.slot:hover:not(:disabled) {
+  background: rgba($PrimaryColor, 0.08);
+  border-color: $PrimaryColorHover;
+  color: $PrimaryColorHover;
+}
+
+.slot:disabled {
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.slot.is-active {
+  background: $PrimaryActive;
+  color: #fff;
+  border-color: $PrimaryActive;
+}
+
+.slot.is-booked {
+  background: $SecondaryColor;
+  color: #fff;
+  border-color: $SecondaryColor;
+}
+
+.slot.is-past {
+  background: rgba($PrimaryColor, 0.06);
+  color: rgba($PrimaryColor, 0.5);
+  border-color: rgba($PrimaryColor, 0.15);
+  cursor: not-allowed;
+}
+
+.slot-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.slot-range {
+  font-size: 0.68rem;
+  font-weight: 600;
+  opacity: 0.75;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: rgba($PrimaryColor, 0.08);
+  color: inherit;
+}
+
+.slot.is-active .slot-range {
+  background: rgba(#fff, 0.22);
+}
+
+.slot.is-booked .slot-range {
+  background: rgba(#fff, 0.2);
+}
+
+.slot.is-past .slot-range {
+  background: rgba($PrimaryColor, 0.08);
+  opacity: 0.6;
+}
+
+.calendar-footer {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: $PrimaryColorHover;
+}

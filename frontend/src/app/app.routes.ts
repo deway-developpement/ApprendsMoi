@@ -7,6 +7,9 @@ import { HomeRouterComponent } from './pages/HomeRooter/home-router.component';
 import { ChatComponent } from './pages/Chat/chat.component';
 import { UsersListComponent } from './pages/HomeAdmin/UsersList/users-list.component';
 import { UserDetailsComponent } from './pages/HomeAdmin/UsersDetails/user-details.component';
+import { PlanningManagementTeacherComponent } from './pages/PlanningManagementTeacher/planning-management-teacher.component';
+import { SearchForTeachersComponent } from './pages/SearchForTeachers/search-for-teachers.component';
+import { TeacherProfileComponent } from './pages/TeacherProfile/teacher-profile.component';
 
 export const routes: Routes = [
   { path: '', component: HomeRouterComponent },
@@ -21,6 +24,9 @@ export const routes: Routes = [
   { path: 'chat', component: ChatComponent },
   { path: 'admin/users', component: UsersListComponent },
   { path: 'admin/users/:id', component: UserDetailsComponent },
+  { path: 'teacher/planning', component: PlanningManagementTeacherComponent },
+  { path: 'search', component: SearchForTeachersComponent },
+  { path: 'teachers/:id', component: TeacherProfileComponent }
 ];
 
 

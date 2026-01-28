@@ -27,7 +27,7 @@ public class ZoomController : ControllerBase
     /// Creates a new instant Zoom meeting and saves it to the database
     /// </summary>
     [HttpPost("meeting")]
-    [RequireRole(ProfileType.Admin, ProfileType.Teacher)]
+    [RequireRole(ProfileType.Admin, ProfileType.Teacher, ProfileType.Parent, ProfileType.Student)]
     [Consumes("application/json")]
     [Produces("application/json")]
     [ProducesResponseType(typeof(CreateMeetingResponse), StatusCodes.Status200OK)]
@@ -57,10 +57,37 @@ public class ZoomController : ControllerBase
             var userProfile = JwtHelper.GetUserProfileFromClaims(User);
 
             // Teachers can only create meetings where they are the teacher
+            // Students can only create meetings for themselves
+            // Parents can only create meetings for their children
             // Admins can create any meeting
             if (userProfile == ProfileType.Teacher && request.TeacherId!.Value != currentUserId)
             {
                 return Forbid();
+            }
+
+            if (userProfile == ProfileType.Student && request.StudentId!.Value != currentUserId)
+            {
+                return Forbid();
+            }
+
+            if (userProfile == ProfileType.Parent)
+            {
+                var parentWithChildren = await _dbContext.Users
+                    .Where(u => u.Id == currentUserId)
+                    .Include(u => u.Parent!)
+                    .ThenInclude(p => p.Students)
+                    .FirstOrDefaultAsync();
+
+                if (parentWithChildren?.Parent == null)
+                {
+                    return Forbid();
+                }
+
+                var childrenIds = parentWithChildren.Parent.Students.Select(s => s.UserId).ToList();
+                if (!childrenIds.Contains(request.StudentId!.Value))
+                {
+                    return Forbid();
+                }
             }
 
             var teacher = await _dbContext.Users.FindAsync(request.TeacherId!.Value);

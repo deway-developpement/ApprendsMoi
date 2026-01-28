@@ -1,0 +1,241 @@
+<app-header theme="light"></app-header>
+
+<div class="profile-page" *ngIf="teacher as t">
+  <section class="profile-hero">
+    <div class="hero-content">
+      <a class="back-link" routerLink="/search">
+        <span>←</span> Back to search
+      </a>
+
+      <div class="hero-card">
+        <div class="teacher-main">
+          <div class="avatar" [style.background-color]="t.avatarColor">
+            {{ t.name.split(' ')[0].charAt(0) }}{{ t.name.split(' ')[1]?.charAt(0) || '' }}
+          </div>
+          <div class="name-block">
+            <div class="name-row">
+              <h1>{{ t.name }}</h1>
+              <span class="badge premium" *ngIf="t.isPremium">Premium</span>
+              <span class="badge verified" *ngIf="t.isVerified">Verified</span>
+              <span class="badge top" *ngIf="t.isTop">Top prof</span>
+            </div>
+            <p class="headline">{{ t.headline }}</p>
+            <div class="meta-row">
+              <span class="meta">{{ t.city }}</span>
+              <span class="meta">•</span>
+              <span class="meta">{{ t.rating.toFixed(1) }} ({{ t.reviews }} avis)</span>
+              <span class="meta">•</span>
+              <span class="meta">{{ t.pricePerHour }}€/h</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-actions">
+          <app-button variant="primary">Book a session</app-button>
+          <app-button variant="ghost">Send a message</app-button>
+        </div>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat-card" *ngFor="let stat of t.highlights">
+          <span class="stat-value">{{ stat.value }}</span>
+          <span class="stat-label">{{ stat.label }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="profile-body">
+    <section class="profile-section">
+      <div class="section-title">
+        <h2>About</h2>
+        <p class="section-subtitle">Teaching style and focus areas.</p>
+      </div>
+      <div class="info-grid">
+        <div class="info-card">
+          <h3>Bio</h3>
+          <p>{{ t.bio }}</p>
+        </div>
+        <div class="info-card">
+          <h3>Specialties</h3>
+          <div class="pill-row">
+            <span class="pill" *ngFor="let item of t.specialties">{{ item }}</span>
+          </div>
+        </div>
+        <div class="info-card">
+          <h3>Subjects & levels</h3>
+          <div class="pill-row">
+            <span class="pill soft" *ngFor="let subject of t.subjects">{{ subject }}</span>
+          </div>
+          <div class="pill-row">
+            <span class="pill outline" *ngFor="let level of t.levels">{{ level }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="profile-section booking">
+      <div class="section-title">
+        <h2>Book a session</h2>
+        <p class="section-subtitle">Choose a date and time to reserve a lesson.</p>
+      </div>
+
+      <div class="booking-card" *ngIf="canBook; else bookingLocked">
+        <div class="booking-layout">
+          <div class="booking-calendar">
+            <div class="calendar-title">
+              <div>
+                <h3>Available slots</h3>
+                <p>Select a blue slot to continue.</p>
+              </div>
+              <span class="calendar-status" *ngIf="availabilityLoading">Loading...</span>
+            </div>
+
+            <div class="calendar-legend">
+              <span class="legend-pill available">Available</span>
+              <span class="legend-pill selected">Selected</span>
+              <span class="legend-pill booked">Booked</span>
+              <span class="legend-pill past">Past</span>
+            </div>
+
+            <div class="calendar-grid">
+              <div class="calendar-header">
+                <div class="calendar-corner"></div>
+                <div class="calendar-day" *ngFor="let day of weekDays">
+                  <span class="day-name">{{ day.label }}</span>
+                  <span class="day-date">{{ day.dateLabel }}</span>
+                </div>
+              </div>
+
+              <div class="calendar-body">
+                <div class="time-column">
+                  <div class="time-label" *ngFor="let slot of timeSlots">
+                    {{ slot.label }}
+                  </div>
+                </div>
+
+                <div class="day-columns">
+                  <div class="day-column" *ngFor="let day of weekDays">
+                    <button
+                      class="availability-slot"
+                      type="button"
+                      *ngFor="let slot of timeSlots"
+                      [class.is-available]="isSlotAvailable(day, slot)"
+                      [class.is-selected]="isSlotSelected(day, slot)"
+                      [class.is-booked]="isSlotBooked(day, slot)"
+                      [class.is-past]="isSlotPast(day, slot)"
+                      [disabled]="!isSlotAvailable(day, slot) || isSlotBooked(day, slot) || isSlotPast(day, slot)"
+                      (click)="selectSlot(day, slot)">
+                      <span>{{ slot.label }}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="booking-form">
+            <div class="selected-slot" *ngIf="selectedSlotKey; else noSelection">
+              <span class="selected-title">Selected slot</span>
+              <span class="selected-value">{{ selectedSlotLabel }}</span>
+              <span class="selected-time">{{ selectedSlotRange }}</span>
+            </div>
+            <ng-template #noSelection>
+              <div class="selected-slot empty">
+                <span class="selected-title">No slot selected</span>
+                <span class="selected-time">Pick a time on the left to continue.</span>
+              </div>
+            </ng-template>
+
+            <div class="booking-grid">
+              <div class="field">
+                <label>Duration</label>
+                <div class="fixed-duration" *ngIf="needsStudentSelection; else durationSelect">
+                  60 min
+                </div>
+                <ng-template #durationSelect>
+                  <app-select
+                    [options]="durationOptions"
+                    [(value)]="bookingDuration"
+                    placeholder="Duration">
+                  </app-select>
+                </ng-template>
+              </div>
+              <div class="field" *ngIf="needsStudentSelection">
+                <label>Student</label>
+                <app-select
+                  [options]="studentOptions"
+                  [(value)]="selectedStudentId"
+                  placeholder="Select a student">
+                </app-select>
+              </div>
+              <div class="field full">
+                <label>Topic (optional)</label>
+                <app-text-input
+                  placeholder="Ex: Revision chapitre 3"
+                  [value]="bookingTopic"
+                  (valueChange)="bookingTopic = $event">
+                </app-text-input>
+              </div>
+            </div>
+
+            <div class="booking-actions">
+              <app-button variant="primary" (click)="bookSession()" [disabled]="isBooking">
+                {{ isBooking ? 'Booking...' : 'Book appointment' }}
+              </app-button>
+              <app-button variant="ghost" (click)="resetBooking()" [disabled]="isBooking">
+                Reset
+              </app-button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #bookingLocked>
+        <div class="booking-card locked">
+          <p>Log in as a parent or student to book a session with this teacher.</p>
+          <app-button variant="primary" routerLink="/login">Login</app-button>
+        </div>
+      </ng-template>
+    </section>
+
+    <section class="profile-section split">
+      <div class="availability-card">
+        <div class="section-title">
+          <h2>Next slots</h2>
+          <p class="section-subtitle">Upcoming availability this week.</p>
+        </div>
+        <div class="slot-list">
+          <div class="slot-item" *ngFor="let slot of t.availability">
+            <div>
+              <span class="slot-day">{{ slot.label }}</span>
+              <span class="slot-time">{{ slot.time }}</span>
+            </div>
+            <span class="slot-format">{{ slot.format }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="details-card">
+        <div class="detail-block">
+          <h3>Languages</h3>
+          <div class="pill-row">
+            <span class="pill soft" *ngFor="let lang of t.languages">{{ lang }}</span>
+          </div>
+        </div>
+        <div class="detail-block">
+          <h3>Education</h3>
+          <ul>
+            <li *ngFor="let edu of t.education">{{ edu }}</li>
+          </ul>
+        </div>
+        <div class="detail-block">
+          <h3>Certifications</h3>
+          <ul>
+            <li *ngFor="let cert of t.certifications">{{ cert }}</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
