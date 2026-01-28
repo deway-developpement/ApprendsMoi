@@ -150,7 +150,7 @@ export class PlanningManagementTeacherComponent implements OnInit {
     const key = this.buildSlotKey(day.key, slot.startTime);
 
     if (this.selectedSlotKeys.has(key)) {
-      this.toastService.info('This slot is already saved.');
+      this.toastService.info('Ce créneau est déjà enregistré.');
       return;
     }
 
@@ -159,7 +159,7 @@ export class PlanningManagementTeacherComponent implements OnInit {
     }
 
     if (!this.teacherId) {
-      this.toastService.error('You must be logged in as a teacher to add availability.');
+      this.toastService.error('Vous devez être connecté en tant que professeur pour ajouter une disponibilité.');
       return;
     }
 
@@ -179,10 +179,10 @@ export class PlanningManagementTeacherComponent implements OnInit {
         this.http.post<AvailabilityResponse>(this.apiBaseUrl, payload)
       );
       this.applyAvailabilityToSlots(created);
-      this.toastService.success(`Saved: ${day.label} ${day.dateLabel} ${slot.rangeLabel}.`);
+      this.toastService.success(`Enregistré : ${day.label} ${day.dateLabel} ${slot.rangeLabel}.`);
       this.refreshSummary();
     } catch (err) {
-      this.toastService.error(this.getErrorMessage(err, 'Unable to save availability.'));
+      this.toastService.error(this.getErrorMessage(err, 'Impossible d\'enregistrer la disponibilité.'));
     } finally {
       this.pendingSlotKeys.delete(key);
       this.isSaving = false;
@@ -197,18 +197,18 @@ export class PlanningManagementTeacherComponent implements OnInit {
       try {
         user = await firstValueFrom(this.authService.fetchMe());
       } catch (err) {
-        this.toastService.error(this.getErrorMessage(err, 'Unable to load user profile.'));
+        this.toastService.error(this.getErrorMessage(err, 'Impossible de charger le profil utilisateur.'));
         return;
       }
     }
 
     if (!user) {
-      this.toastService.error('You must be logged in to access this page.');
+      this.toastService.error('Vous devez être connecté pour accéder à cette page.');
       return;
     }
 
     if (user.profileType !== ProfileType.Teacher) {
-      this.toastService.warning('This page is only available for teachers.');
+      this.toastService.warning('Cette page est réservée aux professeurs.');
       return;
     }
 
@@ -235,7 +235,7 @@ export class PlanningManagementTeacherComponent implements OnInit {
       this.applyBlockedSlots(blockedSlots ?? []);
       this.refreshSummary();
     } catch (err) {
-      this.toastService.error(this.getErrorMessage(err, 'Unable to load availabilities.'));
+      this.toastService.error(this.getErrorMessage(err, 'Impossible de charger les disponibilités.'));
     } finally {
       this.isLoading = false;
     }
@@ -292,7 +292,7 @@ export class PlanningManagementTeacherComponent implements OnInit {
     const availabilityId = this.slotAvailabilityIds.get(key);
 
     if (!availabilityId) {
-      this.toastService.error('Unable to find the availability to remove.');
+      this.toastService.error('Impossible de trouver la disponibilité à supprimer.');
       return;
     }
 
@@ -302,10 +302,10 @@ export class PlanningManagementTeacherComponent implements OnInit {
     try {
       await firstValueFrom(this.http.delete(`${this.apiBaseUrl}/${availabilityId}`));
       this.removeAvailabilityFromSlots(availabilityId);
-      this.toastService.success(`Removed: ${day.label} ${day.dateLabel} ${slot.rangeLabel}.`);
+      this.toastService.success(`Supprimé : ${day.label} ${day.dateLabel} ${slot.rangeLabel}.`);
       this.refreshSummary();
     } catch (err) {
-      this.toastService.error(this.getErrorMessage(err, 'Unable to remove availability.'));
+      this.toastService.error(this.getErrorMessage(err, 'Impossible de supprimer la disponibilité.'));
     } finally {
       this.pendingSlotKeys.delete(key);
       this.isSaving = false;
@@ -358,8 +358,8 @@ export class PlanningManagementTeacherComponent implements OnInit {
 
     this.weekDays = Array.from({ length: 7 }, (_, index) => {
       const date = this.addDays(this.weekStart, index);
-      const label = date.toLocaleDateString('en-US', { weekday: 'short' });
-      const dateLabel = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const label = date.toLocaleDateString('fr-FR', { weekday: 'short' });
+      const dateLabel = date.toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' });
       return {
         date,
         label,
@@ -385,8 +385,8 @@ export class PlanningManagementTeacherComponent implements OnInit {
     });
 
     this.weekRangeLabel = `${this.formatShortDate(this.weekStart)} - ${this.formatShortDate(this.weekEnd)}`;
-    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Local time';
-    this.timeZoneLabel = `Timezone: ${timeZone}`;
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Heure locale';
+    this.timeZoneLabel = `Fuseau horaire : ${timeZone}`;
   }
 
   private getStartOfCurrentWeek(baseDate: Date): Date {
@@ -416,7 +416,7 @@ export class PlanningManagementTeacherComponent implements OnInit {
   }
 
   private formatShortDate(date: Date): string {
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return date.toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' });
   }
 
   private formatTime(hour: number, minute: number): string {

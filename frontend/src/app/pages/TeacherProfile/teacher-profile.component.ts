@@ -172,14 +172,14 @@ export class TeacherProfileComponent implements OnInit {
       bio: 'Je propose un accompagnement structure, des fiches de revision claires et des exercices adaptes a chaque eleve.',
       specialties: ['Preparation brevet', 'Methodologie', 'Confiance en soi'],
       highlights: [
-        { label: 'Students helped', value: '180+' },
-        { label: 'Response time', value: '< 1h' },
-        { label: 'Lessons completed', value: '900+' }
+        { label: 'Élèves accompagnés', value: '180+' },
+        { label: 'Temps de réponse', value: '< 1h' },
+        { label: 'Cours réalisés', value: '900+' }
       ],
       availability: [
-        { label: 'Tue', time: '17:00 - 18:00', format: 'Visio' },
-        { label: 'Wed', time: '14:00 - 15:00', format: 'Domicile' },
-        { label: 'Sat', time: '10:00 - 11:00', format: 'Hybride' }
+        { label: 'Mar', time: '17:00 - 18:00', format: 'Visio' },
+        { label: 'Mer', time: '14:00 - 15:00', format: 'Domicile' },
+        { label: 'Sam', time: '10:00 - 11:00', format: 'Hybride' }
       ],
       languages: ['Francais', 'Anglais'],
       education: ['Master Physique - Sorbonne', 'CAPES Mathematiques'],
@@ -202,13 +202,13 @@ export class TeacherProfileComponent implements OnInit {
       bio: 'Cours interactifs, preparation examens et prise de parole pour progresser rapidement.',
       specialties: ['Oral', 'Toeic', 'Revision rapide'],
       highlights: [
-        { label: 'Students helped', value: '120+' },
-        { label: 'Response time', value: '< 2h' },
-        { label: 'Lessons completed', value: '540+' }
+        { label: 'Élèves accompagnés', value: '120+' },
+        { label: 'Temps de réponse', value: '< 2h' },
+        { label: 'Cours réalisés', value: '540+' }
       ],
       availability: [
-        { label: 'Mon', time: '18:00 - 19:00', format: 'Visio' },
-        { label: 'Thu', time: '19:00 - 20:00', format: 'Visio' }
+        { label: 'Lun', time: '18:00 - 19:00', format: 'Visio' },
+        { label: 'Jeu', time: '19:00 - 20:00', format: 'Visio' }
       ],
       languages: ['Francais', 'Anglais'],
       education: ['Licence Langues etrangeres appliquees'],
@@ -231,13 +231,13 @@ export class TeacherProfileComponent implements OnInit {
       bio: 'Cours vivants, suivi personnalise et methodes simples pour progresser.',
       specialties: ['Expression ecrite', 'Methodologie', 'Confiance'],
       highlights: [
-        { label: 'Students helped', value: '90+' },
-        { label: 'Response time', value: '< 2h' },
-        { label: 'Lessons completed', value: '420+' }
+        { label: 'Élèves accompagnés', value: '90+' },
+        { label: 'Temps de réponse', value: '< 2h' },
+        { label: 'Cours réalisés', value: '420+' }
       ],
       availability: [
-        { label: 'Tue', time: '16:00 - 17:00', format: 'Domicile' },
-        { label: 'Fri', time: '18:00 - 19:00', format: 'Hybride' }
+        { label: 'Mar', time: '16:00 - 17:00', format: 'Domicile' },
+        { label: 'Ven', time: '18:00 - 19:00', format: 'Hybride' }
       ],
       languages: ['Francais', 'Anglais'],
       education: ['Master Lettres modernes'],
@@ -276,35 +276,35 @@ export class TeacherProfileComponent implements OnInit {
 
   async bookSession(): Promise<void> {
     if (!this.canBook) {
-      this.toastService.warning('Booking is available for parents or students.');
+      this.toastService.warning('La réservation est disponible pour les parents ou les élèves.');
       return;
     }
 
     if (!this.teacherId) {
-      this.toastService.error('Teacher id is missing.');
+      this.toastService.error('L\'identifiant du professeur est manquant.');
       return;
     }
 
     if (!this.selectedSlotKey || !this.bookingDate || !this.bookingTime) {
-      this.toastService.warning('Please select a slot from the calendar.');
+      this.toastService.warning('Veuillez sélectionner un créneau dans le calendrier.');
       return;
     }
 
     const studentId = this.resolveStudentId();
     if (!studentId) {
-      this.toastService.warning('Please select a student.');
+      this.toastService.warning('Veuillez sélectionner un élève.');
       return;
     }
 
     const scheduledDate = new Date(`${this.bookingDate}T${this.bookingTime}:00`);
     if (Number.isNaN(scheduledDate.getTime())) {
-      this.toastService.error('Invalid date or time.');
+      this.toastService.error('Date ou heure invalide.');
       return;
     }
 
     const duration =
       this.userProfile === ProfileType.Parent ? 60 : (Number(this.bookingDuration) || 60);
-    const topic = this.bookingTopic?.trim() || `Session with ${this.teacher?.name ?? 'teacher'}`;
+    const topic = this.bookingTopic?.trim() || `Séance avec ${this.teacher?.name ?? 'le professeur'}`;
 
     this.isBooking = true;
 
@@ -319,10 +319,10 @@ export class TeacherProfileComponent implements OnInit {
         })
       );
 
-      this.toastService.success('Appointment booked successfully.');
+      this.toastService.success('Séance réservée avec succès.');
       this.resetBooking();
     } catch (err) {
-      this.toastService.error(this.getErrorMessage(err, 'Unable to book appointment.'));
+      this.toastService.error(this.getErrorMessage(err, 'Impossible de réserver la séance.'));
     } finally {
       this.isBooking = false;
     }
@@ -361,7 +361,7 @@ export class TeacherProfileComponent implements OnInit {
       try {
         user = await firstValueFrom(this.authService.fetchMe());
       } catch (err) {
-        this.toastService.error(this.getErrorMessage(err, 'Unable to load user.'));
+        this.toastService.error(this.getErrorMessage(err, 'Impossible de charger l\'utilisateur.'));
         return;
       }
     }
@@ -419,13 +419,13 @@ export class TeacherProfileComponent implements OnInit {
       bio: dto.bio || 'Profil en cours de mise a jour.',
       specialties: ['Suivi personnalise', 'Revision', 'Methodologie'],
       highlights: [
-        { label: 'Students helped', value: '80+' },
-        { label: 'Response time', value: '< 2h' },
-        { label: 'Lessons completed', value: '300+' }
+        { label: 'Élèves accompagnés', value: '80+' },
+        { label: 'Temps de réponse', value: '< 2h' },
+        { label: 'Cours réalisés', value: '300+' }
       ],
       availability: [
-        { label: 'Mon', time: '18:00 - 19:00', format: travelRadius > 0 ? 'Domicile' : 'Visio' },
-        { label: 'Thu', time: '19:00 - 20:00', format: travelRadius > 0 ? 'Hybride' : 'Visio' }
+        { label: 'Lun', time: '18:00 - 19:00', format: travelRadius > 0 ? 'Domicile' : 'Visio' },
+        { label: 'Jeu', time: '19:00 - 20:00', format: travelRadius > 0 ? 'Hybride' : 'Visio' }
       ],
       languages: ['Francais'],
       education: ['Profil enseignant'],
@@ -449,7 +449,7 @@ export class TeacherProfileComponent implements OnInit {
         }
       },
       error: (err) => {
-        this.toastService.error(this.getErrorMessage(err, 'Unable to load students.'));
+        this.toastService.error(this.getErrorMessage(err, 'Impossible de charger les élèves.'));
       }
     });
   }
@@ -472,7 +472,7 @@ export class TeacherProfileComponent implements OnInit {
       this.applyAvailabilities(availabilities ?? []);
       this.applyBlockedSlots(blockedSlots ?? []);
     } catch (err) {
-      this.toastService.error(this.getErrorMessage(err, 'Unable to load availabilities.'));
+      this.toastService.error(this.getErrorMessage(err, 'Impossible de charger les disponibilités.'));
     } finally {
       this.availabilityLoading = false;
     }
@@ -568,8 +568,8 @@ export class TeacherProfileComponent implements OnInit {
 
     this.weekDays = Array.from({ length: 7 }, (_, index) => {
       const date = this.addDays(this.weekStart, index);
-      const label = date.toLocaleDateString('en-US', { weekday: 'short' });
-      const dateLabel = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const label = date.toLocaleDateString('fr-FR', { weekday: 'short' });
+      const dateLabel = date.toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' });
       return {
         date,
         label,

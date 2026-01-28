@@ -75,7 +75,7 @@ export class HomeStudentComponent implements OnInit {
       try {
         user = await firstValueFrom(this.authService.fetchMe());
       } catch (err) {
-        this.toastService.error(this.getErrorMessage(err, 'Unable to load user.'));
+        this.toastService.error(this.getErrorMessage(err, 'Impossible de charger l\'utilisateur.'));
         return;
       }
     }
@@ -124,7 +124,7 @@ export class HomeStudentComponent implements OnInit {
       this.nextCourse =
         this.courses.find(c => c.status === 'Confirmé' && c.date > new Date()) ?? null;
     } catch (err) {
-      this.toastService.error(this.getErrorMessage(err, 'Unable to load appointments.'));
+      this.toastService.error(this.getErrorMessage(err, 'Impossible de charger les rendez-vous.'));
     }
   }
 

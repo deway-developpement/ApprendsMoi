@@ -46,7 +46,7 @@ export class UserDetailsComponent implements OnInit {
     this.user$ = this.route.paramMap.pipe(
       switchMap(params => {
         const id = params.get('id');
-        if (!id) throw new Error('No ID provided');
+        if (!id) throw new Error('Aucun identifiant fourni');
         return this.userService.getUserById(id); // Ensure this exists in UserService
       })
     );

@@ -86,7 +86,7 @@ export class SearchForTeachersComponent implements OnInit {
     { label: 'Pertinence', value: 'relevance' },
     { label: 'Note la plus haute', value: 'rating' },
     { label: 'Prix croissant', value: 'price_asc' },
-    { label: 'Prix decroissant', value: 'price_desc' }
+    { label: 'Prix décroissant', value: 'price_desc' }
   ];
 
   ngOnInit(): void {
@@ -134,11 +134,11 @@ export class SearchForTeachersComponent implements OnInit {
 
   get activeFilters(): string[] {
     const filters: string[] = [];
-    if (this.searchCriteria.subject) filters.push('Matiere');
+    if (this.searchCriteria.subject) filters.push('Matière');
     if (this.searchCriteria.level) filters.push('Niveau');
     if (this.searchCriteria.location) filters.push(`Ville: ${this.searchCriteria.location}`);
     if (this.premiumOnly) filters.push('Premium');
-    if (this.verifiedOnly) filters.push('Verifie');
+    if (this.verifiedOnly) filters.push('Vérifié');
     if (this.formatFilter !== 'all') filters.push(`Format: ${this.formatLabel(this.formatFilter)}`);
     return filters;
   }
@@ -157,7 +157,7 @@ export class SearchForTeachersComponent implements OnInit {
       this.teachers = (data ?? []).map((teacher) => this.mapTeacherCard(teacher));
       this.updateResults();
     } catch (err) {
-      this.toastService.error(this.getErrorMessage(err, 'Unable to load teachers.'));
+      this.toastService.error(this.getErrorMessage(err, 'Impossible de charger les professeurs.'));
       this.teachers = [];
       this.visibleTeachers = [];
     } finally {
@@ -218,8 +218,8 @@ export class SearchForTeachersComponent implements OnInit {
       pricePerHour: 30,
       rating: 4.8,
       reviews: 20,
-      bio: teacher.bio || 'Profil en cours de mise a jour.',
-      subjects: ['Toutes matieres'],
+      bio: teacher.bio || 'Profil en cours de mise à jour.',
+      subjects: ['Toutes matières'],
       subjectSlugs: ['all'],
       levels: ['Tous niveaux'],
       levelSlugs: ['all'],

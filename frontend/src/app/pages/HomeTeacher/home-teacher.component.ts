@@ -74,7 +74,7 @@ export class HomeTeacherComponent implements OnInit {
       try {
         user = await firstValueFrom(this.authService.fetchMe());
       } catch (err) {
-        this.toastService.error(this.getErrorMessage(err, 'Unable to load user.'));
+        this.toastService.error(this.getErrorMessage(err, 'Impossible de charger l\'utilisateur.'));
         return;
       }
     }
@@ -125,7 +125,7 @@ export class HomeTeacherComponent implements OnInit {
 
       this.calculateRevenue();
     } catch (err) {
-      this.toastService.error(this.getErrorMessage(err, 'Unable to load appointments.'));
+      this.toastService.error(this.getErrorMessage(err, 'Impossible de charger les rendez-vous.'));
     }
   }
 

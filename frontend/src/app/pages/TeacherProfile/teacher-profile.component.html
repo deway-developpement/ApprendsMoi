@@ -4,7 +4,7 @@
   <section class="profile-hero">
     <div class="hero-content">
       <a class="back-link" routerLink="/search">
-        <span>←</span> Back to search
+        <span>←</span> Retour à la recherche
       </a>
 
       <div class="hero-card">
@@ -16,7 +16,7 @@
             <div class="name-row">
               <h1>{{ t.name }}</h1>
               <span class="badge premium" *ngIf="t.isPremium">Premium</span>
-              <span class="badge verified" *ngIf="t.isVerified">Verified</span>
+              <span class="badge verified" *ngIf="t.isVerified">Vérifié</span>
               <span class="badge top" *ngIf="t.isTop">Top prof</span>
             </div>
             <p class="headline">{{ t.headline }}</p>
@@ -31,8 +31,8 @@
         </div>
 
         <div class="hero-actions">
-          <app-button variant="primary">Book a session</app-button>
-          <app-button variant="ghost">Send a message</app-button>
+          <app-button variant="primary">Réserver une séance</app-button>
+          <app-button variant="ghost">Envoyer un message</app-button>
         </div>
       </div>
 
@@ -48,8 +48,8 @@
   <main class="profile-body">
     <section class="profile-section">
       <div class="section-title">
-        <h2>About</h2>
-        <p class="section-subtitle">Teaching style and focus areas.</p>
+        <h2>À propos</h2>
+        <p class="section-subtitle">Style d'enseignement et axes de travail.</p>
       </div>
       <div class="info-grid">
         <div class="info-card">
@@ -57,13 +57,13 @@
           <p>{{ t.bio }}</p>
         </div>
         <div class="info-card">
-          <h3>Specialties</h3>
+          <h3>Spécialités</h3>
           <div class="pill-row">
             <span class="pill" *ngFor="let item of t.specialties">{{ item }}</span>
           </div>
         </div>
         <div class="info-card">
-          <h3>Subjects & levels</h3>
+          <h3>Matières et niveaux</h3>
           <div class="pill-row">
             <span class="pill soft" *ngFor="let subject of t.subjects">{{ subject }}</span>
           </div>
@@ -76,8 +76,8 @@
 
     <section class="profile-section booking">
       <div class="section-title">
-        <h2>Book a session</h2>
-        <p class="section-subtitle">Choose a date and time to reserve a lesson.</p>
+        <h2>Réserver une séance</h2>
+        <p class="section-subtitle">Choisissez une date et une heure pour réserver un cours.</p>
       </div>
 
       <div class="booking-card" *ngIf="canBook; else bookingLocked">
@@ -85,17 +85,17 @@
           <div class="booking-calendar">
             <div class="calendar-title">
               <div>
-                <h3>Available slots</h3>
-                <p>Select a blue slot to continue.</p>
+                <h3>Créneaux disponibles</h3>
+                <p>Sélectionnez un créneau bleu pour continuer.</p>
               </div>
-              <span class="calendar-status" *ngIf="availabilityLoading">Loading...</span>
+              <span class="calendar-status" *ngIf="availabilityLoading">Chargement...</span>
             </div>
 
             <div class="calendar-legend">
-              <span class="legend-pill available">Available</span>
-              <span class="legend-pill selected">Selected</span>
-              <span class="legend-pill booked">Booked</span>
-              <span class="legend-pill past">Past</span>
+              <span class="legend-pill available">Disponible</span>
+              <span class="legend-pill selected">Sélectionné</span>
+              <span class="legend-pill booked">Réservé</span>
+              <span class="legend-pill past">Passé</span>
             </div>
 
             <div class="calendar-grid">
@@ -136,20 +136,20 @@
 
           <div class="booking-form">
             <div class="selected-slot" *ngIf="selectedSlotKey; else noSelection">
-              <span class="selected-title">Selected slot</span>
+              <span class="selected-title">Sélectionné slot</span>
               <span class="selected-value">{{ selectedSlotLabel }}</span>
               <span class="selected-time">{{ selectedSlotRange }}</span>
             </div>
             <ng-template #noSelection>
               <div class="selected-slot empty">
-                <span class="selected-title">No slot selected</span>
-                <span class="selected-time">Pick a time on the left to continue.</span>
+                <span class="selected-title">Aucun créneau sélectionné</span>
+                <span class="selected-time">Choisissez une heure à gauche pour continuer.</span>
               </div>
             </ng-template>
 
             <div class="booking-grid">
               <div class="field">
-                <label>Duration</label>
+                <label>Durée</label>
                 <div class="fixed-duration" *ngIf="needsStudentSelection; else durationSelect">
                   60 min
                 </div>
@@ -157,22 +157,22 @@
                   <app-select
                     [options]="durationOptions"
                     [(value)]="bookingDuration"
-                    placeholder="Duration">
+                    placeholder="Durée">
                   </app-select>
                 </ng-template>
               </div>
               <div class="field" *ngIf="needsStudentSelection">
-                <label>Student</label>
+                <label>Élève</label>
                 <app-select
                   [options]="studentOptions"
                   [(value)]="selectedStudentId"
-                  placeholder="Select a student">
+                  placeholder="Sélectionner un élève">
                 </app-select>
               </div>
               <div class="field full">
-                <label>Topic (optional)</label>
+                <label>Sujet (optionnel)</label>
                 <app-text-input
-                  placeholder="Ex: Revision chapitre 3"
+                  placeholder="Ex : Révision chapitre 3"
                   [value]="bookingTopic"
                   (valueChange)="bookingTopic = $event">
                 </app-text-input>
@@ -181,10 +181,10 @@
 
             <div class="booking-actions">
               <app-button variant="primary" (click)="bookSession()" [disabled]="isBooking">
-                {{ isBooking ? 'Booking...' : 'Book appointment' }}
+                {{ isBooking ? 'Réservation...' : 'Réserver la séance' }}
               </app-button>
               <app-button variant="ghost" (click)="resetBooking()" [disabled]="isBooking">
-                Reset
+                Réinitialiser
               </app-button>
             </div>
           </div>
@@ -193,8 +193,8 @@
 
       <ng-template #bookingLocked>
         <div class="booking-card locked">
-          <p>Log in as a parent or student to book a session with this teacher.</p>
-          <app-button variant="primary" routerLink="/login">Login</app-button>
+          <p>Connectez-vous en tant que parent ou élève pour réserver une séance avec ce professeur.</p>
+          <app-button variant="primary" routerLink="/login">Se connecter</app-button>
         </div>
       </ng-template>
     </section>
@@ -202,8 +202,8 @@
     <section class="profile-section split">
       <div class="availability-card">
         <div class="section-title">
-          <h2>Next slots</h2>
-          <p class="section-subtitle">Upcoming availability this week.</p>
+          <h2>Prochains créneaux</h2>
+          <p class="section-subtitle">Disponibilités à venir cette semaine.</p>
         </div>
         <div class="slot-list">
           <div class="slot-item" *ngFor="let slot of t.availability">
@@ -218,13 +218,13 @@
 
       <div class="details-card">
         <div class="detail-block">
-          <h3>Languages</h3>
+          <h3>Langues</h3>
           <div class="pill-row">
             <span class="pill soft" *ngFor="let lang of t.languages">{{ lang }}</span>
           </div>
         </div>
         <div class="detail-block">
-          <h3>Education</h3>
+          <h3>Formation</h3>
           <ul>
             <li *ngFor="let edu of t.education">{{ edu }}</li>
           </ul>

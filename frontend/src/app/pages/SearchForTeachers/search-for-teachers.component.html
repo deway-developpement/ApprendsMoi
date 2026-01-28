@@ -4,10 +4,10 @@
   <section class="search-hero">
     <div class="hero-content">
       <div class="hero-copy">
-        <p class="eyebrow">Search</p>
-        <h1>Find the right teacher for your child</h1>
+        <p class="eyebrow">Recherche</p>
+        <h1>Trouvez le bon professeur pour votre enfant</h1>
         <p class="subtitle">
-          Filter by subject, level, and format. Compare profiles quickly and book with confidence.
+          Filtrez par matière, niveau et format. Comparez les profils rapidement et réservez en toute confiance.
         </p>
       </div>
 
@@ -17,8 +17,8 @@
   <section class="results-section">
     <div class="results-header">
       <div>
-        <h2>Teachers</h2>
-        <p class="results-count">{{ visibleTeachers.length }} profiles available</p>
+        <h2>Professeurs</h2>
+        <p class="results-count">{{ visibleTeachers.length }} profils disponibles</p>
       </div>
       <div class="search-inline">
         <app-search-bar (search)="applySearch($event)"></app-search-bar>
@@ -30,7 +30,7 @@
             Premium
           </button>
           <button class="filter-pill" [class.active]="verifiedOnly" (click)="toggleVerified()">
-            Verified
+            Vérifié
           </button>
           <button class="filter-pill" [class.active]="formatFilter === 'visio'" (click)="setFormat('visio')">
             Visio
@@ -42,17 +42,17 @@
             Hybride
           </button>
           <button class="filter-clear" [disabled]="!hasActiveFilters" (click)="clearFilters()">
-            Reset
+            Réinitialiser
           </button>
         </div>
 
         <div class="sort-control">
-          <span class="sort-label">Sort by</span>
+          <span class="sort-label">Trier par</span>
           <app-select
             [options]="sortOptions"
             [(value)]="sortValue"
             (valueChange)="onSortChange()"
-            placeholder="Sort">
+            placeholder="Trier">
           </app-select>
         </div>
       </div>
@@ -76,7 +76,7 @@
 
         <div class="badge-row">
           <span class="badge premium" *ngIf="teacher.isPremium">Premium</span>
-          <span class="badge verified" *ngIf="teacher.isVerified">Verified</span>
+          <span class="badge verified" *ngIf="teacher.isVerified">Vérifié</span>
           <span class="badge top" *ngIf="teacher.isTop">Top prof</span>
         </div>
 
@@ -96,7 +96,7 @@
             <span class="rating-meta">({{ teacher.reviews }} avis)</span>
           </div>
           <app-button variant="primary" size="small" [routerLink]="['/teachers', teacher.id]">
-            View profile
+            Voir le profil
           </app-button>
         </div>
       </article>
@@ -104,9 +104,9 @@
 
     <ng-template #emptyState>
       <div class="empty-state">
-        <h3>No teachers found</h3>
-        <p>Try adjusting filters or reset your search.</p>
-        <app-button variant="primary" (click)="clearFilters()">Reset filters</app-button>
+        <h3>Aucun professeur trouvé</h3>
+        <p>Essayez d'ajuster les filtres ou de réinitialiser votre recherche.</p>
+        <app-button variant="primary" (click)="clearFilters()">Réinitialiser les filtres</app-button>
       </div>
     </ng-template>
   </section>

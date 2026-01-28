@@ -7,9 +7,9 @@
         class="connection-status"
         [class.connected]="isSignalRConnected"
         [class.disconnected]="!isSignalRConnected"
-        [title]="isSignalRConnected ? 'Connected to real-time chat' : 'Disconnected from real-time chat'">
+        [title]="isSignalRConnected ? 'Connecté au chat en temps réel' : 'Déconnecté du chat en temps réel'">
         <span class="status-dot"></span>
-        <span class="status-text">{{ isSignalRConnected ? 'Live' : 'Offline' }}</span>
+        <span class="status-text">{{ isSignalRConnected ? 'En ligne' : 'Hors ligne' }}</span>
       </div>
     </div>
     <button 
@@ -17,7 +17,7 @@
       (click)="openCreateChatModal()"
       type="button"
       class="btn-primary">
-      + Start New Chat
+      + Démarrer une nouvelle discussion
     </button>
   </div>
 
@@ -36,9 +36,9 @@
       </div>
       
       <div *ngIf="chats.length === 0" class="empty-state">
-        <p>No chats yet</p>
+        <p>Aucune discussion pour le moment</p>
         <small *ngIf="currentUser?.profileType === ProfileType.Parent">
-          Start a conversation with a teacher by clicking the button above
+          Démarrez une conversation avec un professeur en cliquant sur le bouton ci-dessus
         </small>
       </div>
 
@@ -53,7 +53,7 @@
         <div class="chat-item-content">
           <div class="chat-item-name">{{ chat.participantName }}</div>
           <div class="chat-item-preview">
-            {{ chat.lastMessage || 'No messages yet' }}
+            {{ chat.lastMessage || 'Aucun message pour le moment' }}
           </div>
         </div>
         <span class="unread-badge" *ngIf="chat.unreadCount > 0">{{ chat.unreadCount }}</span>
@@ -63,7 +63,7 @@
     <!-- Chat Detail -->
     <div class="chat-detail">
       <div *ngIf="!selectedChat" class="empty-state">
-        <p>📭 Select a chat to start messaging</p>
+        <p>📭 Sélectionnez une discussion pour commencer à échanger</p>
       </div>
 
       <div *ngIf="selectedChat" class="chat-window">
@@ -71,9 +71,9 @@
         <div class="chat-window-header">
           <div>
             <h3>{{ selectedChat.participantName }}</h3>
-            <small>{{ selectedChat.chatType === ChatType.ParentChat ? 'Parent Chat' : 'Student Chat' }}</small>
+            <small>{{ selectedChat.chatType === ChatType.ParentChat ? 'Discussion parent' : 'Discussion élève' }}</small>
           </div>
-          <button (click)="archiveChat()" class="btn-icon" title="Archive chat">📦</button>
+          <button (click)="archiveChat()" class="btn-icon" title="Archiver la discussion">📦</button>
         </div>
 
         <!-- Messages -->
@@ -98,7 +98,7 @@
             </div>
           </div>
           <div *ngIf="typingUsers.size > 0" class="typing-indicator">
-            <span>{{ Array.from(typingUsers).join(', ') }} is typing...</span>
+            <span>{{ Array.from(typingUsers).join(', ') }} est en train d'écrire...</span>
           </div>
         </div>
 
@@ -108,14 +108,14 @@
             [(ngModel)]="messageContent"
             (keyup.enter)="sendMessage()"
             (keyup)="onMessageInput()"
-            placeholder="Type a message... (Enter to send)"
+            placeholder="Ecrivez un message... (Entre pour envoyer)"
             rows="3">
           </textarea>
           <button 
             (click)="sendMessage()"
             [disabled]="!messageContent.trim() || loading"
             class="btn-primary">
-            {{ loading ? 'Sending...' : 'Send' }}
+            {{ loading ? 'Envoi...' : 'Envoyer' }}
           </button>
         </div>
       </div>
@@ -126,21 +126,21 @@
   <div *ngIf="showCreateChatModal" class="modal-overlay" (click)="closeCreateModal()">
     <div class="modal" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h2>Start New Chat</h2>
+        <h2>Démarrer une nouvelle discussion</h2>
         <button (click)="closeCreateModal()" class="close">×</button>
       </div>
       <div class="modal-body">
-        <label>Find a teacher</label>
+        <label>Trouver un professeur</label>
         <input 
           [(ngModel)]="teacherSearchTerm"
           (input)="applyTeacherFilter()"
           type="text"
-          placeholder="Search by name, email, or city"
+          placeholder="Rechercher par nom, email ou ville"
           class="form-input">
         <div class="teacher-list">
-          <div *ngIf="loadingTeachers" class="teacher-list-empty">Loading teachers...</div>
+          <div *ngIf="loadingTeachers" class="teacher-list-empty">Chargement des professeurs...</div>
           <div *ngIf="!loadingTeachers && filteredTeachers.length === 0" class="teacher-list-empty">
-            No teachers found
+            Aucun professeur trouvé.
           </div>
           <button
             type="button"
@@ -150,21 +150,22 @@
             (click)="selectTeacher(teacher)">
             <div class="teacher-name">{{ teacher.firstName }} {{ teacher.lastName }}</div>
             <div class="teacher-meta">
-              <span>{{ teacher.email || 'No email' }}</span>
+              <span>{{ teacher.email || 'Aucun email' }}</span>
               <span *ngIf="teacher.city">• {{ teacher.city }}</span>
             </div>
           </button>
         </div>
       </div>
       <div class="modal-footer">
-        <button (click)="closeCreateModal()" class="btn-secondary">Cancel</button>
+        <button (click)="closeCreateModal()" class="btn-secondary">Annuler</button>
         <button 
           (click)="createNewChat()"
           [disabled]="!newChatTeacherId.trim() || loading"
           class="btn-primary">
-          {{ loading ? 'Creating...' : 'Start Chat' }}
+          {{ loading ? 'Création...' : 'Démarrer la discussion' }}
         </button>
       </div>
     </div>
   </div>
 </div>
+

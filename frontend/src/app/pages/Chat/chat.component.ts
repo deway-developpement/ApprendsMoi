@@ -139,7 +139,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         });
       },
       error: (err) => {
-        this.error = 'Failed to load chats';
+        this.error = 'Impossible de charger les discussions';
         console.error(err);
         this.loading = false;
       }
@@ -155,7 +155,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.loadingTeachers = false;
       },
       error: (err) => {
-        this.error = 'Failed to load teachers';
+        this.error = 'Impossible de charger les professeurs';
         console.error(err);
         this.loadingTeachers = false;
       }
@@ -204,7 +204,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         });
       },
       error: (err) => {
-        this.error = 'Failed to load chat';
+        this.error = 'Impossible de charger la discussion';
         console.error(err);
         this.loading = false;
       }
@@ -250,7 +250,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         }
       },
       error: (err) => {
-        this.error = 'Failed to send message';
+        this.error = 'Impossible d\'envoyer le message';
         console.error(err);
         this.loading = false;
       }
@@ -259,7 +259,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   createNewChat(): void {
     if (!this.newChatTeacherId.trim()) {
-      this.error = 'Please select a teacher';
+      this.error = 'Veuillez sélectionner un professeur';
       return;
     }
 
@@ -278,7 +278,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.selectChat(chat);
       },
       error: (err) => {
-        this.error = err.error?.message || 'Failed to create chat';
+        this.error = err.error?.message || 'Impossible de créer la discussion';
         console.error(err);
         this.loading = false;
       }
@@ -296,14 +296,14 @@ export class ChatComponent implements OnInit, OnDestroy {
   archiveChat(): void {
     if (!this.selectedChat) return;
 
-    if (confirm('Are you sure you want to archive this chat?')) {
+    if (confirm('Êtes-vous sûr de vouloir archiver cette discussion ?')) {
       this.chatService.archiveChat(this.selectedChat.chatId).subscribe({
         next: () => {
           this.chats = this.chats.filter(c => c.chatId !== this.selectedChat?.chatId);
           this.selectedChat = null;
         },
         error: (err) => {
-          this.error = 'Failed to archive chat';
+          this.error = 'Impossible d\'archiver la discussion';
           console.error(err);
         }
       });
@@ -324,7 +324,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
 
     // Notify that user is typing
-    this.chatSignalRService.notifyTyping(this.selectedChat.chatId, this.currentUser.firstName || 'User').catch(err => {
+    this.chatSignalRService.notifyTyping(this.selectedChat.chatId, this.currentUser.firstName || 'Utilisateur').catch(err => {
       console.error('Error notifying typing:', err);
     });
 

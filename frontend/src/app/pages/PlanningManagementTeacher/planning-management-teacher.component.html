@@ -3,12 +3,12 @@
 <div class="planning-page">
   <section class="planning-hero">
     <div class="hero-content">
-      <p class="eyebrow">Teacher planning</p>
-      <h1>Set your availability for next week</h1>
-      <p class="subtitle">Click a time slot to add or remove availability. Saved slots appear filled.</p>
+      <p class="eyebrow">Planning professeur</p>
+      <h1>Définissez vos disponibilités pour la semaine prochaine</h1>
+      <p class="subtitle">Cliquez sur un créneau pour ajouter ou retirer une disponibilité. Les créneaux enregistrés apparaissent remplis.</p>
 
       <div class="hero-meta">
-        <div class="meta-card">Week: {{ weekRangeLabel }}</div>
+        <div class="meta-card">Semaine : {{ weekRangeLabel }}</div>
         <div class="meta-card">{{ timeZoneLabel }}</div>
       </div>
 
@@ -19,21 +19,21 @@
     <section class="calendar-card">
       <div class="card-header">
         <div>
-          <h2>Weekly calendar</h2>
-          <p class="card-subtitle">Click a slot to add or remove availability for that hour.</p>
+          <h2>Calendrier hebdomadaire</h2>
+          <p class="card-subtitle">Cliquez sur un créneau pour ajouter ou retirer une disponibilité pour cette heure.</p>
         </div>
         <div class="legend">
           <span class="legend-item">
             <span class="legend-dot is-active"></span>
-            Saved
+            Enregistré
           </span>
           <span class="legend-item">
             <span class="legend-dot is-booked"></span>
-            Booked
+            Réservé
           </span>
           <span class="legend-item">
             <span class="legend-dot"></span>
-            Available
+            Disponible
           </span>
         </div>
       </div>
@@ -66,7 +66,7 @@
                   [class.is-past]="isSlotPast(day, slot)"
                   [disabled]="isSlotPending(day, slot) || isSlotBooked(day, slot) || isLoading || (!isSlotActive(day, slot) && isDayInPast(day))"
                   (click)="toggleAvailability(day, slot)"
-                  [attr.aria-label]="(isSlotActive(day, slot) ? 'Remove' : 'Add') + ' availability on ' + day.label + ' ' + day.dateLabel + ' at ' + slot.rangeLabel">
+                  [attr.aria-label]="(isSlotActive(day, slot) ? 'Retirer' : 'Ajouter') + ' une disponibilité le ' + day.label + ' ' + day.dateLabel + ' à ' + slot.rangeLabel">
                   <span class="slot-label">{{ slot.label }}</span>
                   <span class="slot-range">{{ slot.rangeLabel }}</span>
                 </button>
@@ -77,8 +77,8 @@
       </div>
 
       <div class="calendar-footer">
-        <span *ngIf="isLoading">Loading availabilities...</span>
-        <span *ngIf="!isLoading">Total slots saved: {{ summarySlots.length }}</span>
+        <span *ngIf="isLoading">Chargement des disponibilités...</span>
+        <span *ngIf="!isLoading">Total de créneaux enregistrés : {{ summarySlots.length }}</span>
       </div>
     </section>
   </main>
