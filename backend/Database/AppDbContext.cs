@@ -424,6 +424,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             b.Property(e => e.PaidAt).HasColumnName("paid_at");
             b.Property(e => e.PaymentIntentId).HasColumnName("payment_intent_id");
             b.Property(e => e.InvoiceNumber).HasColumnName("invoice_number");
+            b.Property(e => e.PdfFilePath).HasColumnName("pdf_file_path");
             
             b.HasIndex(e => e.CourseId);
             b.HasIndex(e => e.ParentId);

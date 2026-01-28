@@ -14,4 +14,5 @@ public class Invoice {
     public DateTime? PaidAt { get; set; }
     public string? PaymentIntentId { get; set; }
     public string? InvoiceNumber { get; set; }
+    public string? PdfFilePath { get; set; }
 }

@@ -6,24 +6,27 @@ using Microsoft.EntityFrameworkCore;
 namespace backend.Domains.Payments.Services;
 
 public interface IPaymentService {
-    Task<InvoiceDto> CreateInvoiceForCourseAsync(Guid courseId);
-    Task<InvoiceDto> GetInvoiceByIdAsync(Guid invoiceId);
-    Task<IEnumerable<InvoiceDto>> GetInvoicesByParentIdAsync(Guid parentId);
-    Task<IEnumerable<InvoiceDto>> GetInvoicesByTeacherIdAsync(Guid teacherId);
-    Task<IEnumerable<InvoiceDto>> GetAllInvoicesAsync();
+    Task<BillingDto> CreateBillingForCourseAsync(Guid courseId);
+    Task<BillingDto> GetBillingByIdAsync(Guid billingId);
+    Task<IEnumerable<BillingDto>> GetBillingsByParentIdAsync(Guid parentId);
+    Task<IEnumerable<BillingDto>> GetBillingsByTeacherIdAsync(Guid teacherId);
+    Task<IEnumerable<BillingDto>> GetAllBillingsAsync();
     Task<PaymentDto> ProcessPaymentAsync(CreatePaymentDto dto, Guid parentId);
     Task<PaymentHistoryDto> GetParentPaymentHistoryAsync(Guid parentId);
     Task<PaymentHistoryDto> GetTeacherPaymentHistoryAsync(Guid teacherId);
+    Task<byte[]> GenerateInvoicePdfAsync(Guid billingId);
 }
 
 public class PaymentService : IPaymentService {
     private readonly AppDbContext _context;
+    private readonly IInvoicePdfService _pdfService;
 
-    public PaymentService(AppDbContext context) {
+    public PaymentService(AppDbContext context, IInvoicePdfService pdfService) {
         _context = context;
+        _pdfService = pdfService;
     }
 
-    public async Task<InvoiceDto> CreateInvoiceForCourseAsync(Guid courseId) {
+    public async Task<BillingDto> CreateBillingForCourseAsync(Guid courseId) {
         var course = await _context.Courses
             .Include(c => c.Student).ThenInclude(s => s.Parent)
             .Include(c => c.Teacher).ThenInclude(t => t.User)
@@ -34,12 +37,12 @@ public class PaymentService : IPaymentService {
             throw new Exception("Course not found");
         }
 
-        // Check if invoice already exists
+        // Check if billing record already exists
         var existingInvoice = await _context.Invoices
             .FirstOrDefaultAsync(i => i.CourseId == courseId);
         
         if (existingInvoice != null) {
-            return await GetInvoiceByIdAsync(existingInvoice.Id);
+            return await GetBillingByIdAsync(existingInvoice.Id);
         }
 
         var teacherEarning = course.PriceSnapshot - course.CommissionSnapshot;
@@ -58,23 +61,23 @@ public class PaymentService : IPaymentService {
         _context.Invoices.Add(invoice);
         await _context.SaveChangesAsync();
 
-        return await GetInvoiceByIdAsync(invoice.Id);
+        return await GetBillingByIdAsync(invoice.Id);
     }
 
-    public async Task<InvoiceDto> GetInvoiceByIdAsync(Guid invoiceId) {
+    public async Task<BillingDto> GetBillingByIdAsync(Guid billingId) {
         var invoice = await _context.Invoices
             .Include(i => i.Course).ThenInclude(c => c.Subject)
             .Include(i => i.Parent).ThenInclude(p => p.User)
-            .FirstOrDefaultAsync(i => i.Id == invoiceId);
+            .FirstOrDefaultAsync(i => i.Id == billingId);
 
         if (invoice == null) {
-            throw new Exception("Invoice not found");
+            throw new Exception("Billing record not found");
         }
 
-        return MapInvoiceToDto(invoice);
+        return MapBillingToDto(invoice);
     }
 
-    public async Task<IEnumerable<InvoiceDto>> GetInvoicesByParentIdAsync(Guid parentId) {
+    public async Task<IEnumerable<BillingDto>> GetBillingsByParentIdAsync(Guid parentId) {
         var invoices = await _context.Invoices
             .Include(i => i.Course).ThenInclude(c => c.Subject)
             .Include(i => i.Parent).ThenInclude(p => p.User)
@@ -82,10 +85,10 @@ public class PaymentService : IPaymentService {
             .OrderByDescending(i => i.IssuedAt)
             .ToListAsync();
 
-        return invoices.Select(MapInvoiceToDto);
+        return invoices.Select(MapBillingToDto);
     }
 
-    public async Task<IEnumerable<InvoiceDto>> GetInvoicesByTeacherIdAsync(Guid teacherId) {
+    public async Task<IEnumerable<BillingDto>> GetBillingsByTeacherIdAsync(Guid teacherId) {
         var invoices = await _context.Invoices
             .Include(i => i.Course).ThenInclude(c => c.Subject)
             .Include(i => i.Parent).ThenInclude(p => p.User)
@@ -93,17 +96,17 @@ public class PaymentService : IPaymentService {
             .OrderByDescending(i => i.IssuedAt)
             .ToListAsync();
 
-        return invoices.Select(MapInvoiceToDto);
+        return invoices.Select(MapBillingToDto);
     }
 
-    public async Task<IEnumerable<InvoiceDto>> GetAllInvoicesAsync() {
+    public async Task<IEnumerable<BillingDto>> GetAllBillingsAsync() {
         var invoices = await _context.Invoices
             .Include(i => i.Course).ThenInclude(c => c.Subject)
             .Include(i => i.Parent).ThenInclude(p => p.User)
             .OrderByDescending(i => i.IssuedAt)
             .ToListAsync();
 
-        return invoices.Select(MapInvoiceToDto);
+        return invoices.Select(MapBillingToDto);
     }
 
     public async Task<PaymentDto> ProcessPaymentAsync(CreatePaymentDto dto, Guid parentId) {
@@ -145,17 +148,17 @@ public class PaymentService : IPaymentService {
     }
 
     public async Task<PaymentHistoryDto> GetParentPaymentHistoryAsync(Guid parentId) {
-        var invoices = await GetInvoicesByParentIdAsync(parentId);
+        var billings = await GetBillingsByParentIdAsync(parentId);
         var payments = await _context.Payments
             .Where(p => p.ParentId == parentId)
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync();
 
-        var totalPaid = invoices.Where(i => i.Status == "PAID").Sum(i => i.Amount);
-        var totalPending = invoices.Where(i => i.Status == "PENDING").Sum(i => i.Amount);
+        var totalPaid = billings.Where(i => i.Status == "PAID").Sum(i => i.Amount);
+        var totalPending = billings.Where(i => i.Status == "PENDING").Sum(i => i.Amount);
 
         return new PaymentHistoryDto {
-            Invoices = invoices.ToList(),
+            Billings = billings.ToList(),
             Payments = payments.Select(MapPaymentToDto).ToList(),
             TotalPaid = totalPaid,
             TotalPending = totalPending
@@ -163,21 +166,35 @@ public class PaymentService : IPaymentService {
     }
 
     public async Task<PaymentHistoryDto> GetTeacherPaymentHistoryAsync(Guid teacherId) {
-        var invoices = await GetInvoicesByTeacherIdAsync(teacherId);
+        var billings = await GetBillingsByTeacherIdAsync(teacherId);
         
-        var totalPaid = invoices.Where(i => i.Status == "PAID").Sum(i => i.TeacherEarning);
-        var totalPending = invoices.Where(i => i.Status == "PENDING").Sum(i => i.TeacherEarning);
+        var totalPaid = billings.Where(i => i.Status == "PAID").Sum(i => i.TeacherEarning);
+        var totalPending = billings.Where(i => i.Status == "PENDING").Sum(i => i.TeacherEarning);
 
         return new PaymentHistoryDto {
-            Invoices = invoices.ToList(),
+            Billings = billings.ToList(),
             Payments = new List<PaymentDto>(),
             TotalPaid = totalPaid,
             TotalPending = totalPending
         };
     }
 
-    private InvoiceDto MapInvoiceToDto(Invoice invoice) {
-        return new InvoiceDto {
+    public async Task<byte[]> GenerateInvoicePdfAsync(Guid billingId) {
+        var invoice = await _context.Invoices
+            .Include(i => i.Course).ThenInclude(c => c.Subject)
+            .Include(i => i.Course).ThenInclude(c => c.Teacher).ThenInclude(t => t.User)
+            .Include(i => i.Parent).ThenInclude(p => p.User)
+            .FirstOrDefaultAsync(i => i.Id == billingId);
+
+        if (invoice == null) {
+            throw new Exception("Billing record not found");
+        }
+
+        return await _pdfService.GenerateInvoicePdfAsync(invoice);
+    }
+
+    private BillingDto MapBillingToDto(Invoice invoice) {
+        return new BillingDto {
             Id = invoice.Id,
             CourseId = invoice.CourseId,
             CourseName = invoice.Course.Subject.Name,

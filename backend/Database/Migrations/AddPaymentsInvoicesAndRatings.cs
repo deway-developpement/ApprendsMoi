@@ -22,7 +22,8 @@ public class AddPaymentsInvoicesAndRatings : FluentMigrator.Migration {
             .WithColumn("issued_at").AsDateTime().NotNullable().WithDefault(SystemMethods.CurrentUTCDateTime)
             .WithColumn("paid_at").AsDateTime().Nullable()
             .WithColumn("payment_intent_id").AsString(255).Nullable()
-            .WithColumn("invoice_number").AsString(50).Nullable();
+            .WithColumn("invoice_number").AsString(50).Nullable()
+            .WithColumn("pdf_file_path").AsString().Nullable();
 
         Create.ForeignKey("FK_invoices_courses")
             .FromTable("invoices").ForeignColumn("course_id")
