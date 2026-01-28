@@ -1,6 +1,7 @@
 using backend.Database;
 using backend.Database.Models;
 using backend.Domains.Courses;
+using backend.Domains.Payments.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Domains.Courses.Services;
@@ -13,17 +14,19 @@ public interface ICourseService {
     Task<IEnumerable<CourseDto>> GetAllCoursesAsync();
     Task<CourseDto> UpdateCourseAsync(Guid courseId, UpdateCourseDto dto);
     Task DeleteCourseAsync(Guid courseId);
-    Task<CourseDto> MarkAttendanceAsync(Guid courseId, MarkAttendanceDto dto);
     Task<CourseStatsDto> GetStudentStatsAsync(Guid studentId);
     Task<CourseStatsDto> GetTeacherStatsAsync(Guid teacherId);
     Task<TeacherEarningsDto> GetTeacherEarningsAsync(Guid teacherId);
+    Task<Student?> GetStudentWithParentAsync(Guid studentId);
 }
 
 public class CourseService : ICourseService {
     private readonly AppDbContext _context;
+    private readonly IPaymentService _paymentService;
 
-    public CourseService(AppDbContext context) {
+    public CourseService(AppDbContext context, IPaymentService paymentService) {
         _context = context;
+        _paymentService = paymentService;
     }
 
     public async Task<CourseDto> CreateCourseAsync(CreateCourseDto dto) {
@@ -132,6 +135,8 @@ public class CourseService : ICourseService {
             throw new Exception("Course not found");
         }
 
+        var previousStatus = course.Status;
+
         if (dto.StartDate.HasValue) {
             course.StartDate = dto.StartDate.Value;
             course.EndDate = dto.StartDate.Value.AddMinutes(course.DurationMinutes);
@@ -144,6 +149,12 @@ public class CourseService : ICourseService {
 
         if (!string.IsNullOrEmpty(dto.Status)) {
             course.Status = Enum.Parse<CourseStatus>(dto.Status);
+            
+            // Auto-mark student as attended when course is completed
+            if (course.Status == CourseStatus.COMPLETED && previousStatus != CourseStatus.COMPLETED) {
+                course.StudentAttended = true;
+                course.AttendanceMarkedAt = DateTime.UtcNow;
+            }
         }
 
         if (dto.MeetingLink != null) {
@@ -151,6 +162,17 @@ public class CourseService : ICourseService {
         }
 
         await _context.SaveChangesAsync();
+
+        // Auto-create billing when course is marked as COMPLETED
+        if (course.Status == CourseStatus.COMPLETED && previousStatus != CourseStatus.COMPLETED) {
+            try {
+                await _paymentService.CreateBillingForCourseAsync(courseId);
+            }
+            catch (Exception ex) {
+                // Log but don't fail the course update if billing creation fails
+                Console.WriteLine($"Warning: Failed to create billing for course {courseId}: {ex.Message}");
+            }
+        }
 
         return await GetCourseByIdAsync(courseId);
     }
@@ -167,20 +189,6 @@ public class CourseService : ICourseService {
 
         _context.Courses.Remove(course);
         await _context.SaveChangesAsync();
-    }
-
-    public async Task<CourseDto> MarkAttendanceAsync(Guid courseId, MarkAttendanceDto dto) {
-        var course = await _context.Courses.FindAsync(courseId);
-        if (course == null) {
-            throw new Exception("Course not found");
-        }
-
-        course.StudentAttended = dto.Attended;
-        course.AttendanceMarkedAt = DateTime.UtcNow;
-
-        await _context.SaveChangesAsync();
-
-        return await GetCourseByIdAsync(courseId);
     }
 
     public async Task<CourseStatsDto> GetStudentStatsAsync(Guid studentId) {
@@ -239,6 +247,12 @@ public class CourseService : ICourseService {
             PendingEarnings = pendingEarnings,
             TotalCourses = invoices.Count
         };
+    }
+
+    public async Task<Student?> GetStudentWithParentAsync(Guid studentId) {
+        return await _context.Students
+            .Include(s => s.Parent)
+            .FirstOrDefaultAsync(s => s.UserId == studentId);
     }
 
     private CourseDto MapToDto(Course course) {
