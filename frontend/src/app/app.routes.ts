@@ -10,6 +10,7 @@ import { UserDetailsComponent } from './pages/HomeAdmin/UsersDetails/user-detail
 import { PlanningManagementTeacherComponent } from './pages/PlanningManagementTeacher/planning-management-teacher.component';
 import { SearchForTeachersComponent } from './pages/SearchForTeachers/search-for-teachers.component';
 import { TeacherProfileComponent } from './pages/TeacherProfile/teacher-profile.component';
+import { HomeComponent } from './pages/Home/home.component';
 
 export const routes: Routes = [
   { path: '', component: HomeRouterComponent },
@@ -26,7 +27,9 @@ export const routes: Routes = [
   { path: 'admin/users/:id', component: UserDetailsComponent },
   { path: 'teacher/planning', component: PlanningManagementTeacherComponent },
   { path: 'search', component: SearchForTeachersComponent },
-  { path: 'teachers/:id', component: TeacherProfileComponent }
+  { path: 'teachers/:id', component: TeacherProfileComponent },
+  { path: 'home', component: HomeComponent },
+  { path: '**', redirectTo: '' }
 ];
 
 

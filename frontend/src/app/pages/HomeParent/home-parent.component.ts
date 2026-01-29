@@ -15,7 +15,7 @@ import { CoursesScheduleComponent } from '../../components/shared/CoursesSchedul
 
 // Services & Models
 import { ParentService, Child, CreateChildRequest } from '../../services/parent.service';
-import { AuthService, GradeLevel } from '../../services/auth.service';
+import { AuthService, GradeLevel, UserDto } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
 
 // Interfaces locales
@@ -115,7 +115,7 @@ export class HomeParentComponent implements OnInit {
     // 1. On s'abonne une seule fois pour récupérer les infos ET l'ID
     this.authService.currentUser$.subscribe(user => {
       if (user) {
-        this.userName = user.firstName || 'Parent';
+        this.userName = this.formatUserName(user);
         this.userLastName = user.lastName || '';
       }
     });
@@ -123,6 +123,14 @@ export class HomeParentComponent implements OnInit {
     this.loadChildren();
     this.loadDashboardData();
   }
+
+  private formatUserName(user: UserDto): string {
+      const fullName = `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim();
+      if (fullName) {
+        return fullName;
+      }
+      return user.username || '';
+    }
 
   openDetailsModal(child: Child) {
     this.selectedChild = child;
