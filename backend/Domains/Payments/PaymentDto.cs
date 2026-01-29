@@ -7,11 +7,11 @@ public class BillingDto {
     public Guid ParentId { get; set; }
     public string ParentName { get; set; } = string.Empty;
     public Guid TeacherId { get; set; }
-    public decimal Amount { get; set; } // TTC
+    public decimal Amount { get; set; } // TTC - Total amount parent pays (includes commission)
     public decimal AmountHT { get; set; } // Hors Taxes
     public decimal VatAmount { get; set; } // Montant TVA
-    public decimal Commission { get; set; }
-    public decimal TeacherEarning { get; set; }
+    public decimal Commission { get; set; } // Platform commission (15%)
+    public decimal TeacherEarning { get; set; } // Amount teacher receives (Amount - Commission)
     public string Status { get; set; } = string.Empty;
     public DateTime IssuedAt { get; set; }
     public DateTime? PaidAt { get; set; }
@@ -40,6 +40,6 @@ public class CreatePaymentDto {
 public class PaymentHistoryDto {
     public List<BillingDto> Billings { get; set; } = new();
     public List<PaymentDto> Payments { get; set; } = new();
-    public decimal TotalPaid { get; set; }
-    public decimal TotalPending { get; set; }
+    public decimal TotalPaid { get; set; } // For parents: sum of Amount, for teachers: sum of TeacherEarning
+    public decimal TotalPending { get; set; } // For parents: sum of Amount, for teachers: sum of TeacherEarning
 }

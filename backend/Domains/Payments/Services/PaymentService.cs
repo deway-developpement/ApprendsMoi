@@ -46,6 +46,8 @@ public class PaymentService : IPaymentService {
             return await GetBillingByIdAsync(existingInvoice.Id);
         }
 
+        // Parents pay the full price (PriceSnapshot) which includes the commission
+        // Teachers receive the earnings after commission is deducted
         var teacherEarning = course.PriceSnapshot - course.CommissionSnapshot;
         var invoiceNumber = $"INV-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
 
@@ -166,6 +168,7 @@ public class PaymentService : IPaymentService {
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync();
 
+        // Parents see the full amount they need to pay (includes commission)
         var totalPaid = billings.Where(i => i.Status == "PAID").Sum(i => i.Amount);
         var totalPending = billings.Where(i => i.Status == "PENDING").Sum(i => i.Amount);
 
@@ -180,6 +183,7 @@ public class PaymentService : IPaymentService {
     public async Task<PaymentHistoryDto> GetTeacherPaymentHistoryAsync(Guid teacherId) {
         var billings = await GetBillingsByTeacherIdAsync(teacherId);
         
+        // Teachers see their earnings after commission has been deducted
         var totalPaid = billings.Where(i => i.Status == "PAID").Sum(i => i.TeacherEarning);
         var totalPending = billings.Where(i => i.Status == "PENDING").Sum(i => i.TeacherEarning);
 
