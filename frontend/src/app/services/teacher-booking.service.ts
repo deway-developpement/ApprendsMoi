@@ -3,6 +3,11 @@ import { HttpClient } from '@angular/common/http';
 import { forkJoin, Observable } from 'rxjs';
 import { environment } from '../environments/environment';
 
+
+export enum CourseFormat {
+  HOME = "HOME", // ou 'Home' selon ton backend
+  VISIO = "VISIO"
+}
 // --- Interfaces exportées ---
 
 export interface CalendarDay {
@@ -97,7 +102,7 @@ export class TeacherBookingService {
     subjectId: string; 
     startDate: string;
     durationMinutes: number;
-    format: string; 
+    format: CourseFormat; 
   }): Observable<CourseDto> {
     return this.http.post<CourseDto>(`${this.apiUrl}/api/Courses`, payload);
   }

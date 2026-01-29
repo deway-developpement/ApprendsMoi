@@ -20,7 +20,8 @@ import {
   TimeSlot, 
   AvailabilityResponse, 
   UnavailableSlotResponse,
-  SubjectDto // Ajout de l'interface
+  SubjectDto,
+  CourseFormat // Import de l'enum depuis le service
 } from '../../services/teacher-booking.service';
 
 interface HighlightStat {
@@ -117,7 +118,6 @@ export class TeacherProfileComponent implements OnInit {
   studentOptions: SelectOption[] = [];
   selectedStudentId: string | number | null = null;
 
-  // --- Nouveautés pour les sujets ---
   subjectOptions: SelectOption[] = [];
   selectedSubjectId: string | number | null = null;
 
@@ -136,7 +136,7 @@ export class TeacherProfileComponent implements OnInit {
       this.loadTeacherData();
     }
     this.loadUser();
-    this.loadSubjects(); // Chargement des matières au démarrage
+    this.loadSubjects();
   }
 
   get canBook(): boolean {
@@ -147,7 +147,6 @@ export class TeacherProfileComponent implements OnInit {
     return this.userProfile === ProfileType.Parent;
   }
 
-  // --- Méthode pour charger les matières ---
   private loadSubjects(): void {
     this.bookingService.getSubjects().subscribe({
       next: (subjects: SubjectDto[]) => {
@@ -155,21 +154,17 @@ export class TeacherProfileComponent implements OnInit {
           label: s.name,
           value: s.id
         }));
-        // Sélection par défaut de la première matière si disponible
         if (this.subjectOptions.length > 0) {
           this.selectedSubjectId = this.subjectOptions[0].value;
         }
       },
-      error: (err) => {
-        this.toastService.error('Impossible de charger les matières.');
-      }
+      error: () => this.toastService.error('Impossible de charger les matières.')
     });
   }
 
   private loadTeacherData(): void {
     if (!this.teacherId) return;
     this.availabilityLoading = true;
-
     this.availableSlotKeys.clear();
     this.bookedSlotKeys.clear();
 
@@ -200,13 +195,8 @@ export class TeacherProfileComponent implements OnInit {
     }
 
     const studentId = this.resolveStudentId();
-    if (!studentId) {
-      this.toastService.warning('Veuillez sélectionner un élève.');
-      return;
-    }
-
-    if (!this.selectedSubjectId) {
-      this.toastService.warning('Veuillez sélectionner une matière.');
+    if (!studentId || !this.selectedSubjectId) {
+      this.toastService.warning('Veuillez sélectionner un élève et une matière.');
       return;
     }
 
@@ -218,10 +208,10 @@ export class TeacherProfileComponent implements OnInit {
         this.bookingService.createCourse({
           teacherId: this.teacherId!,
           studentId: String(studentId),
-          subjectId: String(this.selectedSubjectId), // Utilisation de la matière sélectionnée
+          subjectId: String(this.selectedSubjectId),
           startDate: scheduledDate.toISOString(),
           durationMinutes: 60,
-          format: "Online" 
+          format: CourseFormat.VISIO // Utilisation de l'enum
         })
       );
 
@@ -236,9 +226,7 @@ export class TeacherProfileComponent implements OnInit {
   }
 
   selectSlot(day: CalendarDay, slot: TimeSlot): void {
-    if (!this.isSlotAvailable(day, slot) || this.isSlotBooked(day, slot) || this.isSlotPast(day, slot)) {
-      return;
-    }
+    if (!this.isSlotAvailable(day, slot) || this.isSlotBooked(day, slot) || this.isSlotPast(day, slot)) return;
 
     this.selectedSlotKey = this.bookingService.buildSlotKey(day.key, slot.startTime);
     this.selectedSlotLabel = `${day.label} ${day.dateLabel}`;
@@ -247,35 +235,17 @@ export class TeacherProfileComponent implements OnInit {
     this.bookingTime = slot.startTime.slice(0, 5);
   }
 
-  isSlotAvailable(day: CalendarDay, slot: TimeSlot): boolean {
-    return this.availableSlotKeys.has(this.bookingService.buildSlotKey(day.key, slot.startTime));
-  }
-
-  isSlotBooked(day: CalendarDay, slot: TimeSlot): boolean {
-    return this.bookedSlotKeys.has(this.bookingService.buildSlotKey(day.key, slot.startTime));
-  }
-
-  isSlotSelected(day: CalendarDay, slot: TimeSlot): boolean {
-    return this.selectedSlotKey === this.bookingService.buildSlotKey(day.key, slot.startTime);
-  }
-
-  isSlotPast(day: CalendarDay, slot: TimeSlot): boolean {
-    return this.bookingService.isSlotInPast(day, slot);
-  }
+  isSlotAvailable = (day: CalendarDay, slot: TimeSlot) => this.availableSlotKeys.has(this.bookingService.buildSlotKey(day.key, slot.startTime));
+  isSlotBooked = (day: CalendarDay, slot: TimeSlot) => this.bookedSlotKeys.has(this.bookingService.buildSlotKey(day.key, slot.startTime));
+  isSlotSelected = (day: CalendarDay, slot: TimeSlot) => this.selectedSlotKey === this.bookingService.buildSlotKey(day.key, slot.startTime);
+  isSlotPast = (day: CalendarDay, slot: TimeSlot) => this.bookingService.isSlotInPast(day, slot);
 
   private applyExistingCourses(courses: any[]): void {
     if (!courses) return;
-    
     courses.forEach(course => {
       const date = new Date(course.startDate);
-      const dateKey = this.bookingService.toDateKey(date);
-      
-      const hours = this.bookingService.pad(date.getHours());
-      const minutes = this.bookingService.pad(date.getMinutes());
-      const startTime = `${hours}:${minutes}:00`; 
-      
-      const key = this.bookingService.buildSlotKey(dateKey, startTime);
-      this.bookedSlotKeys.add(key);
+      const startTime = `${this.bookingService.pad(date.getHours())}:${this.bookingService.pad(date.getMinutes())}:00`; 
+      this.bookedSlotKeys.add(this.bookingService.buildSlotKey(this.bookingService.toDateKey(date), startTime));
     });
   }
 
@@ -306,28 +276,22 @@ export class TeacherProfileComponent implements OnInit {
   private applyBlockedSlots(blockedSlots: UnavailableSlotResponse[]): void {
     blockedSlots.forEach((blocked) => {
       const dateKey = blocked.blockedDate.split('T')[0];
-      const startMinutes = this.bookingService.timeToMinutes(blocked.blockedStartTime);
-      const endMinutes = this.bookingService.timeToMinutes(blocked.blockedEndTime);
+      const startMin = this.bookingService.timeToMinutes(blocked.blockedStartTime);
+      const endMin = this.bookingService.timeToMinutes(blocked.blockedEndTime);
 
       this.timeSlots.forEach((slot) => {
-        if (slot.startMinutes >= startMinutes && slot.endMinutes <= endMinutes) {
+        if (slot.startMinutes >= startMin && slot.endMinutes <= endMin) {
           this.bookedSlotKeys.add(this.bookingService.buildSlotKey(dateKey, slot.startTime));
         }
       });
     });
   }
 
-  private resolveStudentId(): string | null {
-    if (this.userProfile === ProfileType.Student) return this.currentUserId;
-    if (this.userProfile === ProfileType.Parent) return this.selectedStudentId ? String(this.selectedStudentId) : null;
-    return null;
-  }
+  private resolveStudentId = () => this.userProfile === ProfileType.Student ? this.currentUserId : (this.selectedStudentId ? String(this.selectedStudentId) : null);
 
   private async loadUser(): Promise<void> {
     let user = await firstValueFrom(this.authService.currentUser$);
-    if (!user) {
-      try { user = await firstValueFrom(this.authService.fetchMe()); } catch (err) { return; }
-    }
+    if (!user) try { user = await firstValueFrom(this.authService.fetchMe()); } catch { return; }
     if (!user) return;
     this.userProfile = user.profileType;
     this.currentUserId = user.id;
@@ -345,28 +309,22 @@ export class TeacherProfileComponent implements OnInit {
   }
 
   private mapTeacherProfile(dto: TeacherDto): TeacherProfile {
-    const travelRadius = dto.travelRadiusKm ?? 0;
+    const radius = dto.travelRadiusKm ?? 0;
     return {
-      id: dto.id,
-      name: `${dto.firstName} ${dto.lastName}`.trim() || 'Professeur',
-      city: dto.city || 'Ville inconnue',
-      headline: dto.bio || 'Profil en cours de mise à jour.',
-      rating: 4.8, reviews: 20, pricePerHour: 30,
-      subjects: ['Toutes matières'], levels: ['Tous niveaux'],
-      bio: dto.bio || 'Profil en cours de mise à jour.',
-      specialties: ['Suivi personnalisé', 'Révision', 'Méthodologie'],
+      id: dto.id, name: `${dto.firstName} ${dto.lastName}`.trim() || 'Professeur',
+      city: dto.city || 'Ville inconnue', headline: dto.bio || 'Profil en cours de mise à jour.',
+      rating: 4.8, reviews: 20, pricePerHour: 30, subjects: ['Toutes matières'], levels: ['Tous niveaux'],
+      bio: dto.bio || 'Profil en cours de mise à jour.', specialties: ['Suivi personnalisé', 'Révision', 'Méthodologie'],
       highlights: [{ label: 'Élèves', value: '80+' }, { label: 'Réponse', value: '< 2h' }, { label: 'Cours', value: '300+' }],
-      availability: [{ label: 'Lun', time: '18:00', format: travelRadius > 0 ? 'Domicile' : 'Visio' }],
+      availability: [{ label: 'Lun', time: '18:00', format: radius > 0 ? 'Domicile' : 'Visio' }],
       languages: ['Français'], education: ['Enseignant'], certifications: ['En cours'],
-      avatarColor: dto.isPremium ? '#fbbf24' : '#1a365d',
-      isPremium: dto.isPremium, isVerified: dto.verificationStatus === 1, isTop: dto.isPremium
+      avatarColor: dto.isPremium ? '#fbbf24' : '#1a365d', isPremium: dto.isPremium, isVerified: dto.verificationStatus === 1, isTop: dto.isPremium
     };
   }
 
   resetBooking(): void {
     this.bookingDate = ''; this.bookingTime = ''; this.bookingTopic = ''; this.selectedSlotKey = null;
     this.selectedSlotLabel = ''; this.selectedSlotRange = '';
-    // On ne reset pas la matière choisie par défaut pour fluidifier l'expérience
   }
 
   private getErrorMessage(err: unknown, fallback: string): string {
