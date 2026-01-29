@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 // Services
-import { UserDto, ProfileType } from '../../../../services/auth.service';
+import { UserDto } from '../../../../services/auth.service';
 
 // UI Components
 import { ButtonComponent } from '../../../../components/shared/Button/button.component';
 import { IconComponent } from '../../../../components/shared/Icon/icon.component';
 import { SmallIconComponent } from '../../../../components/shared/SmallIcon/small-icon.component';
 import { IconButtonComponent } from '../../../../components/shared/IconButton/icon-button.component';
+import { TeacherReviewsComponent } from '../../../../components/shared/TeacherReviews/teacher-reviews.component';
 
 @Component({
   selector: 'app-teacher-detail',
@@ -18,9 +19,8 @@ import { IconButtonComponent } from '../../../../components/shared/IconButton/ic
     CommonModule, 
     RouterModule,
     ButtonComponent,
-    IconComponent,
     SmallIconComponent,
-    IconButtonComponent
+    TeacherReviewsComponent
   ],
   templateUrl: './teacher-detail.component.html',
   styleUrls: ['./teacher-detail.component.scss']
