@@ -3,32 +3,15 @@
 :host {
   display: block;
   min-height: 100vh;
-  background: $heroIntroBackground;
-  color: #0f172a;
+  background: $backgroundColor;
+  color: $PrimaryColor;
 }
 
 .visio-hero {
   padding: clamp(4rem, 10vh, 8rem) clamp(1.5rem, 5vw, 4rem) 3rem;
-  color: #f8fafc;
+  color: $PrimaryColor;
   position: relative;
   overflow: hidden;
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 2rem 6rem auto auto;
-    width: 320px;
-    height: 320px;
-    background: radial-gradient(circle at 30% 30%, rgba(249, 115, 22, 0.28), transparent 60%);
-    filter: blur(1px);
-    z-index: 1;
-    
-    @media (max-width: 768px) {
-      width: 200px;
-      height: 200px;
-      inset: 1rem 2rem auto auto;
-    }
-  }
 }
 
 .visio-hero__content {
@@ -40,7 +23,7 @@
 .visio-hero__eyebrow {
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(248, 250, 252, 0.75);
+  color: rgba($PrimaryColor, 0.6);
   font-size: $tinierFontSize;
   margin: 0 0 0.5rem;
 }
@@ -49,11 +32,12 @@
   margin: 0;
   font-size: clamp(1.8rem, 4vw, 2.4rem);
   font-weight: 700;
+  color: $PrimaryColor;
 }
 
 .visio-hero__subtitle {
   margin: 0.75rem 0 0;
-  color: rgba(248, 250, 252, 0.82);
+  color: rgba($PrimaryColor, 0.75);
   font-size: clamp($smallerFontSize, 2vw, $regularFontSize);
   line-height: 1.6;
 }
@@ -63,7 +47,9 @@
   grid-template-columns: 1.75fr 1fr;
   gap: clamp(1rem, 2vw, 1.5rem);
   padding: 0 clamp(1.5rem, 5vw, 4rem) 3.5rem;
-  margin-top: -3rem;
+  margin: -3rem 3rem 0;
+  max-width: $maxContentWidth;
+  align-items: start;
 
   @media (max-width: 1100px) {
     grid-template-columns: 1fr;
@@ -83,7 +69,8 @@
 }
 
 .visio-card--meeting {
-  min-height: 70vh;
+  min-height: 75vh;
+  min-width: 100vh;
 
   @media (max-width: 1100px) {
     min-height: 60vh;
@@ -118,6 +105,7 @@
   align-items: center;
   gap: 0.75rem;
   flex-wrap: wrap;
+  
 
   @media (max-width: 768px) {
     width: 100%;
@@ -144,9 +132,7 @@
 .zoom-container {
   flex: 1;
   min-height: 500px;
-  border: 2px solid #0f172a;
   border-radius: 10px;
-  background: #0b0c10;
   position: relative;
   overflow: hidden;
   display: flex;
@@ -154,7 +140,7 @@
   justify-content: center;
 
   @media (max-width: 768px) {
-    min-height: 400px;
+    height: 250px;
   }
 
   :deep(> *:not(.zoom-placeholder):not(.zoom-status):not(.zoom-error)) {
@@ -237,10 +223,11 @@
 }
 
 .visio-card--chat {
-  min-height: 60vh;
+  min-height: 75vh;
+  min-width: 100vh;
 
   @media (max-width: 1100px) {
-    min-height: 50vh;
+    min-height: 60vh;
   }
 }
 
@@ -252,9 +239,32 @@
   padding: clamp(0.75rem, 2vw, 1rem);
   display: flex;
   flex-direction: column;
+  gap: 0.75rem;
+  max-height: 62vh;
+}
+
+.chat-window--empty {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #64748b;
+  font-size: $smallerFontSize;
+}
+
+.chat-messages {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   gap: 0.85rem;
   overflow-y: auto;
-  max-height: 50vh;
+  padding-right: 0.25rem;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.chat-messages::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .chat-message {
@@ -263,6 +273,13 @@
   border-radius: 10px;
   padding: 0.75rem 0.9rem;
   box-shadow: 0 8px 16px rgba(15, 23, 42, 0.05);
+}
+
+.chat-message--own {
+  align-self: flex-end;
+  border-color: rgba($SecondaryColor, 0.35);
+  background: #fff7ed;
+  box-shadow: 0 8px 16px rgba(249, 115, 22, 0.12);
 }
 
 .chat-message--teacher {
@@ -291,6 +308,58 @@
   font-size: $smallerFontSize;
 }
 
+.chat-attachments {
+  margin-top: 0.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.chat-attachment {
+  font-size: $tinierFontSize;
+  color: $PrimaryColorHover;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.chat-time {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: $tinierFontSize;
+  color: #64748b;
+}
+
+.chat-typing {
+  font-size: $tinierFontSize;
+  color: #64748b;
+}
+
+.chat-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: $tinierFontSize;
+  color: #64748b;
+}
+
+.chat-status__dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+
+.chat-status.connected {
+  color: $green;
+
+  .chat-status__dot {
+    background: $green;
+  }
+}
+
 .chat-input {
   display: flex;
   gap: 0.6rem;
@@ -313,6 +382,12 @@
   outline: none;
   border-color: $SecondaryColor;
   box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+}
+
+.chat-input input:disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
 }
 
 @media (max-width: 768px) {
