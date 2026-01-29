@@ -68,3 +68,59 @@ public class ParentOrAdminAttribute : RequireRoleAttribute
 {
     public ParentOrAdminAttribute() : base(ProfileType.Parent, ProfileType.Admin) { }
 }
+
+/// <summary>
+/// Requires the user to be a verified teacher (VerificationStatus.APPROVED)
+/// </summary>
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false)]
+public class VerifiedTeacherOnlyAttribute : Attribute, IAsyncAuthorizationFilter
+{
+    public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
+    {
+        // Check if user is authenticated
+        if (context.HttpContext.User.Identity?.IsAuthenticated != true)
+        {
+            context.Result = new UnauthorizedObjectResult(new { error = "Authentication required" });
+            return;
+        }
+
+        // Check if user is a teacher
+        var profileClaim = JwtHelper.GetUserProfileFromClaims(context.HttpContext.User);
+        if (profileClaim != ProfileType.Teacher)
+        {
+            context.Result = new ForbidResult();
+            return;
+        }
+
+        // Get teacher verification status from database
+        var userId = JwtHelper.GetUserIdFromClaims(context.HttpContext.User);
+        if (userId == null)
+        {
+            context.Result = new UnauthorizedObjectResult(new { error = "Invalid user ID" });
+            return;
+        }
+
+        var dbContext = context.HttpContext.RequestServices.GetRequiredService<Database.AppDbContext>();
+        var teacher = await dbContext.Teachers.FindAsync(userId.Value);
+        
+        if (teacher == null)
+        {
+            context.Result = new NotFoundObjectResult(new { error = "Teacher profile not found" });
+            return;
+        }
+
+        if (teacher.VerificationStatus != VerificationStatus.VERIFIED)
+        {
+            context.Result = new ObjectResult(new 
+            { 
+                error = "Teacher account not verified",
+                message = "Votre compte n'est pas encore vérifié. Veuillez soumettre vos documents d'identité et attendre l'approbation.",
+                verificationStatus = teacher.VerificationStatus.ToString()
+            })
+            {
+                StatusCode = StatusCodes.Status403Forbidden
+            };
+            return;
+        }
+    }
+}

@@ -68,7 +68,13 @@ export interface UserDto {
   isActive: boolean;
   createdAt: string;
   lastLoginAt?: string;
-
+  // Teacher-specific fields
+  verificationStatus?: 'PENDING' | 'VERIFIED' | 'REJECTED' | 'DIPLOMA_VERIFIED' | 0 | 1 | 2 | 3;
+  bio?: string;
+  phoneNumber?: string;
+  isPremium?: boolean;
+  city?: string;
+  travelRadiusKm?: number;
 }
 
 export interface LoginResponse {

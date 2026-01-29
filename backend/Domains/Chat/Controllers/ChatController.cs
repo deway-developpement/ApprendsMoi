@@ -2,12 +2,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using backend.Database.Models;
+using backend.Helpers;
 
 namespace backend.Domains.Chat.Controllers;
 
 [ApiController]
 [Route("api/chats")]
 [Authorize]
+[RequireRole(ProfileType.Parent, ProfileType.Student, ProfileType.Admin)] // Teachers need separate verification
 public class ChatController(ChatService chatService) : ControllerBase {
     private readonly ChatService _chatService = chatService;
 
@@ -15,6 +17,7 @@ public class ChatController(ChatService chatService) : ControllerBase {
     /// Get all chats for the current user
     /// </summary>
     [HttpGet]
+    [RequireRole(ProfileType.Parent, ProfileType.Student, ProfileType.Admin, ProfileType.Teacher)]
     public async Task<ActionResult<List<ChatDto>>> GetChats(CancellationToken ct = default) {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid)) {

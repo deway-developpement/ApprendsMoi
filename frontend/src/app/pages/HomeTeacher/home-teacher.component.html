@@ -5,13 +5,28 @@
   <div class="dashboard-header-bg">
     <div class="header-content">
       <h1 class="welcome-title">Bonjour {{ teacherName }} 👋</h1>
-      <p class="welcome-subtitle">Voici le résumé de votre activité pour ce mois.</p>
+      <p class="welcome-subtitle" *ngIf="isVerified">Voici le résumé de votre activité pour ce mois.</p>
+      <p class="welcome-subtitle warning" *ngIf="!isVerified">⚠️ Votre compte n'est pas encore vérifié. Veuillez soumettre vos documents d'identité.</p>
     </div>
   </div>
 
   <main class="dashboard-container">
     
-    <section class="widgets-section">
+    <!-- Verification Warning for Unverified Teachers -->
+    <div *ngIf="!isVerified" class="verification-warning">
+      <h3>🔒 Accès limité</h3>
+      <p>Votre compte enseignant n'est pas encore vérifié. Pour accéder à toutes les fonctionnalités :</p>
+      <ol>
+        <li>Soumettez votre pièce d'identité (obligatoire)</li>
+        <li>Ajoutez vos diplômes (optionnel mais recommandé)</li>
+        <li>Attendez la validation par notre équipe</li>
+      </ol>
+      <a class="verification-link" routerLink="/documents">
+        📄 Accéder à la gestion des documents →
+      </a>
+    </div>
+
+    <section class="widgets-section" *ngIf="isVerified">"
       <div class="widgets-grid three-columns"> <div class="widget-card accent-blue">
           <div class="widget-top">
             <div class="icon-circle blue">
@@ -67,7 +82,7 @@
             </div>
             <h3>Revenus (Oct.)</h3>
           </div>
-          <div class="widget-content">
+    <div class="card-header-actions" *ngIf="isVerified">>
             <div class="main-info">
               <span class="big-amount">{{ currentMonthRevenue }} €</span>
             </div>
@@ -87,14 +102,14 @@
       </a>
     </div>
 
-    <app-courses-schedule [courses]="courses"></app-courses-schedule>
+    <app-courses-schedule *ngIf="isVerified" [courses]="courses"></app-courses-schedule>
 
     <app-teacher-reviews 
-      *ngIf="currentUserId" 
-      [teacherId]="currentUserId">
+      *ngIf="isVerified && currentUserId" 
+      [teacherId]="currentUserId!">
     </app-teacher-reviews>
 
-    <div *ngIf="!currentUserId" class="loading-placeholder">
+    <div *ngIf="!currentUserId && isVerified" class="loading-placeholder">
         <p>Chargement des avis...</p>
     </div>
 
