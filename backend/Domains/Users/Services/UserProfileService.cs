@@ -227,6 +227,12 @@ public class UserProfileService(AppDbContext db) {
         }).ToList();
     }
 
+    public async Task<bool> HasTeacherStudentRelationshipAsync(Guid teacherId, Guid studentId, CancellationToken ct = default) {
+        // Check if teacher has taught this student (at least one course exists)
+        return await _db.Courses
+            .AnyAsync(c => c.TeacherId == teacherId && c.StudentId == studentId, ct);
+    }
+
     private static UserDto MapToDto(User user) {
         string? email = null;
         string? username = null;
