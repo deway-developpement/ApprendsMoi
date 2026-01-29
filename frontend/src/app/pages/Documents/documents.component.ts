@@ -24,9 +24,9 @@ interface BatchUploadResponse {
 interface TeacherDocumentDto {
   id: string;
   teacherId: string;
-  documentType: string;
+  documentType: number | string;
   fileName: string;
-  status: string;
+  status: number | string;
   rejectionReason?: string;
   uploadedAt: string;
   reviewedAt?: string;
@@ -36,9 +36,9 @@ interface TeacherDocumentDto {
 interface PendingDocument {
   id: string;
   teacherId: string;
-  documentType: string;
+  documentType: number | string;
   fileName: string;
-  status: string;
+  status: number | string;
   uploadedAt: string;
 }
 
@@ -114,7 +114,7 @@ export class DocumentsComponent implements OnInit {
 
   async uploadDocuments(): Promise<void> {
     if (!this.selectedIdPaper && this.selectedDiplomas.length === 0) {
-      this.toastService.error('Please select at least one file');
+      this.toastService.error('Veuillez sélectionner au moins un fichier');
       return;
     }
 
@@ -125,14 +125,14 @@ export class DocumentsComponent implements OnInit {
     // Add ID Paper
     if (this.selectedIdPaper) {
       formData.append('files', this.selectedIdPaper);
-      formData.append(`documentTypes[${fileIndex}]`, 'ID_PAPER');
+      formData.append(`documentTypes[${fileIndex}]`, String(DocumentType.ID_PAPER));
       fileIndex++;
     }
 
     // Add Diplomas
     for (const diploma of this.selectedDiplomas) {
       formData.append('files', diploma);
-      formData.append(`documentTypes[${fileIndex}]`, 'DIPLOMA');
+      formData.append(`documentTypes[${fileIndex}]`, String(DocumentType.DIPLOMA));
       fileIndex++;
     }
 
@@ -142,9 +142,9 @@ export class DocumentsComponent implements OnInit {
         .toPromise();
 
       if (response) {
-        this.toastService.success(`Successfully uploaded ${response.successCount} document(s)`);
+        this.toastService.success(`Téléchargement de ${response.successCount} document(s) réussi(s)`);
         if (response.failureCount > 0) {
-          this.toastService.warning(`Failed to upload ${response.failureCount} document(s)`);
+          this.toastService.warning(`Échec du téléchargement de ${response.failureCount} document(s)`);
         }
         this.selectedIdPaper = null;
         this.selectedDiplomas = [];
@@ -157,7 +157,7 @@ export class DocumentsComponent implements OnInit {
       }
     } catch (error: any) {
       console.error('Upload error:', error);
-      this.toastService.error(error.error?.message || 'Failed to upload documents');
+      this.toastService.error(error.error?.message || 'Échec du téléchargement des documents');
     } finally {
       this.uploading = false;
     }
@@ -175,7 +175,7 @@ export class DocumentsComponent implements OnInit {
       this.myDocuments = response || [];
     } catch (error: any) {
       console.error('Error loading documents:', error);
-      this.toastService.error('Failed to load documents');
+      this.toastService.error('Impossible de charger les documents');
     } finally {
       this.loadingDocuments = false;
     }
@@ -193,7 +193,7 @@ export class DocumentsComponent implements OnInit {
       this.pendingDocuments = response || [];
     } catch (error: any) {
       console.error('Error loading pending documents:', error);
-      this.toastService.error('Failed to load pending documents');
+      this.toastService.error('Impossible de charger les documents en attente');
     } finally {
       this.loadingPending = false;
     }
@@ -203,7 +203,7 @@ export class DocumentsComponent implements OnInit {
     const validationItems = documentIds.map(id => ({
       documentId: id,
       approve: approve,
-      rejectionReason: approve ? null : prompt(`Reason for rejecting ${id}?`)
+      rejectionReason: approve ? null : prompt(`Raison du rejet de ${id} ?`)
     }));
 
     try {
@@ -211,11 +211,11 @@ export class DocumentsComponent implements OnInit {
         .post(`${environment.apiUrl}/api/documents/validate`, { documents: validationItems })
         .toPromise();
 
-      this.toastService.success(`${approve ? 'Approved' : 'Rejected'} documents successfully`);
+      this.toastService.success(`${approve ? 'Approuvé' : 'Rejeté'} documents avec succès`);
       await this.loadPendingDocuments();
     } catch (error: any) {
       console.error('Validation error:', error);
-      this.toastService.error(error.error?.message || 'Failed to validate documents');
+      this.toastService.error(error.error?.message || 'Impossible de valider les documents');
     }
   }
 
@@ -237,22 +237,22 @@ export class DocumentsComponent implements OnInit {
       }
     } catch (error: any) {
       console.error('Download error:', error);
-      this.toastService.error('Failed to download document');
+      this.toastService.error('Impossible de télécharger le document');
     }
   }
 
   async deleteDocument(documentId: string): Promise<void> {
-    if (confirm('Are you sure you want to delete this document?')) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce document ?')) {
       try {
         await this.http
           .delete(`${environment.apiUrl}/api/documents/${documentId}`)
           .toPromise();
 
-        this.toastService.success('Document deleted successfully');
+        this.toastService.success('Document supprimé avec succès');
         await this.loadMyDocuments();
       } catch (error: any) {
         console.error('Delete error:', error);
-        this.toastService.error('Failed to delete document');
+        this.toastService.error('Impossible de supprimer le document');
       }
     }
   }
@@ -261,27 +261,74 @@ export class DocumentsComponent implements OnInit {
     return this.pendingDocuments.map(d => d.id);
   }
 
-  getDocumentStatusClass(status: string): string {
+  getDocumentTypeLabel(documentType: any): string {
+    if (typeof documentType === 'string') {
+      return documentType === 'ID_PAPER' ? 'Pièce d\'identité' : 'Diplôme';
+    }
+    // Handle numeric enum values
+    if (documentType === 0 || documentType === DocumentType.ID_PAPER) {
+      return 'Pièce d\'identité';
+    }
+    if (documentType === 1 || documentType === DocumentType.DIPLOMA) {
+      return 'Diplôme';
+    }
+    return 'Document';
+  }
+
+  getDocumentStatusClass(status: any): string {
+    // Handle numeric values
+    if (status === 0 || status === DocumentStatus.PENDING) {
+      return 'status-pending';
+    }
+    if (status === 1 || status === DocumentStatus.APPROVED) {
+      return 'status-approved';
+    }
+    if (status === 2 || status === DocumentStatus.REJECTED) {
+      return 'status-rejected';
+    }
+    // Handle string values
     switch (status) {
-      case DocumentStatus.APPROVED:
-        return 'status-approved';
-      case DocumentStatus.REJECTED:
-        return 'status-rejected';
+      case 'PENDING':
       case DocumentStatus.PENDING:
         return 'status-pending';
+      case 'APPROVED':
+      case DocumentStatus.APPROVED:
+        return 'status-approved';
+      case 'REJECTED':
+      case DocumentStatus.REJECTED:
+        return 'status-rejected';
       default:
         return '';
+    }
+  }
+
+  getDocumentStatusLabel(status: any): string {
+    // Convert to number if string
+    const numStatus = typeof status === 'string' ? parseInt(status, 10) : status;
+    
+    switch (numStatus) {
+      case 0:
+      case DocumentStatus.PENDING:
+        return 'En attente';
+      case 1:
+      case DocumentStatus.APPROVED:
+        return 'Approuvé';
+      case 2:
+      case DocumentStatus.REJECTED:
+        return 'Rejeté';
+      default:
+        return status?.toString() || 'Inconnu';
     }
   }
 }
 
 enum DocumentType {
-  ID_PAPER = 'ID_PAPER',
-  DIPLOMA = 'DIPLOMA'
+  ID_PAPER = 0,
+  DIPLOMA = 1
 }
 
 enum DocumentStatus {
-  PENDING = 'PENDING',
-  APPROVED = 'APPROVED',
-  REJECTED = 'REJECTED'
+  PENDING = 0,
+  APPROVED = 1,
+  REJECTED = 2
 }
