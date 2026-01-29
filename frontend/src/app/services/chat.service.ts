@@ -22,6 +22,7 @@ export interface ChatDto {
   createdAt: string;
   updatedAt: string;
   isActive: boolean;
+  isReadOnly: boolean;
 }
 
 export interface ChatDetailDto extends ChatDto {

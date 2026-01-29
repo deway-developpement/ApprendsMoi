@@ -30,10 +30,11 @@ public class ChatService(AppDbContext db) {
     }
 
     /// <summary>
-    /// Get all chats for a parent (parent chats only)
+    /// Get all chats for a parent (parent chats + children's chats in read-only mode)
     /// </summary>
     public async Task<List<ChatDto>> GetChatsByParentAsync(Guid parentId, CancellationToken ct = default) {
-        var chats = await _db.Chats
+        // Get parent's own chats
+        var parentChats = await _db.Chats
             .Where(c => c.ParentId == parentId && c.ChatType == ChatType.ParentChat && c.IsActive)
             .Include(c => c.Parent).ThenInclude(p => p!.User)
             .Include(c => c.Teacher).ThenInclude(t => t!.User)
@@ -43,12 +44,42 @@ public class ChatService(AppDbContext db) {
             .ToListAsync(ct);
 
         var chatDtos = new List<ChatDto>();
-        foreach (var chat in chats) {
+        foreach (var chat in parentChats) {
             var unread = await GetUnreadCountAsync(chat, parentId, ct);
-            chatDtos.Add(MapChatToDto(chat, unread));
+            var dto = MapChatToDto(chat, unread);
+            dto.IsReadOnly = false; // Parents can fully interact with their own chats
+            chatDtos.Add(dto);
         }
 
-        return chatDtos;
+        // Get children's student IDs
+        var childrenIds = await _db.Students
+            .Where(s => s.ParentId == parentId)
+            .Select(s => s.UserId)
+            .ToListAsync(ct);
+
+        // Get children's chats (read-only)
+        if (childrenIds.Count > 0) {
+            var childrenChats = await _db.Chats
+                .Where(c => childrenIds.Contains(c.StudentId!.Value) && c.ChatType == ChatType.StudentChat && c.IsActive)
+                .Include(c => c.Student).ThenInclude(s => s!.User)
+                .Include(c => c.Teacher).ThenInclude(t => t!.User)
+                .Include(c => c.Messages.OrderByDescending(m => m.CreatedAt).Take(1))
+                .AsNoTracking()
+                .OrderByDescending(c => c.UpdatedAt)
+                .ToListAsync(ct);
+
+            foreach (var chat in childrenChats) {
+                var dto = MapChatToDto(chat, 0); // No unread count for read-only chats
+                dto.IsReadOnly = true; // Parents can only read their children's chats
+                // Update participant name to show it's the child's chat
+                if (chat.Student?.User != null) {
+                    dto.ParticipantName = $"{chat.Student.User.GetFullName()} - {chat.Teacher?.User?.GetFullName() ?? "Teacher"}";
+                }
+                chatDtos.Add(dto);
+            }
+        }
+
+        return chatDtos.OrderByDescending(c => c.UpdatedAt).ToList();
     }
 
     /// <summary>
@@ -152,8 +183,8 @@ public class ChatService(AppDbContext db) {
     /// Create a new chat or return existing one
     /// Supports multiple scenarios:
     /// 1. Parent initiating chat with teacher (ChatType=ParentChat, TeacherId provided, called by Parent)
-    /// 2. Teacher creating chat with parent (ChatType=ParentChat, ParentId provided, called by Teacher)
-    /// 3. Auto-creation when course is booked (ChatType=StudentChat, StudentId+TeacherId provided)
+    /// 2. Teacher creating chat with parent (ChatType=ParentChat, ParentId provided, called by Teacher) - requires existing parent-teacher relationship
+    /// 3. Auto-creation when course is booked (ChatType=StudentChat, StudentId+TeacherId provided) - requires existing parent chat
     /// </summary>
     public async Task<ChatDto> CreateChatAsync(CreateChatDto dto, Guid userId, ProfileType userProfile, CancellationToken ct = default) {
         Guid teacherId = Guid.Empty;
@@ -206,6 +237,33 @@ public class ChatService(AppDbContext db) {
                     c.ChatType == ChatType.ParentChat,
                 ct);
         } else if (dto.ChatType == ChatType.StudentChat && studentId.HasValue) {
+            // For student chats, verify a parent chat exists first
+            var student = await _db.Students
+                .Include(s => s.Parent)
+                .FirstOrDefaultAsync(s => s.UserId == studentId, ct);
+
+            if (student == null) {
+                throw new InvalidOperationException("Student not found");
+            }
+
+            var parentId_StudentChat = student.Parent?.UserId;
+            if (!parentId_StudentChat.HasValue) {
+                throw new InvalidOperationException("Student has no parent associated");
+            }
+
+            // Check if a parent chat exists between the teacher and the student's parent
+            var parentChatExists = await _db.Chats
+                .AnyAsync(c => 
+                    c.TeacherId == teacherId && 
+                    c.ParentId == parentId_StudentChat &&
+                    c.ChatType == ChatType.ParentChat,
+                ct);
+
+            if (!parentChatExists) {
+                throw new InvalidOperationException(
+                    "Cannot create a chat with this student. A chat must first be established with the student's parent.");
+            }
+
             existingChat = await _db.Chats
                 .FirstOrDefaultAsync(c => 
                     c.TeacherId == teacherId && 
@@ -275,16 +333,28 @@ public class ChatService(AppDbContext db) {
     }
 
     /// <summary>
-    /// Check if user has access to chat
+    /// Check if user has access to chat (including read-only access for parents viewing children's chats)
     /// </summary>
     public async Task<bool> UserHasAccessToChatAsync(Guid chatId, Guid userId, CancellationToken ct = default) {
         var chat = await _db.Chats
+            .Include(c => c.Student)
             .FirstOrDefaultAsync(c => c.Id == chatId, ct);
 
         if (chat == null) return false;
 
         // Check if user is the teacher, parent, or student in the chat
-        return chat.TeacherId == userId || chat.ParentId == userId || chat.StudentId == userId;
+        if (chat.TeacherId == userId || chat.ParentId == userId || chat.StudentId == userId) {
+            return true;
+        }
+
+        // Check if user is a parent viewing their child's chat
+        if (chat.ChatType == ChatType.StudentChat && chat.StudentId.HasValue) {
+            var isParentOfStudent = await _db.Students
+                .AnyAsync(s => s.UserId == chat.StudentId.Value && s.ParentId == userId, ct);
+            return isParentOfStudent;
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -374,5 +444,30 @@ public class ChatService(AppDbContext db) {
         }
 
         return await query.CountAsync(ct);
+    }
+
+    /// <summary>
+    /// Check if user has read-only access to a chat (e.g., parent viewing child's chat)
+    /// </summary>
+    public async Task<bool> IsReadOnlyAccessAsync(Guid chatId, Guid userId, CancellationToken ct = default) {
+        var chat = await _db.Chats
+            .Include(c => c.Student)
+            .FirstOrDefaultAsync(c => c.Id == chatId, ct);
+
+        if (chat == null) return false;
+
+        // If user is a direct participant, they have full access (not read-only)
+        if (chat.TeacherId == userId || chat.ParentId == userId || chat.StudentId == userId) {
+            return false;
+        }
+
+        // Check if user is a parent viewing their child's chat
+        if (chat.ChatType == ChatType.StudentChat && chat.StudentId.HasValue) {
+            var isParentOfStudent = await _db.Students
+                .AnyAsync(s => s.UserId == chat.StudentId.Value && s.ParentId == userId, ct);
+            return isParentOfStudent;
+        }
+
+        return false;
     }
 }

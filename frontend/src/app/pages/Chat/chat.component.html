@@ -19,6 +19,20 @@
       class="btn-primary">
       + Démarrer une nouvelle discussion
     </button>
+    <button 
+      *ngIf="currentUser?.profileType === ProfileType.Student" 
+      (click)="openCreateChatModal()"
+      type="button"
+      class="btn-primary">
+      + Envoyer un message au professeur
+    </button>
+    <button 
+      *ngIf="currentUser?.profileType === ProfileType.Teacher" 
+      (click)="openCreateChatModal()"
+      type="button"
+      class="btn-primary">
+      + Contacter un parent
+    </button>
   </div>
 
   <!-- Error Message -->
@@ -72,8 +86,14 @@
           <div>
             <h3>{{ selectedChat.participantName }}</h3>
             <small>{{ selectedChat.chatType === ChatType.ParentChat ? 'Discussion parent' : 'Discussion élève' }}</small>
+            <small *ngIf="selectedChat.isReadOnly" class="read-only-badge">📖 Lecture seule</small>
           </div>
-          <button (click)="archiveChat()" class="btn-icon" title="Archiver la discussion">📦</button>
+          <button 
+            (click)="archiveChat()" 
+            [disabled]="selectedChat.isReadOnly"
+            class="btn-icon" 
+            title="Archiver la discussion">📦
+          </button>
         </div>
 
         <!-- Messages -->
@@ -104,19 +124,25 @@
 
         <!-- Message Input -->
         <div class="message-input-area">
-          <textarea 
-            [(ngModel)]="messageContent"
-            (keyup.enter)="sendMessage()"
-            (keyup)="onMessageInput()"
-            placeholder="Ecrivez un message... (Entre pour envoyer)"
-            rows="3">
-          </textarea>
-          <button 
-            (click)="sendMessage()"
-            [disabled]="!messageContent.trim() || loading"
-            class="btn-primary">
-            {{ loading ? 'Envoi...' : 'Envoyer' }}
-          </button>
+          <div *ngIf="selectedChat.isReadOnly" class="read-only-notice">
+            📖 Vous avez accès en lecture seule à cette discussion
+          </div>
+          <div class="input-row">
+            <textarea 
+              [(ngModel)]="messageContent"
+              (keyup.enter)="sendMessage()"
+              (keyup)="onMessageInput()"
+              [disabled]="selectedChat.isReadOnly"
+              placeholder="Ecrivez un message... (Entre pour envoyer)"
+              rows="3">
+            </textarea>
+            <button 
+              (click)="sendMessage()"
+              [disabled]="!messageContent.trim() || loading || selectedChat.isReadOnly"
+              class="btn-primary">
+              {{ loading ? 'Envoi...' : 'Envoyer' }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -126,7 +152,11 @@
   <div *ngIf="showCreateChatModal" class="modal-overlay" (click)="closeCreateModal()">
     <div class="modal" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h2>Démarrer une nouvelle discussion</h2>
+        <h2>
+          <span *ngIf="currentUser?.profileType === ProfileType.Parent">Démarrer une nouvelle discussion</span>
+          <span *ngIf="currentUser?.profileType === ProfileType.Student">Envoyer un message au professeur</span>
+          <span *ngIf="currentUser?.profileType === ProfileType.Teacher">Contacter un parent</span>
+        </h2>
         <button (click)="closeCreateModal()" class="close">×</button>
       </div>
       <div class="modal-body">

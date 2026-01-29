@@ -17,6 +17,7 @@ public class ChatDto {
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public bool IsActive { get; set; }
+    public bool IsReadOnly { get; set; } = false;
 }
 
 public class ChatDetailDto : ChatDto {

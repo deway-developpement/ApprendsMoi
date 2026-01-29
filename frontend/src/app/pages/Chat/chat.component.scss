@@ -260,6 +260,16 @@
             font-size: 12px;
             color: #999;
             margin-top: 4px;
+
+            &.read-only-badge {
+              color: #856404;
+              background-color: #fff3cd;
+              padding: 4px 8px;
+              border-radius: 3px;
+              display: inline-block;
+              margin-top: 8px;
+              font-weight: 500;
+            }
           }
 
           .btn-icon {
@@ -269,8 +279,13 @@
             cursor: pointer;
             padding: 8px;
 
-            &:hover {
+            &:hover:not(:disabled) {
               opacity: 0.7;
+            }
+
+            &:disabled {
+              opacity: 0.4;
+              cursor: not-allowed;
             }
           }
         }
@@ -419,6 +434,23 @@
           background-color: #fafafa;
           display: flex;
           gap: 12px;
+          flex-direction: column;
+
+          .read-only-notice {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 4px;
+            padding: 10px 12px;
+            color: #856404;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 0;
+          }
+
+          .input-row {
+            display: flex;
+            gap: 12px;
+          }
 
           textarea {
             flex: 1;
@@ -435,6 +467,12 @@
               outline: none;
               border-color: #007bff;
               box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+            }
+
+            &:disabled {
+              background-color: #e9ecef;
+              cursor: not-allowed;
+              color: #999;
             }
           }
 

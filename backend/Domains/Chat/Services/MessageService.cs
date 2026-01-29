@@ -141,9 +141,38 @@ public class MessageService(AppDbContext db) {
     }
 
     /// <summary>
-    /// Check if user is participant in chat
+    /// Check if user is participant in chat (including read-only access for parents viewing children's chats)
     /// </summary>
     public async Task<bool> UserIsParticipantInChatAsync(
+        Guid chatId,
+        Guid userId,
+        CancellationToken ct = default) {
+        
+        var chat = await _db.Chats
+            .Include(c => c.Student)
+            .FirstOrDefaultAsync(c => c.Id == chatId, ct);
+
+        if (chat == null) return false;
+
+        // Check if user is direct participant
+        if (chat.TeacherId == userId || chat.ParentId == userId || chat.StudentId == userId) {
+            return true;
+        }
+
+        // Check if user is a parent viewing their child's chat
+        if (chat.ChatType == ChatType.StudentChat && chat.StudentId.HasValue) {
+            var isParentOfStudent = await _db.Students
+                .AnyAsync(s => s.UserId == chat.StudentId.Value && s.ParentId == userId, ct);
+            return isParentOfStudent;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Check if user can send messages in chat (not read-only)
+    /// </summary>
+    public async Task<bool> UserCanSendMessageAsync(
         Guid chatId,
         Guid userId,
         CancellationToken ct = default) {
@@ -153,6 +182,7 @@ public class MessageService(AppDbContext db) {
 
         if (chat == null) return false;
 
+        // Only direct participants can send messages
         return chat.TeacherId == userId || chat.ParentId == userId || chat.StudentId == userId;
     }
 }

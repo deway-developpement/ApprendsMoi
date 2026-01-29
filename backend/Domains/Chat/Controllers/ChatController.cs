@@ -117,7 +117,12 @@ public class ChatController(ChatService chatService) : ControllerBase {
             return Unauthorized();
         }
 
-        // Verify user has access to this chat
+        // Verify user has access to this chat and it's not read-only
+        var isReadOnly = await _chatService.IsReadOnlyAccessAsync(chatId, userGuid, ct);
+        if (isReadOnly) {
+            return Forbid("You cannot archive this chat as you have read-only access");
+        }
+
         var hasAccess = await _chatService.UserHasAccessToChatAsync(chatId, userGuid, ct);
         if (!hasAccess) {
             return Forbid();
@@ -141,7 +146,12 @@ public class ChatController(ChatService chatService) : ControllerBase {
             return Unauthorized();
         }
 
-        // Verify user has access to this chat
+        // Verify user has access to this chat and it's not read-only
+        var isReadOnly = await _chatService.IsReadOnlyAccessAsync(chatId, userGuid, ct);
+        if (isReadOnly) {
+            return Forbid("You cannot reactivate this chat as you have read-only access");
+        }
+
         var hasAccess = await _chatService.UserHasAccessToChatAsync(chatId, userGuid, ct);
         if (!hasAccess) {
             return Forbid();

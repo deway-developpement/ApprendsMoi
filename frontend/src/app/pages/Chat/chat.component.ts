@@ -216,6 +216,11 @@ export class ChatComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.selectedChat.isReadOnly) {
+      this.error = 'Vous ne pouvez pas envoyer de messages dans cette discussion (accès lecture seule)';
+      return;
+    }
+
     this.loading = true;
     const messageContent = this.messageContent;
     this.chatService.sendMessage(this.selectedChat.chatId, { Content: messageContent }).subscribe({
@@ -263,10 +268,32 @@ export class ChatComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const dto: CreateChatDto = {
-      chatType: ChatType.ParentChat,
-      teacherId: this.newChatTeacherId
-    };
+    let dto: CreateChatDto;
+
+    if (this.currentUser?.profileType === ProfileType.Parent) {
+      // Parents create parent chats
+      dto = {
+        chatType: ChatType.ParentChat,
+        teacherId: this.newChatTeacherId
+      };
+    } else if (this.currentUser?.profileType === ProfileType.Student) {
+      // Students create student chats with teachers
+      dto = {
+        chatType: ChatType.StudentChat,
+        teacherId: this.newChatTeacherId,
+        studentId: this.currentUser.id
+      };
+    } else if (this.currentUser?.profileType === ProfileType.Teacher) {
+      // Teachers create student chats with their students
+      // For now, just create a parent chat; students will create their own student chats
+      dto = {
+        chatType: ChatType.ParentChat,
+        parentId: this.newChatTeacherId
+      };
+    } else {
+      this.error = 'Type de profil non reconnu';
+      return;
+    }
 
     this.loading = true;
     this.chatService.createChat(dto).subscribe({
@@ -295,6 +322,11 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   archiveChat(): void {
     if (!this.selectedChat) return;
+
+    if (this.selectedChat.isReadOnly) {
+      this.error = 'Vous ne pouvez pas archiver cette discussion (accès lecture seule)';
+      return;
+    }
 
     if (confirm('Êtes-vous sûr de vouloir archiver cette discussion ?')) {
       this.chatService.archiveChat(this.selectedChat.chatId).subscribe({

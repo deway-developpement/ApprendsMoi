@@ -55,10 +55,10 @@ public class MessageController(
             return Unauthorized();
         }
 
-        // Verify user has access to this chat
-        var hasAccess = await _messageService.UserIsParticipantInChatAsync(chatId, userGuid, ct);
-        if (!hasAccess) {
-            return Forbid();
+        // Verify user can send messages (not read-only access)
+        var canSend = await _messageService.UserCanSendMessageAsync(chatId, userGuid, ct);
+        if (!canSend) {
+            return Forbid("You do not have permission to send messages in this chat");
         }
 
         try {
