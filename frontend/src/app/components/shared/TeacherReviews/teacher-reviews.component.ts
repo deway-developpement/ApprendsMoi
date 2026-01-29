@@ -38,7 +38,6 @@ export class TeacherReviewsComponent implements OnInit {
       next: (data) => {
         this.stats = data;
         this.loading = false;
-        console.log(data);
       },
       error: (err) => {
         console.error('Error fetching teacher stats', err);
@@ -47,5 +46,12 @@ export class TeacherReviewsComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+// Dans teacher-reviews.component.ts
+  getStarColor(rating: number): string {
+    if (rating >= 4) return '#4EE381'; // Jaune
+    if (rating >= 2.5) return '#f97316'; // Orange
+    return '#ef4444'; // Rouge
   }
 }

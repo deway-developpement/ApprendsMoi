@@ -37,7 +37,6 @@
   .stars {
     display: flex;
     gap: 2px;
-    color: $colorPremium; // Gold color for main stars
   }
 
   .total-reviews {
@@ -67,7 +66,6 @@
   .review-stars {
     display: flex;
     gap: 1px;
-    color: $SecondaryColor; // Orange for individual reviews to differentiate
     transform: scale(0.8); // Slightly smaller stars for list
     transform-origin: left;
   }
@@ -109,3 +107,34 @@
   color: $PrimaryColor;
   font-weight: 600;
 }
+
+// coucou ylan
+
+
+// Dans teacher-reviews.component.scss
+
+.stars, .review-stars {
+  display: flex;
+  gap: 2px;
+  
+  // Appliquer la couleur aux composants icons enfants
+  &.stars-high {
+    // Jaune Or
+    ::ng-deep .small-icon-container { color: #fbbf24 !important; }
+    ::ng-deep svg path { fill: #fbbf24 !important; } 
+  }
+
+  &.stars-medium {
+    // Orange
+    ::ng-deep .small-icon-container { color: #f97316 !important; }
+    ::ng-deep svg path { fill: #f97316 !important; }
+  }
+
+  &.stars-low {
+    // Rouge
+    ::ng-deep .small-icon-container { color: #ef4444 !important; }
+    ::ng-deep svg path { fill: #ef4444 !important; }
+  }
+}
+
+// Supprimez les anciennes définitions de couleur fixes dans .stars et .review-stars

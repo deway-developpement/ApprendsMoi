@@ -169,14 +169,15 @@
                   placeholder="Sélectionner un élève">
                 </app-select>
               </div>
-              <div class="field full">
-                <label>Sujet (optionnel)</label>
-                <app-text-input
-                  placeholder="Ex : Révision chapitre 3"
-                  [value]="bookingTopic"
-                  (valueChange)="bookingTopic = $event">
-                </app-text-input>
-              </div>
+                <div class="field full">
+                  <app-select
+                    label="Matière"
+                    placeholder="Choisissez la matière du cours"
+                    [options]="subjectOptions"
+                    [value]="selectedSubjectId"
+                    (valueChange)="selectedSubjectId = $event">
+                  </app-select>
+                </div>
             </div>
 
             <div class="booking-actions">
