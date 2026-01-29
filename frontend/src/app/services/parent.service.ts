@@ -35,6 +35,20 @@ export interface StudentDto {
   profile: number;
 }
 
+export interface TeacherRating {
+  rating: number;
+  comment: string;
+}
+
+export interface TeacherStatsDto {
+  teacherId: string;
+  teacherName: string;
+  averageRating: number;
+  totalRatings: number;
+  ratingDistribution: { [key: string]: number }; // Handles "additionalProp1": 0, etc.
+  recentRatings: TeacherRating[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -165,5 +179,9 @@ export class ParentService {
 
   deleteChild(id: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/api/Users/${id}`);
+  }
+
+  getTeacherStats(teacherId: string): Observable<TeacherStatsDto> {
+    return this.http.get<TeacherStatsDto>(`${this.apiUrl}/api/Ratings/stats/teacher/${teacherId}`);
   }
 }
