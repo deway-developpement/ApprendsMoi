@@ -32,24 +32,22 @@ public class AuthController(
             return BadRequest(new { error = "Invalid credentials" });
         }
 
-        if (request.IsStudent) {
-            if (!UsernameRegex.IsMatch(request.Credential)) {
-                return BadRequest(new { error = "Invalid credentials" });
-            }
-        } else {
-            if (!EmailRegex.IsMatch(request.Credential)) {
-                return BadRequest(new { error = "Invalid credentials" });
-            }
-        }
-
         User? user;
+        bool isUsername = UsernameRegex.IsMatch(request.Credential);
+        bool isEmail = EmailRegex.IsMatch(request.Credential);
+
+        if (!isUsername && !isEmail) {
+            return BadRequest(new { error = "Invalid credentials" });
+        }
         
-        if (request.IsStudent) {
+        if (isUsername) {
+            // Student login with username
             user = await _authService.ValidateCredentialsByUsernameAsync(request.Credential, request.Password, ct);
             if (user == null || user.Profile != ProfileType.Student) {
                 return Unauthorized(new { error = "Invalid credentials" });
             }
         } else {
+            // Non-student login with email
             user = await _authService.ValidateCredentialsByEmailAsync(request.Credential.ToLower(), request.Password, ct);
             if (user == null || user.Profile == ProfileType.Student) {
                 return Unauthorized(new { error = "Invalid credentials" });
@@ -237,7 +235,7 @@ public class AuthController(
     }
 }
 
-public record LoginRequest(string Credential, string Password, bool IsStudent);
+public record LoginRequest(string Credential, string Password);
 public record RegisterRequest(string Email, string Password, string FirstName, string LastName, ProfileType? Profile, string? PhoneNumber);
 public record RegisterStudentRequest(string Username, string Password, string FirstName, string LastName, GradeLevel? GradeLevel, DateOnly? BirthDate, Guid? ParentId);
 public record LoginResponse(string Token, string RefreshToken, UserDto User);
