@@ -14,9 +14,6 @@ public interface ICourseService {
     Task<IEnumerable<CourseDto>> GetAllCoursesAsync();
     Task<CourseDto> UpdateCourseAsync(Guid courseId, UpdateCourseDto dto);
     Task DeleteCourseAsync(Guid courseId);
-    Task<CourseStatsDto> GetStudentStatsAsync(Guid studentId);
-    Task<CourseStatsDto> GetTeacherStatsAsync(Guid teacherId);
-    Task<TeacherEarningsDto> GetTeacherEarningsAsync(Guid teacherId);
 }
 
 public class CourseService : ICourseService {
@@ -188,64 +185,6 @@ public class CourseService : ICourseService {
 
         _context.Courses.Remove(course);
         await _context.SaveChangesAsync();
-    }
-
-    public async Task<CourseStatsDto> GetStudentStatsAsync(Guid studentId) {
-        var courses = await _context.Courses
-            .Where(c => c.StudentId == studentId)
-            .ToListAsync();
-
-        var completed = courses.Where(c => c.Status == CourseStatus.COMPLETED).ToList();
-        var upcoming = courses.Where(c => c.StartDate > DateTime.UtcNow).ToList();
-        var totalHours = courses.Sum(c => c.DurationMinutes) / 60.0m;
-        var attendedCourses = completed.Count(c => c.StudentAttended);
-        var attendanceRate = completed.Count > 0 ? (attendedCourses / (decimal)completed.Count) * 100 : 0;
-
-        return new CourseStatsDto {
-            TotalCourses = courses.Count,
-            CompletedCourses = completed.Count,
-            UpcomingCourses = upcoming.Count,
-            TotalHours = totalHours,
-            AttendanceRate = attendanceRate
-        };
-    }
-
-    public async Task<CourseStatsDto> GetTeacherStatsAsync(Guid teacherId) {
-        var courses = await _context.Courses
-            .Where(c => c.TeacherId == teacherId)
-            .ToListAsync();
-
-        var completed = courses.Where(c => c.Status == CourseStatus.COMPLETED).ToList();
-        var upcoming = courses.Where(c => c.StartDate > DateTime.UtcNow).ToList();
-        var totalHours = courses.Sum(c => c.DurationMinutes) / 60.0m;
-        var attendedCourses = completed.Count(c => c.StudentAttended);
-        var attendanceRate = completed.Count > 0 ? (attendedCourses / (decimal)completed.Count) * 100 : 0;
-
-        return new CourseStatsDto {
-            TotalCourses = courses.Count,
-            CompletedCourses = completed.Count,
-            UpcomingCourses = upcoming.Count,
-            TotalHours = totalHours,
-            AttendanceRate = attendanceRate
-        };
-    }
-
-    public async Task<TeacherEarningsDto> GetTeacherEarningsAsync(Guid teacherId) {
-        var invoices = await _context.Invoices
-            .Include(i => i.Course)
-            .Where(i => i.Course.TeacherId == teacherId)
-            .ToListAsync();
-
-        var totalEarnings = invoices.Sum(i => i.TeacherEarning);
-        var paidEarnings = invoices.Where(i => i.Status == InvoiceStatus.PAID).Sum(i => i.TeacherEarning);
-        var pendingEarnings = invoices.Where(i => i.Status == InvoiceStatus.PENDING).Sum(i => i.TeacherEarning);
-
-        return new TeacherEarningsDto {
-            TotalEarnings = totalEarnings,
-            PaidEarnings = paidEarnings,
-            PendingEarnings = pendingEarnings,
-            TotalCourses = invoices.Count
-        };
     }
 
     private CourseDto MapToDto(Course course) {

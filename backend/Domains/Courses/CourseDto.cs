@@ -40,18 +40,3 @@ public class UpdateCourseDto {
 public class MarkAttendanceDto {
     public bool Attended { get; set; }
 }
-
-public class CourseStatsDto {
-    public int TotalCourses { get; set; }
-    public int CompletedCourses { get; set; }
-    public int UpcomingCourses { get; set; }
-    public decimal TotalHours { get; set; }
-    public decimal AttendanceRate { get; set; }
-}
-
-public class TeacherEarningsDto {
-    public decimal TotalEarnings { get; set; }
-    public decimal PendingEarnings { get; set; }
-    public decimal PaidEarnings { get; set; }
-    public int TotalCourses { get; set; }
-}
