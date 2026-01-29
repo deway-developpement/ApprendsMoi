@@ -25,6 +25,17 @@
       font-size: 1.1rem;
       opacity: 0.9;
       font-weight: 300;
+
+      &.warning {
+        background: #fff3cd;
+        color: #856404;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        opacity: 1;
+        font-weight: 500;
+        display: inline-block;
+        margin-top: 1rem;
+      }
     }
   }
 }
@@ -235,4 +246,105 @@
   display: flex;
   justify-content: flex-end; // Pousse tout le contenu vers la droite
   width: 100%;
+}
+
+.documents-section {
+  background: white;
+  border-radius: $borderRadiusLarge;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  .section-header {
+    margin-bottom: 1rem;
+    
+    h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: $PrimaryColor;
+      margin: 0;
+    }
+  }
+
+  .section-content {
+    .section-description {
+      color: #64748b;
+      margin-bottom: 1rem;
+      line-height: 1.6;
+    }
+
+    .action-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: $biggerFontSize;
+      font-weight: 600;
+      color: $SecondaryColor;
+      text-decoration: none;
+      transition: color $transitionFast, transform $transitionFast;
+
+      &:hover {
+        color: $SecondaryColorHover;
+        transform: translateX(4px);
+      }
+
+      &:active {
+        color: $SecondaryColorActive;
+      }
+    }
+  }
+}
+
+.verification-warning {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+  border: 2px solid #ffc107;
+  border-radius: $borderRadiusLarge;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
+
+  h3 {
+    color: #856404;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    color: #856404;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+
+  ol {
+    color: #856404;
+    font-size: 1rem;
+    margin-left: 1.5rem;
+    margin-bottom: 1.5rem;
+
+    li {
+      margin-bottom: 0.5rem;
+      line-height: 1.6;
+    }
+  }
+
+  .verification-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #ffc107;
+    color: #000;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+    &:hover {
+      background: #ffb300;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+  }
 }

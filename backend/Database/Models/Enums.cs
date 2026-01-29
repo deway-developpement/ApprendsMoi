@@ -25,7 +25,8 @@ public enum GradeLevel {
 public enum VerificationStatus {
     PENDING,
     VERIFIED,
-    REJECTED
+    REJECTED,
+    DIPLOMA_VERIFIED
 }
 
 public enum CourseStatus {
@@ -62,4 +63,15 @@ public enum PaymentMethod {
     BANK_TRANSFER,
     PAYPAL,
     OTHER
+}
+
+public enum DocumentType {
+    ID_PAPER,
+    DIPLOMA
+}
+
+public enum DocumentStatus {
+    PENDING,
+    APPROVED,
+    REJECTED
 }

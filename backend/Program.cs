@@ -7,6 +7,7 @@ using backend.Domains.Chat;
 using backend.Domains.Courses.Services;
 using backend.Domains.Payments.Services;
 using backend.Domains.Ratings.Services;
+using backend.Domains.Documents;
 using backend.Domains.Stats.Services;
 using backend.Helpers;
 using FluentMigrator.Runner;
@@ -113,6 +114,9 @@ builder.Services.AddScoped<IInvoicePdfService, InvoicePdfService>();
 // Rating services
 builder.Services.AddScoped<IRatingService, RatingService>();
 builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
+
+// Document services
+builder.Services.AddScoped<DocumentService>();
 
 // Stats services
 builder.Services.AddScoped<IStatsService, StatsService>();

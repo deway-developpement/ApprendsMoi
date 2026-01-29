@@ -11,24 +11,28 @@ import { PlanningManagementTeacherComponent } from './pages/PlanningManagementTe
 import { SearchForTeachersComponent } from './pages/SearchForTeachers/search-for-teachers.component';
 import { TeacherProfileComponent } from './pages/TeacherProfile/teacher-profile.component';
 import { HomeComponent } from './pages/Home/home.component';
+import { DocumentsComponent } from './pages/Documents/documents.component';
+import { teacherOnlyGuard, verifiedTeacherGuard } from './guards/verified-teacher.guard';
 
 export const routes: Routes = [
   { path: '', component: HomeRouterComponent },
-  { path: 'visio', component: PlanningComponent },
+  { path: 'visio', component: PlanningComponent, canActivate: [verifiedTeacherGuard] },
   { 
     path: 'visio/:id', 
     component: Visio,
-    data: { getPrerenderParams: () => [] }
+    data: { getPrerenderParams: () => [] },
+    canActivate: [verifiedTeacherGuard]
   },
   { path: 'login', component: ConnexionComponent},
   { path: 'register', component: InscriptionComponent },
-  { path: 'chat', component: ChatComponent },
+  { path: 'chat', component: ChatComponent, canActivate: [verifiedTeacherGuard] },
   { path: 'admin/users', component: UsersListComponent },
   { path: 'admin/users/:id', component: UserDetailsComponent },
-  { path: 'teacher/planning', component: PlanningManagementTeacherComponent },
+  { path: 'teacher/planning', component: PlanningManagementTeacherComponent, canActivate: [verifiedTeacherGuard] },
   { path: 'search', component: SearchForTeachersComponent },
   { path: 'teachers/:id', component: TeacherProfileComponent },
   { path: 'home', component: HomeComponent },
+  { path: 'documents', component: DocumentsComponent, canActivate: [teacherOnlyGuard] },
   { path: '**', redirectTo: '' }
 ];
 

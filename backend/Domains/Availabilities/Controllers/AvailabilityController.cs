@@ -23,7 +23,7 @@ public class AvailabilityController : ControllerBase
     /// Creates a new availability slot for a teacher
     /// </summary>
     [HttpPost]
-    [RequireRole(ProfileType.Teacher)]
+    [VerifiedTeacherOnly]
     [Consumes("application/json")]
     [Produces("application/json")]
     [ProducesResponseType(typeof(AvailabilityResponse), StatusCodes.Status200OK)]
@@ -179,7 +179,7 @@ public class AvailabilityController : ControllerBase
     /// Blocks a specific time range (independent of availability slots)
     /// </summary>
     [HttpPost("block")]
-    [RequireRole(ProfileType.Teacher)]
+    [VerifiedTeacherOnly]
     [Consumes("application/json")]
     [Produces("application/json")]
     [ProducesResponseType(typeof(UnavailableSlotResponse), StatusCodes.Status200OK)]
@@ -270,7 +270,7 @@ public class AvailabilityController : ControllerBase
     /// Removes a blocked time slot
     /// </summary>
     [HttpDelete("block/{blockId}")]
-    [RequireRole(ProfileType.Teacher)]
+    [VerifiedTeacherOnly]
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -311,7 +311,7 @@ public class AvailabilityController : ControllerBase
     /// Deletes an availability slot
     /// </summary>
     [HttpDelete("{availabilityId}")]
-    [RequireRole(ProfileType.Teacher)]
+    [VerifiedTeacherOnly]
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

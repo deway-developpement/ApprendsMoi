@@ -57,6 +57,7 @@ export class HomeTeacherComponent implements OnInit {
 
   teacherName = 'Professeur';
   currentUserId: string | null = null;
+  isVerified = false;
 
   // Data
   nextCourse: Course | null = null;
@@ -91,6 +92,8 @@ export class HomeTeacherComponent implements OnInit {
 
     this.currentUserId = user.id;
     this.userCache.set(user.id, user);
+    // Accept both VERIFIED (1) and DIPLOMA_VERIFIED (3)
+    this.isVerified = user.verificationStatus === 1 || user.verificationStatus === 3;
     const displayName = this.formatUserName(user);
     if (displayName) {
       this.teacherName = displayName;

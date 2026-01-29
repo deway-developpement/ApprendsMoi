@@ -25,6 +25,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Invoice> Invoices { get; set; } = null!;
     public DbSet<Payment> Payments { get; set; } = null!;
     public DbSet<TeacherRating> TeacherRatings { get; set; } = null!;
+    public DbSet<TeacherDocument> TeacherDocuments { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
         ConfigureUsers(modelBuilder);
@@ -44,6 +45,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         ConfigureInvoices(modelBuilder);
         ConfigurePayments(modelBuilder);
         ConfigureTeacherRatings(modelBuilder);
+        ConfigureTeacherDocuments(modelBuilder);
     }
 
     private void ConfigureUsers(ModelBuilder modelBuilder) {
@@ -511,6 +513,32 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .WithMany()
                 .HasForeignKey(r => r.CourseId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+    }
+
+    private void ConfigureTeacherDocuments(ModelBuilder modelBuilder) {
+        modelBuilder.Entity<TeacherDocument>(b => {
+            b.ToTable("teacher_documents");
+            b.HasKey(e => e.Id);
+            
+            b.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
+            b.Property(e => e.TeacherId).HasColumnName("teacher_id").IsRequired();
+            b.Property(e => e.DocumentType).HasColumnName("document_type").IsRequired();
+            b.Property(e => e.FileName).HasColumnName("file_name").IsRequired();
+            b.Property(e => e.FileContent).HasColumnName("file_content").IsRequired();
+            b.Property(e => e.Status).HasColumnName("status").HasDefaultValue(DocumentStatus.PENDING);
+            b.Property(e => e.RejectionReason).HasColumnName("rejection_reason");
+            b.Property(e => e.UploadedAt).HasColumnName("uploaded_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            b.Property(e => e.ReviewedAt).HasColumnName("reviewed_at");
+            b.Property(e => e.ReviewedBy).HasColumnName("reviewed_by");
+            
+            b.HasIndex(e => e.TeacherId);
+            b.HasIndex(e => new { e.TeacherId, e.DocumentType });
+            
+            b.HasOne(d => d.Teacher)
+                .WithMany(t => t.Documents)
+                .HasForeignKey(d => d.TeacherId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
