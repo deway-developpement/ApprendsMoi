@@ -22,15 +22,18 @@ public class CoursesController : ControllerBase {
     }
 
     [HttpPost]
-    [RequireRole(ProfileType.Admin, ProfileType.Teacher)]
+    [RequireRole(ProfileType.Admin, ProfileType.Parent)]
     public async Task<ActionResult<CourseDto>> CreateCourse([FromBody] CreateCourseDto dto) {
         try {
             var userProfile = User.FindFirst("profile")?.Value;
             var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
-            // If teacher, ensure they can only create courses for themselves
-            if (userProfile == ProfileType.Teacher.ToString() && dto.TeacherId != userId) {
-                return Forbid();
+            // If parent, ensure they can only create courses for their own children
+            if (userProfile == ProfileType.Parent.ToString()) {
+                var student = await _userService.GetStudentWithParentAsync(dto.StudentId);
+                if (student == null || student.ParentId != userId) {
+                    return Forbid();
+                }
             }
 
             var course = await _courseService.CreateCourseAsync(dto);
@@ -71,7 +74,6 @@ public class CoursesController : ControllerBase {
     }
 
     [HttpGet]
-    [RequireRole(ProfileType.Admin)]
     public async Task<ActionResult<IEnumerable<CourseDto>>> GetAllCourses() {
         try {
             var courses = await _courseService.GetAllCoursesAsync();
