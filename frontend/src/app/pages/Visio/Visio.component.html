@@ -4,9 +4,7 @@
   <div class="visio-hero__content">
     <p class="visio-hero__eyebrow">ApprendsMoi · Visio</p>
     <h1 class="visio-hero__title">Salle de visio & chat</h1>
-    <p class="visio-hero__subtitle">
-      Lancez la session Zoom et gardez le chat de classe juste à côté.
-    </p>
+    <br />
   </div>
 </section>
 
@@ -18,8 +16,7 @@
         <span class="visio-badge">En direct</span>
       </div>
       <div class="visio-card__actions">
-        <app-button variant="primary" (click)="initZoomSdk()">Lancer SDK</app-button>
-        <app-button variant="ghost" (click)="openZoomInNewTab()">Nouvel onglet</app-button>
+        <app-button variant="primary" (click)="leaveVisio()">Quitter la visio</app-button>
       </div>
     </header>
 
@@ -32,31 +29,68 @@
       <div *ngIf="sdkError" class="zoom-error">
         <p>{{ sdkError }}</p>
         <button (click)="loadMeetingAndInit()" class="retry-button">Réessayer</button>
-      </div>
+      </div>  
     </div>
   </section>
 
   <aside class="visio-card visio-card--chat">
     <header class="visio-card__header">
-      <h2 class="visio-card__title">Chat de classe</h2>
+      <div class="visio-card__title-group">
+        <h2 class="visio-card__title">Chat de classe</h2>
+        <span class="chat-status" [class.connected]="isSignalRConnected">
+          <span class="chat-status__dot"></span>
+          {{ isSignalRConnected ? 'En ligne' : 'Hors ligne' }}
+        </span>
+      </div>
     </header>
-    <div class="chat-window">
-      <div class="chat-message chat-message--teacher">
-        <span class="chat-author">Professeur</span>
-        <p class="chat-text">Bienvenue ! Faites un test micro/caméra avant de commencer.</p>
+    <div class="chat-window" *ngIf="selectedChat; else chatState">
+      <div class="chat-messages" #chatMessages>
+        <div
+          *ngFor="let message of selectedChat.messages"
+          class="chat-message"
+          [class.chat-message--own]="message.senderId === currentUser?.id">
+          <span class="chat-author">{{ message.senderName }}</span>
+          <p class="chat-text">{{ message.content }}</p>
+          <div *ngIf="message.attachments?.length" class="chat-attachments">
+            <a
+              *ngFor="let attachment of message.attachments"
+              [href]="attachment.fileUrl"
+              target="_blank"
+              rel="noopener"
+              class="chat-attachment">
+              {{ attachment.fileName }}
+            </a>
+          </div>
+          <span class="chat-time">{{ message.createdAt | date:'shortTime' }}</span>
+        </div>
       </div>
-      <div class="chat-message">
-        <span class="chat-author">Élève</span>
-        <p class="chat-text">C'est bon pour moi.</p>
-      </div>
-      <div class="chat-message chat-message--helper">
-        <span class="chat-author">Assistant</span>
-        <p class="chat-text">Vous pouvez partager vos documents ici pendant la session.</p>
+      <div *ngIf="typingUsers.size > 0" class="chat-typing">
+        {{ Array.from(typingUsers).join(', ') }} ecrit...
       </div>
     </div>
+    <ng-template #chatState>
+      <div class="chat-window chat-window--empty">
+        <p *ngIf="isChatLoading">Chargement du chat...</p>
+        <p *ngIf="!isChatLoading && chatError">{{ chatError }}</p>
+        <p *ngIf="!isChatLoading && !chatError">Aucun chat disponible pour cette session.</p>
+      </div>
+    </ng-template>
     <div class="chat-input">
-      <input type="text" placeholder="Écrivez un message..." aria-label="Nouveau message" />
-      <app-button variant="primary">Envoyer</app-button>
+      <input
+        type="text"
+        placeholder="Ecrivez un message..."
+        aria-label="Nouveau message"
+        [(ngModel)]="messageContent"
+        (keydown.enter)="sendMessage()"
+        (input)="onMessageInput()"
+        [disabled]="!selectedChat || isChatLoading"
+      />
+      <app-button
+        variant="primary"
+        (click)="sendMessage()"
+        [disabled]="!selectedChat || !messageContent.trim() || isSendingMessage">
+        {{ isSendingMessage ? 'Envoi...' : 'Envoyer' }}
+      </app-button>
     </div>
   </aside>
 </main>
