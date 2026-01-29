@@ -112,7 +112,6 @@ interface CreateMeetingResponse {
     RouterModule,
     HeaderComponent,
     ButtonComponent,
-    SmallIconComponent,
     SelectComponent,
     TextInputComponent
   ],
