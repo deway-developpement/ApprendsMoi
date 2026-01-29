@@ -22,6 +22,24 @@ public class PaymentsController : ControllerBase {
     [RequireRole(ProfileType.Admin, ProfileType.Teacher)]
     public async Task<ActionResult<BillingDto>> CreateBillingForCourse(Guid courseId) {
         try {
+            var userId = JwtHelper.GetUserIdFromClaims(User);
+            var userProfile = JwtHelper.GetUserProfileFromClaims(User);
+
+            if (userId == null || userProfile == null) {
+                return Unauthorized();
+            }
+
+            // If teacher, verify they are the teacher of this course
+            if (userProfile == ProfileType.Teacher) {
+                var course = await _paymentService.GetCourseTeacherIdAsync(courseId);
+                if (course == null) {
+                    return NotFound(new { message = "Course not found" });
+                }
+                if (course != userId) {
+                    return Forbid();
+                }
+            }
+
             var billing = await _paymentService.CreateBillingForCourseAsync(courseId);
             return CreatedAtAction(nameof(GetBilling), new { id = billing.Id }, billing);
         }

@@ -15,6 +15,7 @@ public interface IPaymentService {
     Task<PaymentHistoryDto> GetParentPaymentHistoryAsync(Guid parentId);
     Task<PaymentHistoryDto> GetTeacherPaymentHistoryAsync(Guid teacherId);
     Task<byte[]> GenerateInvoicePdfAsync(Guid billingId);
+    Task<Guid?> GetCourseTeacherIdAsync(Guid courseId);
 }
 
 public class PaymentService : IPaymentService {
@@ -202,6 +203,16 @@ public class PaymentService : IPaymentService {
         }
 
         return await _pdfService.GenerateInvoicePdfAsync(invoice);
+    }
+
+    public async Task<Guid?> GetCourseTeacherIdAsync(Guid courseId) {
+        var course = await _context.Courses
+            .AsNoTracking()
+            .Where(c => c.Id == courseId)
+            .Select(c => c.TeacherId)
+            .FirstOrDefaultAsync();
+
+        return course == Guid.Empty ? null : course;
     }
 
     private BillingDto MapBillingToDto(Invoice invoice) {
