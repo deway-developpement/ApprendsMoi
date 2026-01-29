@@ -1,0 +1,111 @@
+@import "variables";
+
+.reviews-container {
+  background-color: white;
+  border-radius: $borderRadiusLarge;
+  padding: $paddingMedium;
+  box-shadow: $boxShadow;
+  border: 1px solid rgba($PrimaryColor, 0.08);
+}
+
+.loading-state, .error-state {
+  text-align: center;
+  padding: $paddingMedium;
+  color: $PrimaryColorHover;
+  font-size: $smallerFontSize;
+}
+
+.reviews-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: $marginMedium;
+  border-bottom: 1px solid rgba($PrimaryColor, 0.1);
+  padding-bottom: $paddingSmall;
+
+  .score-block {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .big-score {
+    font-size: $titleFontSize;
+    font-weight: 700;
+    color: $PrimaryColor;
+  }
+
+  .stars {
+    display: flex;
+    gap: 2px;
+    color: $colorPremium; // Gold color for main stars
+  }
+
+  .total-reviews {
+    color: $PrimaryColorHover;
+    font-size: $smallerFontSize;
+    margin-left: 0.5rem;
+  }
+}
+
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: $marginMedium;
+}
+
+.review-item {
+  background-color: rgba($PrimaryColor, 0.02);
+  border-radius: $borderRadius;
+  padding: $paddingSmall $paddingMedium;
+  
+  .review-top {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.25rem;
+  }
+
+  .review-stars {
+    display: flex;
+    gap: 1px;
+    color: $SecondaryColor; // Orange for individual reviews to differentiate
+    transform: scale(0.8); // Slightly smaller stars for list
+    transform-origin: left;
+  }
+
+  .review-text {
+    margin: 0;
+    color: $PrimaryColor;
+    font-size: $smallerFontSize;
+    line-height: 1.4;
+    font-style: italic;
+  }
+}
+
+.no-reviews {
+  text-align: center;
+  color: $PrimaryColorHover;
+  font-size: $smallerFontSize;
+  font-style: italic;
+}
+
+// Simple Spinner
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba($PrimaryColor, 0.2);
+  border-top-color: $PrimaryColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 0.5rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.component-title {
+  margin: 0 0 1rem 0;
+  font-size: $regularFontSize; // or $biggerFontSize
+  color: $PrimaryColor;
+  font-weight: 600;
+}

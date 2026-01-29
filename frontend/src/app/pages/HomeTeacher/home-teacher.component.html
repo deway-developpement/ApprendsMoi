@@ -89,5 +89,14 @@
 
     <app-courses-schedule [courses]="courses"></app-courses-schedule>
 
+    <app-teacher-reviews 
+      *ngIf="currentUserId" 
+      [teacherId]="currentUserId">
+    </app-teacher-reviews>
+
+    <div *ngIf="!currentUserId" class="loading-placeholder">
+        <p>Chargement des avis...</p>
+    </div>
+
   </main>
 </div>

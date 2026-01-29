@@ -1,0 +1,55 @@
+<section class="reviews-container">
+  
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Chargement des avis...</p>
+  </div>
+
+  <div *ngIf="error" class="error-state">
+    <p>Les avis ne sont pas disponibles pour le moment.</p>
+  </div>
+
+  <h3 class="component-title">Avis</h3>
+
+  <div *ngIf="!loading && !error && stats" class="reviews-content">
+    
+    <div class="reviews-header">
+      <div class="score-block">
+        <span class="big-score">{{ stats.averageRating | number:'1.1-1' }}</span>
+        <div class="stars">
+          <app-small-icon 
+            *ngFor="let star of starsArray" 
+            [icon]="star === 1 ? 'assets/icons/star-fill.svg' : 'assets/icons/star.svg'"
+            class="star-icon"
+            [class.filled]="star === 1"
+            [size]="40">
+          </app-small-icon>
+        </div>
+        <span class="total-reviews">({{ stats.totalRatings }} avis)</span>
+      </div>
+    </div>
+
+    <div class="reviews-list">
+      
+      <div *ngIf="stats.recentRatings.length === 0" class="no-reviews">
+        <p>Aucun avis pour le moment.</p>
+      </div>
+
+      <article *ngFor="let review of stats.recentRatings" class="review-item">
+        <div class="review-top">
+          <div class="review-stars">
+             <app-small-icon 
+               *ngFor="let i of [1,2,3,4,5]" 
+               [icon]="i <= review.rating ? 'assets/icons/star-fill.svg' : 'assets/icons/star.svg'"
+               class="mini-star"
+               [size]="30">
+             </app-small-icon>
+          </div>
+          </div>
+        
+        <p class="review-text">"{{ review.comment }}"</p>
+      </article>
+
+    </div>
+  </div>
+</section>
