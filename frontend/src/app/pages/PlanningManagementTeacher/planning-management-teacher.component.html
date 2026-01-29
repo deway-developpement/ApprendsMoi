@@ -1,0 +1,85 @@
+<app-header theme="light"></app-header>
+
+<div class="planning-page">
+  <section class="planning-hero">
+    <div class="hero-content">
+      <p class="eyebrow">Planning professeur</p>
+      <h1>Définissez vos disponibilités pour la semaine prochaine</h1>
+      <p class="subtitle">Cliquez sur un créneau pour ajouter ou retirer une disponibilité. Les créneaux enregistrés apparaissent remplis.</p>
+
+      <div class="hero-meta">
+        <div class="meta-card">Semaine : {{ weekRangeLabel }}</div>
+        <div class="meta-card">{{ timeZoneLabel }}</div>
+      </div>
+
+    </div>
+  </section>
+
+  <main class="planning-body">
+    <section class="calendar-card">
+      <div class="card-header">
+        <div>
+          <h2>Calendrier hebdomadaire</h2>
+          <p class="card-subtitle">Cliquez sur un créneau pour ajouter ou retirer une disponibilité pour cette heure.</p>
+        </div>
+        <div class="legend">
+          <span class="legend-item">
+            <span class="legend-dot is-active"></span>
+            Enregistré
+          </span>
+          <span class="legend-item">
+            <span class="legend-dot is-booked"></span>
+            Réservé
+          </span>
+          <span class="legend-item">
+            <span class="legend-dot"></span>
+            Disponible
+          </span>
+        </div>
+      </div>
+
+      <div class="calendar-scroll">
+        <div class="calendar-grid">
+          <div class="calendar-header">
+            <div class="calendar-corner"></div>
+            <div class="calendar-day" *ngFor="let day of weekDays">
+              <span class="day-name">{{ day.label }}</span>
+              <span class="day-date">{{ day.dateLabel }}</span>
+            </div>
+          </div>
+
+          <div class="calendar-body">
+            <div class="time-column">
+              <div class="time-label" *ngFor="let slot of timeSlots">
+                {{ slot.label }}
+              </div>
+            </div>
+
+            <div class="day-columns">
+              <div class="day-column" *ngFor="let day of weekDays">
+                <button
+                  class="slot"
+                  type="button"
+                  *ngFor="let slot of timeSlots"
+                  [class.is-active]="isSlotActive(day, slot)"
+                  [class.is-booked]="isSlotBooked(day, slot)"
+                  [class.is-past]="isSlotPast(day, slot)"
+                  [disabled]="isSlotPending(day, slot) || isSlotBooked(day, slot) || isLoading || (!isSlotActive(day, slot) && isDayInPast(day))"
+                  (click)="toggleAvailability(day, slot)"
+                  [attr.aria-label]="(isSlotActive(day, slot) ? 'Retirer' : 'Ajouter') + ' une disponibilité le ' + day.label + ' ' + day.dateLabel + ' à ' + slot.rangeLabel">
+                  <span class="slot-label">{{ slot.label }}</span>
+                  <span class="slot-range">{{ slot.rangeLabel }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="calendar-footer">
+        <span *ngIf="isLoading">Chargement des disponibilités...</span>
+        <span *ngIf="!isLoading">Total de créneaux enregistrés : {{ summarySlots.length }}</span>
+      </div>
+    </section>
+  </main>
+</div>

@@ -1,0 +1,594 @@
+@import "variables";
+
+.profile-page {
+  min-height: 100vh;
+  background: $backgroundColor;
+  color: $PrimaryColor;
+}
+
+.profile-hero {
+  background: linear-gradient(120deg, rgba($PrimaryColor, 0.1), rgba($SecondaryColor, 0.12));
+  padding: 3.5rem $paddingMedium 3rem;
+}
+
+.hero-content {
+  max-width: $maxContentWidth;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.back-link {
+  text-decoration: none;
+  color: $PrimaryColorHover;
+  font-weight: 600;
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.hero-card {
+  background: #fff;
+  border-radius: $borderRadiusLarge;
+  box-shadow: $boxShadow;
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+}
+
+.teacher-main {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.name-block h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 2.4vw, 2.4rem);
+}
+
+.name-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.headline {
+  margin: 0.4rem 0 0.6rem;
+  color: $PrimaryColorHover;
+}
+
+.meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  color: $PrimaryColorHover;
+  font-size: 0.9rem;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.badge {
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.badge.premium {
+  background: rgba($colorPremium, 0.25);
+  color: #8a5a00;
+}
+
+.badge.verified {
+  background: rgba($colorVerified, 0.2);
+  color: #0f6a3a;
+}
+
+.badge.top {
+  background: rgba($colorTopProf, 0.2);
+  color: #4c1d95;
+}
+
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.stat-card {
+  background: #fff;
+  border-radius: $borderRadius;
+  padding: 1rem 1.2rem;
+  box-shadow: $boxShadow;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.stat-value {
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.stat-label {
+  color: $PrimaryColorHover;
+  font-size: 0.85rem;
+}
+
+.profile-body {
+  max-width: $maxContentWidth;
+  margin: 0 auto;
+  padding: 2.5rem $paddingMedium 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.profile-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.profile-section.booking .section-title {
+  max-width: 520px;
+}
+
+.section-title h2 {
+  margin: 0;
+}
+
+.section-subtitle {
+  margin: 0.35rem 0 0;
+  color: $PrimaryColorHover;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.info-card {
+  background: #fff;
+  border-radius: $borderRadius;
+  padding: 1rem 1.2rem;
+  border: 1px solid rgba($PrimaryColor, 0.08);
+  box-shadow: $boxShadow;
+}
+
+.info-card h3 {
+  margin: 0 0 0.6rem;
+}
+
+.info-card p {
+  margin: 0;
+  color: $PrimaryColorHover;
+  line-height: 1.6;
+}
+
+.booking-card {
+  background: #fff;
+  border-radius: $borderRadiusLarge;
+  padding: 1.5rem;
+  box-shadow: $boxShadow;
+  border: 1px solid rgba($PrimaryColor, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.booking-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+.booking-calendar {
+  background: rgba($PrimaryColor, 0.03);
+  border: 1px solid rgba($PrimaryColor, 0.08);
+  border-radius: $borderRadius;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.calendar-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.calendar-title h3 {
+  margin: 0;
+}
+
+.calendar-title p {
+  margin: 0.2rem 0 0;
+  color: $PrimaryColorHover;
+  font-size: 0.85rem;
+}
+
+.calendar-status {
+  font-size: 0.8rem;
+  color: $PrimaryColorHover;
+}
+
+.calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.legend-pill {
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.legend-pill.available {
+  background: rgba($PrimaryActive, 0.15);
+  color: $PrimaryColor;
+}
+
+.legend-pill.selected {
+  background: $PrimaryActive;
+  color: #fff;
+}
+
+.legend-pill.booked {
+  background: $SecondaryColor;
+  color: #fff;
+}
+
+.legend-pill.past {
+  background: rgba($PrimaryColor, 0.08);
+  color: rgba($PrimaryColor, 0.5);
+}
+
+.calendar-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.calendar-header {
+  display: grid;
+  grid-template-columns: 56px repeat(7, minmax(0, 1fr));
+  gap: 0.3rem;
+}
+
+.calendar-corner {
+  height: 42px;
+}
+
+.calendar-day {
+  background: $PrimaryColor;
+  color: #fff;
+  border-radius: $borderRadius;
+  padding: 0.4rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.day-name {
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.day-date {
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+
+.calendar-body {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 0.3rem;
+}
+
+.time-column {
+  display: grid;
+  grid-template-rows: repeat(12, 40px);
+  gap: 0.3rem;
+}
+
+.time-label {
+  font-size: 0.7rem;
+  color: $PrimaryColorHover;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 0.4rem;
+}
+
+.day-columns {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.3rem;
+}
+
+.day-column {
+  display: grid;
+  grid-template-rows: repeat(12, 40px);
+  gap: 0.3rem;
+}
+
+.availability-slot {
+  border-radius: 10px;
+  border: 1px dashed rgba($PrimaryColor, 0.2);
+  background: rgba($PrimaryColor, 0.03);
+  color: $PrimaryColor;
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: $transitionFast;
+}
+
+.availability-slot.is-available {
+  border-color: rgba($PrimaryActive, 0.4);
+  background: rgba($PrimaryActive, 0.12);
+}
+
+.availability-slot.is-selected {
+  background: $PrimaryActive;
+  border-color: $PrimaryActive;
+  color: #fff;
+}
+
+.availability-slot.is-booked {
+  background: $SecondaryColor;
+  border-color: $SecondaryColor;
+  color: #fff;
+}
+
+.availability-slot.is-past {
+  background: rgba($PrimaryColor, 0.08);
+  border-color: rgba($PrimaryColor, 0.15);
+  color: rgba($PrimaryColor, 0.5);
+  cursor: not-allowed;
+}
+
+.availability-slot:disabled {
+  cursor: not-allowed;
+}
+
+.booking-card.locked {
+  align-items: flex-start;
+}
+
+.booking-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.field.full {
+  grid-column: 1 / -1;
+}
+
+.field label {
+  font-weight: 600;
+  color: $PrimaryColor;
+  font-size: 0.9rem;
+}
+
+.field input {
+  height: 44px;
+  border-radius: $borderRadius;
+  border: 1px solid rgba($PrimaryColor, 0.2);
+  padding: 0 0.75rem;
+  font-size: 0.9rem;
+  font-family: inherit;
+  color: $PrimaryColor;
+}
+
+.fixed-duration {
+  height: 44px;
+  border-radius: $borderRadius;
+  border: 1px solid rgba($PrimaryColor, 0.15);
+  background: rgba($PrimaryColor, 0.04);
+  padding: 0 0.75rem;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  color: $PrimaryColor;
+}
+
+.booking-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.booking-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.selected-slot {
+  background: rgba($PrimaryColor, 0.05);
+  border: 1px solid rgba($PrimaryColor, 0.1);
+  border-radius: $borderRadius;
+  padding: 0.8rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.selected-slot.empty {
+  background: rgba($PrimaryColor, 0.02);
+}
+
+.selected-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: $PrimaryColorHover;
+}
+
+.selected-value {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.selected-time {
+  font-size: 0.85rem;
+  color: $PrimaryColorHover;
+}
+
+.pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.pill {
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  background: rgba($PrimaryColor, 0.08);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.pill.soft {
+  background: rgba($SecondaryColor, 0.15);
+  color: $SecondaryColorActive;
+}
+
+.pill.outline {
+  background: transparent;
+  border: 1px dashed rgba($PrimaryColor, 0.25);
+}
+
+.profile-section.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: 1.5rem;
+}
+
+.availability-card,
+.details-card {
+  background: #fff;
+  border-radius: $borderRadiusLarge;
+  padding: 1.5rem;
+  box-shadow: $boxShadow;
+}
+
+.slot-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.slot-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-radius: $borderRadius;
+  background: rgba($PrimaryColor, 0.05);
+  border: 1px solid rgba($PrimaryColor, 0.1);
+}
+
+.slot-day {
+  font-weight: 700;
+}
+
+.slot-time {
+  display: block;
+  color: $PrimaryColorHover;
+  font-size: 0.85rem;
+}
+
+.slot-format {
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: rgba($SecondaryColor, 0.15);
+  color: $SecondaryColorActive;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.details-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.detail-block h3 {
+  margin: 0 0 0.5rem;
+}
+
+.detail-block ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: $PrimaryColorHover;
+}
+
+@media (max-width: 1024px) {
+  .hero-card {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-actions {
+    justify-content: flex-start;
+  }
+
+  .profile-section.split {
+    grid-template-columns: 1fr;
+  }
+
+  .booking-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .teacher-main {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .avatar {
+    width: 64px;
+    height: 64px;
+  }
+}
