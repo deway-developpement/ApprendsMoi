@@ -7,9 +7,7 @@ import { UserDto } from '../../../../services/auth.service';
 
 // UI Components
 import { ButtonComponent } from '../../../../components/shared/Button/button.component';
-import { IconComponent } from '../../../../components/shared/Icon/icon.component';
 import { SmallIconComponent } from '../../../../components/shared/SmallIcon/small-icon.component';
-import { IconButtonComponent } from '../../../../components/shared/IconButton/icon-button.component';
 import { TeacherReviewsComponent } from '../../../../components/shared/TeacherReviews/teacher-reviews.component';
 
 @Component({
