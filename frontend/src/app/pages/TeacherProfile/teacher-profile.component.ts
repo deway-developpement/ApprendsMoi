@@ -14,6 +14,7 @@ import { AuthService, ProfileType, UserDto } from '../../services/auth.service';
 import { ParentService, Child } from '../../services/parent.service';
 import { ToastService } from '../../services/toast.service';
 import { environment } from '../../environments/environment';
+import { TeacherReviewsComponent } from '../../components/shared/TeacherReviews/teacher-reviews.component';
 
 interface HighlightStat {
   label: string;
@@ -113,7 +114,8 @@ interface CreateMeetingResponse {
     HeaderComponent,
     ButtonComponent,
     SelectComponent,
-    TextInputComponent
+    TextInputComponent,
+    TeacherReviewsComponent
   ],
   templateUrl: './teacher-profile.component.html',
   styleUrls: ['./teacher-profile.component.scss']
