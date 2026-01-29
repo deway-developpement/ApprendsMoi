@@ -23,16 +23,16 @@ public class StatsService : IStatsService {
 
     public async Task<AdminStatsDto> GetAdminStatsAsync() {
         var now = DateTime.UtcNow;
-        var startOfLastMonth = new DateTime(now.Year, now.Month, 1).AddMonths(-1);
-        var endOfLastMonth = new DateTime(now.Year, now.Month, 1).AddSeconds(-1);
-        var startOfThisMonth = new DateTime(now.Year, now.Month, 1);
+        var startOfLastMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-1);
+        var endOfLastMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(-1);
+        var startOfThisMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
 
         // Count users active last month (logged in during that period)
         var activeUsersLastMonth = await _context.Users
-            .Where(u => u.LastLoginAt.HasValue && 
-                       u.LastLoginAt >= startOfLastMonth && 
-                       u.LastLoginAt <= endOfLastMonth &&
-                       u.IsActive)
+            .Where(u => u.IsActive &&
+                       u.LastLoginAt != null && 
+                       u.LastLoginAt.Value >= startOfLastMonth && 
+                       u.LastLoginAt.Value <= endOfLastMonth)
             .CountAsync();
 
         // Sum commissions from completed courses this month
@@ -70,15 +70,15 @@ public class StatsService : IStatsService {
 
         // Calculate earnings this month from invoices
         var now = DateTime.UtcNow;
-        var startOfThisMonth = new DateTime(now.Year, now.Month, 1);
+        var startOfThisMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
 
         var earningsThisMonth = await _context.Invoices
             .Include(i => i.Course)
             .Where(i => i.Course.TeacherId == teacherId &&
                        i.Status == InvoiceStatus.PAID &&
-                       i.PaidAt.HasValue &&
-                       i.PaidAt >= startOfThisMonth &&
-                       i.PaidAt <= now)
+                       i.PaidAt != null &&
+                       i.PaidAt.Value >= startOfThisMonth &&
+                       i.PaidAt.Value <= now)
             .SumAsync(i => i.TeacherEarning);
 
         // Count current students following (students with at least one completed or upcoming course)
@@ -115,7 +115,7 @@ public class StatsService : IStatsService {
 
         // Count courses booked this month (courses created this month for their children)
         var now = DateTime.UtcNow;
-        var startOfThisMonth = new DateTime(now.Year, now.Month, 1);
+        var startOfThisMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
 
         var studentIds = await _context.Students
             .Where(s => s.ParentId == parentId)
@@ -151,7 +151,7 @@ public class StatsService : IStatsService {
 
         // Calculate total hours in completed courses this month
         var now = DateTime.UtcNow;
-        var startOfThisMonth = new DateTime(now.Year, now.Month, 1);
+        var startOfThisMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
 
         var coursesThisMonth = await _context.Courses
             .Where(c => c.StudentId == studentId &&
