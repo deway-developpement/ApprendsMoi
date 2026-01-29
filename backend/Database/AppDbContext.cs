@@ -417,6 +417,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             b.Property(e => e.CourseId).HasColumnName("course_id").IsRequired();
             b.Property(e => e.ParentId).HasColumnName("parent_id").IsRequired();
             b.Property(e => e.Amount).HasColumnName("amount").HasColumnType("decimal(10,2)").IsRequired();
+            b.Property(e => e.AmountHT).HasColumnName("amount_ht").HasColumnType("decimal(10,2)").IsRequired();
+            b.Property(e => e.VatAmount).HasColumnName("vat_amount").HasColumnType("decimal(10,2)").IsRequired();
             b.Property(e => e.Commission).HasColumnName("commission").HasColumnType("decimal(10,2)").IsRequired();
             b.Property(e => e.TeacherEarning).HasColumnName("teacher_earning").HasColumnType("decimal(10,2)").IsRequired();
             b.Property(e => e.Status).HasColumnName("status").HasDefaultValue(InvoiceStatus.PENDING);

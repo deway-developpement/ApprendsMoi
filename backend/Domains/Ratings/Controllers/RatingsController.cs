@@ -97,11 +97,17 @@ public class RatingsController : ControllerBase {
     }
 
     [HttpDelete("{id}")]
-    [RequireRole(ProfileType.Parent, ProfileType.Admin)]
+    [ParentOrAdmin]
     public async Task<IActionResult> DeleteRating(Guid id) {
         try {
-            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-            await _ratingService.DeleteRatingAsync(id, userId);
+            var userId = JwtHelper.GetUserIdFromClaims(User);
+            var userProfile = JwtHelper.GetUserProfileFromClaims(User);
+
+            if (userId == null || userProfile == null) {
+                return Unauthorized();
+            }
+
+            await _ratingService.DeleteRatingAsync(id, userId.Value, userProfile.Value);
             return NoContent();
         }
         catch (Exception ex) {
