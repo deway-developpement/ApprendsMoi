@@ -20,6 +20,7 @@
           <app-small-icon 
             *ngFor="let star of starsArray" 
             [icon]="star === 1 ? 'assets/icons/star-fill.svg' : 'assets/icons/star.svg'"
+            [color]="getStarColor(stats.averageRating)"
             class="star-icon"
             [class.filled]="star === 1"
             [size]="40">
@@ -41,11 +42,12 @@
              <app-small-icon 
                *ngFor="let i of [1,2,3,4,5]" 
                [icon]="i <= review.rating ? 'assets/icons/star-fill.svg' : 'assets/icons/star.svg'"
+               [color]="getStarColor(review.rating)"
                class="mini-star"
                [size]="30">
              </app-small-icon>
           </div>
-          </div>
+        </div>
         
         <p class="review-text">"{{ review.comment }}"</p>
       </article>

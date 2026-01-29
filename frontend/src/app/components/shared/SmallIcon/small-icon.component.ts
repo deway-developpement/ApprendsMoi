@@ -10,5 +10,6 @@ import { CommonModule } from '@angular/common';
 })
 export class SmallIconComponent {
   @Input() icon!: string;
-  @Input() size = 24; // always small
+  @Input() size = 24;
+  @Input() color = '#22c55e'; // Ton vert par défaut (ex: $green)
 }
