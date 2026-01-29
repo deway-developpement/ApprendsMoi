@@ -6,6 +6,8 @@ namespace backend.Domains.Documents;
 public class TeacherDocumentDto {
     public Guid Id { get; set; }
     public Guid TeacherId { get; set; }
+    public string? TeacherFirstName { get; set; }
+    public string? TeacherLastName { get; set; }
     public DocumentType DocumentType { get; set; }
     public string FileName { get; set; } = string.Empty;
     public DocumentStatus Status { get; set; }

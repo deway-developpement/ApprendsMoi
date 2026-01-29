@@ -115,6 +115,8 @@ public class DocumentService(AppDbContext db, IWebHostEnvironment environment) {
     public async Task<List<TeacherDocumentDto>> GetTeacherDocumentsAsync(Guid teacherId, CancellationToken ct = default) {
         var documents = await _db.TeacherDocuments
             .AsNoTracking()
+            .Include(d => d.Teacher)
+            .ThenInclude(t => t.User)
             .Where(d => d.TeacherId == teacherId)
             .OrderByDescending(d => d.UploadedAt)
             .ToListAsync(ct);
@@ -125,6 +127,8 @@ public class DocumentService(AppDbContext db, IWebHostEnvironment environment) {
     public async Task<List<TeacherDocumentDto>> GetPendingDocumentsAsync(CancellationToken ct = default) {
         var documents = await _db.TeacherDocuments
             .AsNoTracking()
+            .Include(d => d.Teacher)
+            .ThenInclude(t => t.User)
             .Where(d => d.Status == DocumentStatus.PENDING)
             .OrderBy(d => d.UploadedAt)
             .ToListAsync(ct);
@@ -249,6 +253,8 @@ public class DocumentService(AppDbContext db, IWebHostEnvironment environment) {
         return new TeacherDocumentDto {
             Id = document.Id,
             TeacherId = document.TeacherId,
+            TeacherFirstName = document.Teacher?.User?.FirstName,
+            TeacherLastName = document.Teacher?.User?.LastName,
             DocumentType = document.DocumentType,
             FileName = document.FileName,
             Status = document.Status,

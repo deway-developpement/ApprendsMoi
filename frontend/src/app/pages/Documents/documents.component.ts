@@ -24,6 +24,8 @@ interface BatchUploadResponse {
 interface TeacherDocumentDto {
   id: string;
   teacherId: string;
+  teacherFirstName?: string;
+  teacherLastName?: string;
   documentType: number | string;
   fileName: string;
   status: number | string;
@@ -36,6 +38,8 @@ interface TeacherDocumentDto {
 interface PendingDocument {
   id: string;
   teacherId: string;
+  teacherFirstName?: string;
+  teacherLastName?: string;
   documentType: number | string;
   fileName: string;
   status: number | string;
@@ -200,6 +204,13 @@ export class DocumentsComponent implements OnInit {
   }
 
   async validateDocuments(documentIds: string[], approve: boolean): Promise<void> {
+    // Ask for confirmation when batch approving multiple documents
+    if (approve && documentIds.length > 1) {
+      if (!confirm(`Êtes-vous sûr de vouloir approuver ${documentIds.length} document(s) ?`)) {
+        return;
+      }
+    }
+
     const validationItems = documentIds.map(id => ({
       documentId: id,
       approve: approve,
@@ -259,6 +270,13 @@ export class DocumentsComponent implements OnInit {
 
   getPendingDocumentIds(): string[] {
     return this.pendingDocuments.map(d => d.id);
+  }
+
+  getTeacherName(firstN: any, lastN: any): string {
+    const firstName = firstN || '';
+    const lastName = lastN || '';
+    const fullName = `${firstName} ${lastName}`.trim();
+    return fullName || 'Nom inconnu';
   }
 
   getDocumentTypeLabel(documentType: any): string {

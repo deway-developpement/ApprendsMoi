@@ -124,7 +124,7 @@
             <h3>{{ getDocumentTypeLabel(doc.documentType) }}</h3>
             <p class="file-name">{{ doc.fileName }}</p>
             <p class="uploaded-date">Envoyé : {{ doc.uploadedAt | date: 'short' }}</p>
-            <p class="teacher-id">ID Enseignant : {{ doc.teacherId }}</p>
+            <p class="teacher-name">Enseignant : {{ getTeacherName(doc.teacherFirstName, doc.teacherLastName) }}</p>
           </div>
 
           <div class="pending-actions">
