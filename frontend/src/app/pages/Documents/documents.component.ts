@@ -208,7 +208,7 @@ export class DocumentsComponent implements OnInit {
 
     try {
       const response = await this.http
-        .post(`${environment.apiUrl}/api/documents/validate`, { items: validationItems })
+        .post(`${environment.apiUrl}/api/documents/validate`, { documents: validationItems })
         .toPromise();
 
       this.toastService.success(`${approve ? 'Approved' : 'Rejected'} documents successfully`);
