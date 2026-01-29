@@ -74,6 +74,7 @@ public class PaymentService : IPaymentService {
     public async Task<BillingDto> GetBillingByIdAsync(Guid billingId) {
         var invoice = await _context.Invoices
             .Include(i => i.Course).ThenInclude(c => c.Subject)
+            .Include(i => i.Course).ThenInclude(c => c.Teacher)
             .Include(i => i.Parent).ThenInclude(p => p.User)
             .FirstOrDefaultAsync(i => i.Id == billingId);
 
@@ -87,6 +88,7 @@ public class PaymentService : IPaymentService {
     public async Task<IEnumerable<BillingDto>> GetBillingsByParentIdAsync(Guid parentId) {
         var invoices = await _context.Invoices
             .Include(i => i.Course).ThenInclude(c => c.Subject)
+            .Include(i => i.Course).ThenInclude(c => c.Teacher)
             .Include(i => i.Parent).ThenInclude(p => p.User)
             .Where(i => i.ParentId == parentId)
             .OrderByDescending(i => i.IssuedAt)
@@ -98,6 +100,7 @@ public class PaymentService : IPaymentService {
     public async Task<IEnumerable<BillingDto>> GetBillingsByTeacherIdAsync(Guid teacherId) {
         var invoices = await _context.Invoices
             .Include(i => i.Course).ThenInclude(c => c.Subject)
+            .Include(i => i.Course).ThenInclude(c => c.Teacher)
             .Include(i => i.Parent).ThenInclude(p => p.User)
             .Where(i => i.Course.TeacherId == teacherId)
             .OrderByDescending(i => i.IssuedAt)
@@ -109,6 +112,7 @@ public class PaymentService : IPaymentService {
     public async Task<IEnumerable<BillingDto>> GetAllBillingsAsync() {
         var invoices = await _context.Invoices
             .Include(i => i.Course).ThenInclude(c => c.Subject)
+            .Include(i => i.Course).ThenInclude(c => c.Teacher)
             .Include(i => i.Parent).ThenInclude(p => p.User)
             .OrderByDescending(i => i.IssuedAt)
             .ToListAsync();
@@ -207,6 +211,7 @@ public class PaymentService : IPaymentService {
             CourseName = invoice.Course.Subject.Name,
             ParentId = invoice.ParentId,
             ParentName = $"{invoice.Parent.User.FirstName} {invoice.Parent.User.LastName}",
+            TeacherId = invoice.Course.TeacherId,
             Amount = invoice.Amount,
             AmountHT = invoice.AmountHT,
             VatAmount = invoice.VatAmount,

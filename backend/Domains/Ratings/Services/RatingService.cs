@@ -11,7 +11,7 @@ public interface IRatingService {
     Task<IEnumerable<RatingDto>> GetRatingsByTeacherIdAsync(Guid teacherId);
     Task<IEnumerable<RatingDto>> GetRatingsByParentIdAsync(Guid parentId);
     Task<RatingDto> UpdateRatingAsync(Guid ratingId, UpdateRatingDto dto, Guid parentId);
-    Task DeleteRatingAsync(Guid ratingId, Guid parentId);
+    Task DeleteRatingAsync(Guid ratingId, Guid userId, ProfileType userProfile);
     Task<TeacherRatingStatsDto> GetTeacherRatingStatsAsync(Guid teacherId);
 }
 
@@ -143,13 +143,14 @@ public class RatingService : IRatingService {
         return await GetRatingByIdAsync(ratingId);
     }
 
-    public async Task DeleteRatingAsync(Guid ratingId, Guid parentId) {
+    public async Task DeleteRatingAsync(Guid ratingId, Guid userId, ProfileType userProfile) {
         var rating = await _context.TeacherRatings.FindAsync(ratingId);
         if (rating == null) {
             throw new Exception("Rating not found");
         }
 
-        if (rating.ParentId != parentId) {
+        // Admins can delete any rating, parents can only delete their own
+        if (userProfile != ProfileType.Admin && rating.ParentId != userId) {
             throw new Exception("Unauthorized: You can only delete your own ratings");
         }
 

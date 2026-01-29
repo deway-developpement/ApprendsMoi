@@ -3,7 +3,7 @@ using FluentMigrator;
 namespace backend.Database.Migrations;
 
 [Migration(202601270003)]
-public class AddPaymentsInvoicesAndRatings : FluentMigrator.Migration {
+public class AddPaymentsInvoicesAndRatings : Migration {
     public override void Up() {
         // Add attendance tracking to courses table
         Alter.Table("courses")
@@ -16,6 +16,8 @@ public class AddPaymentsInvoicesAndRatings : FluentMigrator.Migration {
             .WithColumn("course_id").AsGuid().NotNullable()
             .WithColumn("parent_id").AsGuid().NotNullable()
             .WithColumn("amount").AsDecimal(10, 2).NotNullable()
+            .WithColumn("amount_ht").AsDecimal(18, 2).NotNullable()
+            .WithColumn("vat_amount").AsDecimal(18, 2).NotNullable()
             .WithColumn("commission").AsDecimal(10, 2).NotNullable()
             .WithColumn("teacher_earning").AsDecimal(10, 2).NotNullable()
             .WithColumn("status").AsInt32().NotNullable().WithDefaultValue(0)

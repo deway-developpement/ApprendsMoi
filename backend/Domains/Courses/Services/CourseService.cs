@@ -52,13 +52,13 @@ public class CourseService : ICourseService {
             throw new Exception("Teacher doesn't teach this subject");
         }
 
-        var plateformCommissionRate = 0.15m; // We take 15% commission
+        var platformCommissionRate = 0.15m; // We take 15% commission
 
         var format = Enum.Parse<CourseFormat>(dto.Format);
         var pricePerHour = teacherSubject.PricePerHour;
         var durationHours = dto.DurationMinutes / 60.0m;
         var price = pricePerHour * durationHours;
-        var commission = price * plateformCommissionRate;
+        var commission = price * platformCommissionRate;
 
         var course = new Course {
             TeacherId = dto.TeacherId,

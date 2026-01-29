@@ -42,8 +42,10 @@ public class PaymentsController : ControllerBase {
                 return Unauthorized();
             }
 
-            // Check authorization
-            if (userProfile != ProfileType.Admin && billing.ParentId != userId) {
+            // Check authorization - allow admins, parents of the course, and teachers of the course
+            if (userProfile != ProfileType.Admin && 
+                billing.ParentId != userId && 
+                billing.TeacherId != userId) {
                 return Forbid();
             }
 
@@ -66,8 +68,10 @@ public class PaymentsController : ControllerBase {
                 return Unauthorized();
             }
 
-            // Check authorization
-            if (userProfile != ProfileType.Admin && billing.ParentId != userId) {
+            // Check authorization - allow admins, parents of the course, and teachers of the course
+            if (userProfile != ProfileType.Admin && 
+                billing.ParentId != userId && 
+                billing.TeacherId != userId) {
                 return Forbid();
             }
 
@@ -136,7 +140,7 @@ public class PaymentsController : ControllerBase {
     }
 
     [HttpPost("process")]
-    [RequireRole(ProfileType.Parent, ProfileType.Admin)]
+    [RequireRole(ProfileType.Parent)]
     public async Task<ActionResult<PaymentDto>> ProcessPayment([FromBody] CreatePaymentDto dto) {
         try {
             var userId = JwtHelper.GetUserIdFromClaims(User);

@@ -143,8 +143,7 @@ using (var scope = app.Services.CreateScope()) {
         try {
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             
-            // Disable EF Core SQL logging during seeding
-            var originalLevel = dbContext.Database.GetCommandTimeout();
+            // Disable EF Core change tracking during seeding
             dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
             
             await DatabaseSeeder.SeedAsync(dbContext, shouldPopulate);
