@@ -72,7 +72,7 @@
       <ng-container *ngIf="user$ | async as user; else guestActions">
         
         <p class="header__welcome-msg">
-          Bonjour, <strong>{{ user.username || user.email || 'Utilisateur' }}</strong>
+          Bonjour, <strong>{{ user.firstName || user.email || 'Utilisateur' }}</strong>
         </p>
         
         <app-button 
