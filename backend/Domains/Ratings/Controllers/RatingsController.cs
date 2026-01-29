@@ -72,6 +72,17 @@ public class RatingsController : ControllerBase {
         }
     }
 
+    [HttpGet("stats/teacher/{teacherId}")]
+    public async Task<ActionResult<TeacherRatingStatsDto>> GetTeacherRatingStats(Guid teacherId) {
+        try {
+            var stats = await _ratingService.GetTeacherRatingStatsAsync(teacherId);
+            return Ok(stats);
+        }
+        catch (Exception ex) {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+    
     [HttpPut("{id}")]
     [RequireRole(ProfileType.Parent)]
     public async Task<ActionResult<RatingDto>> UpdateRating(Guid id, [FromBody] UpdateRatingDto dto) {
