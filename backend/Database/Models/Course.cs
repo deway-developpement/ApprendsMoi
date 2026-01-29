@@ -18,5 +18,7 @@ public class Course {
     public string? MeetingLink { get; set; }
     public DateTime? TeacherValidationAt { get; set; }
     public DateTime? ParentValidationAt { get; set; }
+    public bool StudentAttended { get; set; } = false;
+    public DateTime? AttendanceMarkedAt { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

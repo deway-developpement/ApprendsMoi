@@ -21,6 +21,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Chat> Chats { get; set; } = null!;
     public DbSet<Message> Messages { get; set; } = null!;
     public DbSet<ChatAttachment> ChatAttachments { get; set; } = null!;
+    
+    public DbSet<Invoice> Invoices { get; set; } = null!;
+    public DbSet<Payment> Payments { get; set; } = null!;
+    public DbSet<TeacherRating> TeacherRatings { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
         ConfigureUsers(modelBuilder);
@@ -37,6 +41,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         ConfigureChats(modelBuilder);
         ConfigureMessages(modelBuilder);
         ConfigureChatAttachments(modelBuilder);
+        ConfigureInvoices(modelBuilder);
+        ConfigurePayments(modelBuilder);
+        ConfigureTeacherRatings(modelBuilder);
     }
 
     private void ConfigureUsers(ModelBuilder modelBuilder) {
@@ -244,6 +251,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             b.Property(e => e.MeetingLink).HasColumnName("meeting_link");
             b.Property(e => e.TeacherValidationAt).HasColumnName("teacher_validation_at");
             b.Property(e => e.ParentValidationAt).HasColumnName("parent_validation_at");
+            b.Property(e => e.StudentAttended).HasColumnName("student_attended").HasDefaultValue(false);
+            b.Property(e => e.AttendanceMarkedAt).HasColumnName("attendance_marked_at");
             b.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
             
             b.HasIndex(e => e.TeacherId);
@@ -396,6 +405,112 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .WithMany()
                 .HasForeignKey(ca => ca.UploadedBy)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    private void ConfigureInvoices(ModelBuilder modelBuilder) {
+        modelBuilder.Entity<Invoice>(b => {
+            b.ToTable("invoices");
+            b.HasKey(e => e.Id);
+            
+            b.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
+            b.Property(e => e.CourseId).HasColumnName("course_id").IsRequired();
+            b.Property(e => e.ParentId).HasColumnName("parent_id").IsRequired();
+            b.Property(e => e.Amount).HasColumnName("amount").HasColumnType("decimal(10,2)").IsRequired();
+            b.Property(e => e.AmountHT).HasColumnName("amount_ht").HasColumnType("decimal(10,2)").IsRequired();
+            b.Property(e => e.VatAmount).HasColumnName("vat_amount").HasColumnType("decimal(10,2)").IsRequired();
+            b.Property(e => e.Commission).HasColumnName("commission").HasColumnType("decimal(10,2)").IsRequired();
+            b.Property(e => e.TeacherEarning).HasColumnName("teacher_earning").HasColumnType("decimal(10,2)").IsRequired();
+            b.Property(e => e.Status).HasColumnName("status").HasDefaultValue(InvoiceStatus.PENDING);
+            b.Property(e => e.IssuedAt).HasColumnName("issued_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            b.Property(e => e.PaidAt).HasColumnName("paid_at");
+            b.Property(e => e.PaymentIntentId).HasColumnName("payment_intent_id");
+            b.Property(e => e.InvoiceNumber).HasColumnName("invoice_number");
+            b.Property(e => e.PdfFilePath).HasColumnName("pdf_file_path");
+            
+            b.HasIndex(e => e.CourseId);
+            b.HasIndex(e => e.ParentId);
+            b.HasIndex(e => e.Status);
+            b.HasIndex(e => e.InvoiceNumber).IsUnique();
+            
+            b.HasOne(i => i.Course)
+                .WithMany()
+                .HasForeignKey(i => i.CourseId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            b.HasOne(i => i.Parent)
+                .WithMany()
+                .HasForeignKey(i => i.ParentId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    private void ConfigurePayments(ModelBuilder modelBuilder) {
+        modelBuilder.Entity<Payment>(b => {
+            b.ToTable("payments");
+            b.HasKey(e => e.Id);
+            
+            b.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
+            b.Property(e => e.InvoiceId).HasColumnName("invoice_id").IsRequired();
+            b.Property(e => e.ParentId).HasColumnName("parent_id").IsRequired();
+            b.Property(e => e.Amount).HasColumnName("amount").HasColumnType("decimal(10,2)").IsRequired();
+            b.Property(e => e.Method).HasColumnName("method").IsRequired();
+            b.Property(e => e.Status).HasColumnName("status").HasDefaultValue(PaymentStatus.PENDING);
+            b.Property(e => e.StripePaymentIntentId).HasColumnName("stripe_payment_intent_id");
+            b.Property(e => e.StripeChargeId).HasColumnName("stripe_charge_id");
+            b.Property(e => e.ErrorMessage).HasColumnName("error_message");
+            b.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            b.Property(e => e.ProcessedAt).HasColumnName("processed_at");
+            
+            b.HasIndex(e => e.InvoiceId);
+            b.HasIndex(e => e.ParentId);
+            b.HasIndex(e => e.Status);
+            b.HasIndex(e => e.StripePaymentIntentId);
+            
+            b.HasOne(p => p.Invoice)
+                .WithMany()
+                .HasForeignKey(p => p.InvoiceId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            b.HasOne(p => p.Parent)
+                .WithMany()
+                .HasForeignKey(p => p.ParentId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    private void ConfigureTeacherRatings(ModelBuilder modelBuilder) {
+        modelBuilder.Entity<TeacherRating>(b => {
+            b.ToTable("teacher_ratings");
+            b.HasKey(e => e.Id);
+            
+            b.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
+            b.Property(e => e.TeacherId).HasColumnName("teacher_id").IsRequired();
+            b.Property(e => e.ParentId).HasColumnName("parent_id").IsRequired();
+            b.Property(e => e.CourseId).HasColumnName("course_id");
+            b.Property(e => e.Rating).HasColumnName("rating").IsRequired();
+            b.Property(e => e.Comment).HasColumnName("comment");
+            b.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            b.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            
+            b.HasIndex(e => e.TeacherId);
+            b.HasIndex(e => e.ParentId);
+            b.HasIndex(e => new { e.ParentId, e.TeacherId });
+            
+            b.HasOne(r => r.Teacher)
+                .WithMany()
+                .HasForeignKey(r => r.TeacherId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            b.HasOne(r => r.Parent)
+                .WithMany()
+                .HasForeignKey(r => r.ParentId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            b.HasOne(r => r.Course)
+                .WithMany()
+                .HasForeignKey(r => r.CourseId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }

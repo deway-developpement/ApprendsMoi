@@ -133,6 +133,51 @@ public class UsersController(
         }
     }
 
+    [HttpGet("parent/student/{studentId:guid}")]
+    [Authorize]
+    [ProducesResponseType(typeof(ParentDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<ParentDto>> GetParentByStudentId(Guid studentId, CancellationToken ct) {
+        try {
+            var userId = JwtHelper.GetUserIdFromClaims(User);
+            var userProfile = JwtHelper.GetUserProfileFromClaims(User);
+
+            if (userId == null || userProfile == null) {
+                return Unauthorized();
+            }
+
+            // Get the student to check authorization
+            var student = await _managementService.GetStudentWithParentAsync(studentId, ct);
+            if (student == null) {
+                return NotFound(new { error = "Student not found" });
+            }
+
+            // Check authorization: Admin, the student themselves, the student's parent, or a teacher who taught the student
+            if (userProfile != ProfileType.Admin && 
+                userId != studentId && 
+                userId != student.ParentId) {
+                
+                // Check if caller is a teacher who taught this student
+                if (userProfile == ProfileType.Teacher) {
+                    var hasTeacherRelationship = await _profileService.HasTeacherStudentRelationshipAsync(userId.Value, studentId, ct);
+                    if (!hasTeacherRelationship) {
+                        return Forbid();
+                    }
+                } else {
+                    return Forbid();
+                }
+            }
+
+            var parent = await _profileService.GetParentByStudentIdAsync(studentId, ct);
+            if (parent == null) return NotFound(new { error = "Parent not found for this student" });
+            return Ok(parent);
+        }
+        catch (Exception ex) {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
     [HttpGet("teachers")]
     [ParentOrAdmin]
     [ProducesResponseType(typeof(List<TeacherDto>), StatusCodes.Status200OK)]

@@ -150,6 +150,30 @@ public class UserProfileService(AppDbContext db) {
         }).ToList();
     }
 
+    public async Task<ParentDto?> GetParentByStudentIdAsync(Guid studentId, CancellationToken ct = default) {
+        var student = await _db.Students
+            .AsNoTracking()
+            .Include(s => s.Parent)
+            .ThenInclude(p => p.User)
+            .FirstOrDefaultAsync(s => s.UserId == studentId, ct);
+
+        if (student?.Parent == null) return null;
+
+        var parent = student.Parent;
+        return new ParentDto {
+            Id = parent.User.Id,
+            Email = parent.Email,
+            FirstName = parent.User.FirstName,
+            LastName = parent.User.LastName,
+            ProfilePicture = parent.User.ProfilePicture,
+            Profile = parent.User.Profile,
+            IsActive = parent.User.IsActive,
+            CreatedAt = parent.User.CreatedAt,
+            LastLoginAt = parent.User.LastLoginAt,
+            PhoneNumber = parent.PhoneNumber
+        };
+    }
+
     public async Task<List<TeacherDto>> GetAllTeachersAsync(CancellationToken ct = default) {
         var teachers = await _db.Teachers
             .AsNoTracking()
@@ -201,6 +225,12 @@ public class UserProfileService(AppDbContext db) {
             City = t.City,
             TravelRadiusKm = t.TravelRadiusKm
         }).ToList();
+    }
+
+    public async Task<bool> HasTeacherStudentRelationshipAsync(Guid teacherId, Guid studentId, CancellationToken ct = default) {
+        // Check if teacher has taught this student (at least one course exists)
+        return await _db.Courses
+            .AnyAsync(c => c.TeacherId == teacherId && c.StudentId == studentId, ct);
     }
 
     private static UserDto MapToDto(User user) {

@@ -4,6 +4,9 @@ using backend.Domains.Users;
 using backend.Domains.Zoom;
 using backend.Domains.Availabilities;
 using backend.Domains.Chat;
+using backend.Domains.Courses.Services;
+using backend.Domains.Payments.Services;
+using backend.Domains.Ratings.Services;
 using backend.Helpers;
 using FluentMigrator.Runner;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -98,6 +101,16 @@ builder.Services.AddScoped<UnavailableSlotService>();
 builder.Services.AddScoped<ChatService>();
 builder.Services.AddScoped<MessageService>();
 builder.Services.AddScoped<ChatAttachmentService>();
+
+// Course services
+builder.Services.AddScoped<ICourseService, CourseService>();
+
+// Payment services
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IInvoicePdfService, InvoicePdfService>();
+
+// Rating services
+builder.Services.AddScoped<IRatingService, RatingService>();
 builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
 
 // SignalR for real-time chat
@@ -129,10 +142,17 @@ using (var scope = app.Services.CreateScope()) {
         Console.WriteLine($"🌱 Seeding database (populate={shouldPopulate})...");
         try {
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            
+            // Disable EF Core change tracking during seeding
+            dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+            
             await DatabaseSeeder.SeedAsync(dbContext, shouldPopulate);
+            
+            dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.TrackAll;
+            
             Console.WriteLine("✓ Seeding complete!\n");
         } catch (Exception ex) {
-            Console.WriteLine($"⚠ Seeding skipped: {ex.Message}");
+            Console.WriteLine($"⚠ Seeding failed: {ex.Message}");
         }
     } else {
         runner.MigrateUp();
