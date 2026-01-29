@@ -15,24 +15,24 @@ export const verifiedTeacherGuard: CanActivateFn = (route, state) => {
         return false;
       }
 
-      if (user.profileType !== 1) { // 1 = Teacher
-        router.navigate(['/']);
-        return false;
-      }
-
-      // Allow access to documents page for all teachers
-      if (state.url.includes('/documents')) {
+      // If user is a teacher, check verification status
+      if (user.profileType === 1) { // 1 = Teacher
+        // Teachers must be verified (status 1) or diploma verified (status 3)
+        const isVerified = user.verificationStatus === 1 || user.verificationStatus === 3;
+        
+        if (!isVerified) {
+          router.navigate(['/documents'], {
+            queryParams: { message: 'verification-required' }
+          });
+          return false;
+        }
         return true;
       }
 
-      // For all other pages, teacher must be verified
-      // Accept both VERIFIED (1) and DIPLOMA_VERIFIED (3)
-      const isVerified = user.verificationStatus === 1 || user.verificationStatus === 3;
-      
-      if (!isVerified) {
-        router.navigate(['/documents'], {
-          queryParams: { message: 'verification-required' }
-        });
+      // Non-teachers (Parent, Student, Admin) can access without verification
+      // but they shouldn't access teacher-specific planning pages
+      if (state.url.includes('/teacher/planning')) {
+        router.navigate(['/']);
         return false;
       }
 
