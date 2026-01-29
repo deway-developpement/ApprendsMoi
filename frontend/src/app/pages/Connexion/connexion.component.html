@@ -10,19 +10,10 @@
 
     <form (ngSubmit)="onSubmit()" class="connexion-form">
       
-      <div style="margin-bottom: 1rem;">
-        <app-select
-          label="Vous êtes ?"
-          [options]="profileOptions"
-          [fullWidth]="true"
-          [(value)]="selectedProfile">
-        </app-select>
-      </div>
-
       <app-text-input
-        [label]="isStudent ? 'Nom d\'utilisateur' : 'Adresse Email'"
-        [placeholder]="isStudent ? 'Votre nom d\'utilisateur' : 'exemple@email.com'"
-        [iconLeft]="isStudent ? 'assets/icons/user.svg' : 'assets/icons/email 2 1.svg'"
+        [label]="'Nom d\'utilisateur ou Adresse Email'"
+        [placeholder]="'email@test.com'"
+        [iconLeft]="'assets/icons/user.svg'"
         type="text"
         [fullWidth]="true"
         [(value)]="credential">

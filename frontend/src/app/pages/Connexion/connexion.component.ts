@@ -22,7 +22,6 @@ import { SelectComponent, SelectOption } from '../../components/shared/Select/se
     TextInputComponent, 
     ButtonComponent, 
     HeaderComponent, 
-    SelectComponent
   ],
   templateUrl: './connexion.component.html',
   styleUrls: ['./connexion.component.scss']
@@ -36,26 +35,12 @@ export class ConnexionComponent {
   credential = ''; // Sera Email ou Username
   password = '';
   
-  // Gestion du profil sélectionné (par défaut Parent)
-  selectedProfile: number = ProfileType.Parent;
-
-  // Options du menu déroulant
-  profileOptions: SelectOption[] = [
-    { label: 'Je suis un Élève', value: ProfileType.Student }, 
-    { label: 'Je suis un Parent', value: ProfileType.Parent },
-    { label: 'Je suis un Professeur', value: ProfileType.Teacher },
-    { label: 'Je suis un Administrateur', value: ProfileType.Admin },
-  ];
-
   isLoading = false;
 
   /**
    * Helper pour déterminer si l'utilisateur se connecte en tant qu'élève.
    * Utilisé pour adapter l'UI (Email vs Username) et la requête API.
    */
-  get isStudent(): boolean {
-    return Number(this.selectedProfile) === ProfileType.Student;
-  }
 
   onSubmit() {
     // 1. Validation basique
@@ -70,7 +55,6 @@ export class ConnexionComponent {
     const request: LoginRequest = {
       credential: this.credential,
       password: this.password,
-      isStudent: this.isStudent // Crucial pour le backend
     };
 
     // 3. Appel API
