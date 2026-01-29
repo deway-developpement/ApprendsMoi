@@ -12,11 +12,11 @@ namespace backend.Domains.Zoom;
 [Authorize]
 public class ZoomController : ControllerBase
 {
-    private readonly ZoomService _zoomService;
+    private readonly IZoomService _zoomService;
     private readonly AppDbContext _dbContext;
     private readonly ILogger<ZoomController> _logger;
 
-    public ZoomController(ZoomService zoomService, AppDbContext dbContext, ILogger<ZoomController> logger)
+    public ZoomController(IZoomService zoomService, AppDbContext dbContext, ILogger<ZoomController> logger)
     {
         _zoomService = zoomService;
         _dbContext = dbContext;
