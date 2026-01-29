@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HeaderComponent } from '../../components/Header/header.component';
@@ -58,6 +58,7 @@ export class DocumentsComponent implements OnInit {
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
   private fb = inject(FormBuilder);
+  private location = inject(Location);
 
   myDocuments: TeacherDocumentDto[] = [];
   pendingDocuments: PendingDocument[] = [];
@@ -337,6 +338,10 @@ export class DocumentsComponent implements OnInit {
       default:
         return status?.toString() || 'Inconnu';
     }
+  }
+
+  goBack(): void {
+    this.location.back();
   }
 }
 

@@ -236,3 +236,49 @@
   justify-content: flex-end; // Pousse tout le contenu vers la droite
   width: 100%;
 }
+
+.documents-section {
+  background: white;
+  border-radius: $borderRadiusLarge;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  .section-header {
+    margin-bottom: 1rem;
+    
+    h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: $PrimaryColor;
+      margin: 0;
+    }
+  }
+
+  .section-content {
+    .section-description {
+      color: #64748b;
+      margin-bottom: 1rem;
+      line-height: 1.6;
+    }
+
+    .action-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: $biggerFontSize;
+      font-weight: 600;
+      color: $SecondaryColor;
+      text-decoration: none;
+      transition: color $transitionFast, transform $transitionFast;
+
+      &:hover {
+        color: $SecondaryColorHover;
+        transform: translateX(4px);
+      }
+
+      &:active {
+        color: $SecondaryColorActive;
+      }
+    }
+  }
+}
