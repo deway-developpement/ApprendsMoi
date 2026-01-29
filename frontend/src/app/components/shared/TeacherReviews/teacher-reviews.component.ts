@@ -38,7 +38,6 @@ export class TeacherReviewsComponent implements OnInit {
       next: (data) => {
         this.stats = data;
         this.loading = false;
-        console.log(data);
       },
       error: (err) => {
         console.error('Error fetching teacher stats', err);

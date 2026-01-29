@@ -88,7 +88,6 @@ export class TeacherBookingService {
     return forkJoin({
       profile: this.http.get<any>(`${this.apiUrl}/api/Users/${teacherId}`),
       availabilities: this.http.get<AvailabilityResponse[]>(`${this.apiUrl}/api/availabilities/teacher/${teacherId}`),
-      blockedSlots: this.http.get<UnavailableSlotResponse[]>(`${this.apiUrl}/api/availabilities/block/teacher/${teacherId}`),
       existingCourses: this.http.get<CourseDto[]>(`${this.apiUrl}/api/Courses/teacher/${teacherId}`)
     });
   }
@@ -114,11 +113,16 @@ export class TeacherBookingService {
     const startOfWeek = this.getStartOfCurrentWeek(baseDate);
     return Array.from({ length: 7 }, (_, index) => {
       const date = this.addDays(startOfWeek, index);
+      // ✅ BUILD KEY FROM LOCAL DATE, NO ISO CONVERSION
+      const year = date.getFullYear();
+      const month = this.pad(date.getMonth() + 1);
+      const day = this.pad(date.getDate());
+      const key = `${year}-${month}-${day}`;
       return {
         date,
         label: date.toLocaleDateString('fr-FR', { weekday: 'short' }),
         dateLabel: date.toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' }),
-        key: this.toDateKey(date),
+        key,
         dayOfWeek: date.getDay()
       };
     });
@@ -170,10 +174,13 @@ export class TeacherBookingService {
     return next;
   }
 
-  toDateKey(date: Date): string {
-    const year = date.getFullYear();
-    const month = this.pad(date.getMonth() + 1);
-    const day = this.pad(date.getDate());
+  toDateKey(dateOrString: Date | string): string {
+    if (typeof dateOrString === 'string') {
+      return dateOrString.split('T')[0]; // Prend juste la date du string
+    }
+    const year = dateOrString.getFullYear();
+    const month = this.pad(dateOrString.getMonth() + 1);
+    const day = this.pad(dateOrString.getDate());
     return `${year}-${month}-${day}`;
   }
 

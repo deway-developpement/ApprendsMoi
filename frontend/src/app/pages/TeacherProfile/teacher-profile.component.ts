@@ -19,9 +19,8 @@ import {
   CalendarDay, 
   TimeSlot, 
   AvailabilityResponse, 
-  UnavailableSlotResponse,
   SubjectDto,
-  CourseFormat // Import de l'enum depuis le service
+  CourseFormat 
 } from '../../services/teacher-booking.service';
 
 interface HighlightStat {
@@ -80,7 +79,6 @@ interface TeacherDto {
     HeaderComponent,
     ButtonComponent,
     SelectComponent,
-    TextInputComponent,
     TeacherReviewsComponent
   ],
   templateUrl: './teacher-profile.component.html',
@@ -171,9 +169,15 @@ export class TeacherProfileComponent implements OnInit {
     this.bookingService.getTeacherBookingData(this.teacherId).subscribe({
       next: (res) => {
         this.teacher = this.mapTeacherProfile(res.profile);
-        this.applyAvailabilities(res.availabilities);
-        this.applyBlockedSlots(res.blockedSlots);
+
+        // --- MODIFICATION ICI : INVERSER L'ORDRE ---
+        // 1. On marque d'abord ce qui est réservé (Orange)
         this.applyExistingCourses(res.existingCourses); 
+        
+        // 2. On calcule les dispos ensuite (Bleu)
+        this.applyAvailabilities(res.availabilities);
+        // -------------------------------------------
+
         this.availabilityLoading = false;
       },
       error: (err) => {
@@ -182,109 +186,134 @@ export class TeacherProfileComponent implements OnInit {
       }
     });
   }
-
   async bookSession(): Promise<void> {
-    if (!this.canBook) {
-      this.toastService.warning('La réservation est disponible pour les parents.');
-      return;
-    }
-
-    if (!this.teacherId || !this.selectedSlotKey || !this.bookingDate || !this.bookingTime) {
-      this.toastService.warning('Veuillez sélectionner un créneau.');
-      return;
-    }
-
-    const studentId = this.resolveStudentId();
-    if (!studentId || !this.selectedSubjectId) {
-      this.toastService.warning('Veuillez sélectionner un élève et une matière.');
-      return;
-    }
-
-    this.isBooking = true;
-    try {
-      const scheduledDate = new Date(`${this.bookingDate}T${this.bookingTime}:00`);
-      
-      await firstValueFrom(
-        this.bookingService.createCourse({
-          teacherId: this.teacherId!,
-          studentId: String(studentId),
-          subjectId: String(this.selectedSubjectId),
-          startDate: scheduledDate.toISOString(),
-          durationMinutes: 60,
-          format: CourseFormat.VISIO // Utilisation de l'enum
-        })
-      );
-
-      this.toastService.success('Cours réservé avec succès.');
-      this.resetBooking();
-      this.loadTeacherData();
-    } catch (err) {
-      this.toastService.error(this.getErrorMessage(err, 'Impossible de réserver le cours.'));
-    } finally {
-      this.isBooking = false;
-    }
+  if (!this.canBook) {
+    this.toastService.warning('La réservation est disponible pour les parents.');
+    return;
   }
+
+  if (!this.teacherId || !this.selectedSlotKey || !this.bookingDate || !this.bookingTime) {
+    this.toastService.warning('Veuillez sélectionner un créneau.');
+    return;
+  }
+
+  const studentId = this.resolveStudentId();
+  if (!studentId || !this.selectedSubjectId) {
+    this.toastService.warning('Veuillez sélectionner un élève et une matière.');
+    return;
+  }
+
+  this.isBooking = true;
+  try {
+    // On construit manuellement la date sans passer par l'objet Date pour éviter le décalage UTC
+    // Format attendu : "YYYY-MM-DDTHH:mm:00"
+    const startDateRaw = `${this.bookingDate}T${this.bookingTime}:00.000Z`;
+
+    await firstValueFrom(
+      this.bookingService.createCourse({
+        teacherId: this.teacherId!,
+        studentId: String(studentId),
+        subjectId: String(this.selectedSubjectId),
+        startDate: startDateRaw,
+        durationMinutes: 60,
+        format: CourseFormat.VISIO 
+      })
+    );
+
+    this.toastService.success('Cours réservé avec succès.');
+    this.resetBooking();
+    this.loadTeacherData();
+  } catch (err) {
+    this.toastService.error(this.getErrorMessage(err, 'Impossible de réserver le cours.'));
+  } finally {
+    this.isBooking = false;
+  }
+}
 
   selectSlot(day: CalendarDay, slot: TimeSlot): void {
     if (!this.isSlotAvailable(day, slot) || this.isSlotBooked(day, slot) || this.isSlotPast(day, slot)) return;
-
+    console.log("Selecting slot:", { day, slot });
     this.selectedSlotKey = this.bookingService.buildSlotKey(day.key, slot.startTime);
     this.selectedSlotLabel = `${day.label} ${day.dateLabel}`;
     this.selectedSlotRange = slot.rangeLabel;
     this.bookingDate = day.key;
     this.bookingTime = slot.startTime.slice(0, 5);
+    console.log("bookingTime set to:", this.bookingTime);
   }
 
-  isSlotAvailable = (day: CalendarDay, slot: TimeSlot) => this.availableSlotKeys.has(this.bookingService.buildSlotKey(day.key, slot.startTime));
-  isSlotBooked = (day: CalendarDay, slot: TimeSlot) => this.bookedSlotKeys.has(this.bookingService.buildSlotKey(day.key, slot.startTime));
-  isSlotSelected = (day: CalendarDay, slot: TimeSlot) => this.selectedSlotKey === this.bookingService.buildSlotKey(day.key, slot.startTime);
+  isSlotAvailable = (day: CalendarDay, slot: TimeSlot) => {
+    const key = this.bookingService.buildSlotKey(day.key, slot.startTime);
+    return this.availableSlotKeys.has(key) && !this.bookedSlotKeys.has(key);
+  };
+  isSlotBooked = (day: CalendarDay, slot: TimeSlot) => {
+    const key = this.bookingService.buildSlotKey(day.key, slot.startTime);
+    const isBooked = this.bookedSlotKeys.has(key);
+    return isBooked;
+  };  isSlotSelected = (day: CalendarDay, slot: TimeSlot) => this.selectedSlotKey === this.bookingService.buildSlotKey(day.key, slot.startTime);
   isSlotPast = (day: CalendarDay, slot: TimeSlot) => this.bookingService.isSlotInPast(day, slot);
 
   private applyExistingCourses(courses: any[]): void {
-    if (!courses) return;
-    courses.forEach(course => {
-      const date = new Date(course.startDate);
-      const startTime = `${this.bookingService.pad(date.getHours())}:${this.bookingService.pad(date.getMinutes())}:00`; 
-      this.bookedSlotKeys.add(this.bookingService.buildSlotKey(this.bookingService.toDateKey(date), startTime));
-    });
-  }
+    if (!courses || courses.length === 0) {
+      console.log('❌ Pas de cours existants');
+      return;
+    }
 
+    courses.forEach((course, idx) => {
+      // ✅ Extraire l'heure directement de la chaîne ISO
+      // Format ISO : "2026-01-29T08:00:00Z" ou "2026-01-29T08:00:00"
+      const isoString = course.startDate;
+      const timePart = isoString.split('T')[1]; // "08:00:00Z"
+      const hours = timePart.split(':')[0]; // "08"
+      const minutes = timePart.split(':')[1]; // "00"
+      
+      console.log(`Course ${idx}:`, {
+        rawStartDate: course.startDate,
+        extractedHours: hours,
+        extractedMinutes: minutes
+      });
+
+      // La date au format YYYY-MM-DD
+      const dateKey = isoString.split('T')[0]; // "2026-01-29"
+      const startTime = `${hours}:${minutes}:00`;
+      const key = this.bookingService.buildSlotKey(dateKey, startTime);
+      
+      console.log(`  → Slot clé générée: ${key}`);
+      this.bookedSlotKeys.add(key);
+    });
+    
+    console.log('📋 Tous les booked slot keys:', Array.from(this.bookedSlotKeys));
+  }
+    
   private applyAvailabilities(availabilities: AvailabilityResponse[]): void {
-    availabilities.forEach((availability) => {
-      const startMinutes = this.bookingService.timeToMinutes(availability.startTime);
-      const endMinutes = this.bookingService.timeToMinutes(availability.endTime);
+    console.log('📅 Availabilities reçus:', availabilities);
+    
+    availabilities.forEach((av) => {
+      const startMin = this.bookingService.timeToMinutes(av.startTime);
+      const endMin = this.bookingService.timeToMinutes(av.endTime);
 
       this.weekDays.forEach((day) => {
         let isMatch = false;
-        if (availability.availabilityDate) {
-          if (availability.availabilityDate.split('T')[0] === day.key) isMatch = true;
-        } else if (availability.isRecurring && day.dayOfWeek === availability.dayOfWeek) {
+        if (av.availabilityDate) {
+          if (av.availabilityDate.split('T')[0] === day.key) isMatch = true;
+        } else if (av.isRecurring && day.dayOfWeek === av.dayOfWeek) {
           isMatch = true;
         }
 
         if (isMatch) {
           this.timeSlots.forEach((slot) => {
-            if (slot.startMinutes >= startMinutes && slot.endMinutes <= endMinutes) {
-              this.availableSlotKeys.add(this.bookingService.buildSlotKey(day.key, slot.startTime));
+            if (slot.startMinutes >= startMin && slot.endMinutes <= endMin) {
+              const key = this.bookingService.buildSlotKey(day.key, slot.startTime);
+              
+              if (this.bookedSlotKeys.has(key)) {
+              } else {
+                this.availableSlotKeys.add(key);
+              }
             }
           });
         }
       });
     });
-  }
 
-  private applyBlockedSlots(blockedSlots: UnavailableSlotResponse[]): void {
-    blockedSlots.forEach((blocked) => {
-      const dateKey = blocked.blockedDate.split('T')[0];
-      const startMin = this.bookingService.timeToMinutes(blocked.blockedStartTime);
-      const endMin = this.bookingService.timeToMinutes(blocked.blockedEndTime);
-
-      this.timeSlots.forEach((slot) => {
-        if (slot.startMinutes >= startMin && slot.endMinutes <= endMin) {
-          this.bookedSlotKeys.add(this.bookingService.buildSlotKey(dateKey, slot.startTime));
-        }
-      });
-    });
   }
 
   private resolveStudentId = () => this.userProfile === ProfileType.Student ? this.currentUserId : (this.selectedStudentId ? String(this.selectedStudentId) : null);

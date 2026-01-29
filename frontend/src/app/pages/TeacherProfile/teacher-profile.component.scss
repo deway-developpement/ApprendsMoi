@@ -423,11 +423,20 @@
   }
 
   &.is-booked {
-    background: $SecondaryColor;
-    border-color: $SecondaryColor;
-    color: #fff;
-    cursor: default;
-    opacity: 0.8;
+    background: #f97316;  // ← Change en "background" au lieu de "background-color"
+    border-color: #ea580c;
+    color: white;
+    cursor: not-allowed;
+    opacity: 0.9;
+
+    span {
+      text-decoration: line-through;
+      opacity: 0.7;
+    }
+
+    &:hover {
+      background: #f97316;
+    }
   }
 
   &.is-past {
