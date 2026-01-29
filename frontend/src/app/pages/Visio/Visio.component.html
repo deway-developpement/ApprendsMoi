@@ -94,3 +94,40 @@
     </div>
   </aside>
 </main>
+
+<div *ngIf="showRatingModal" class="rating-modal" (click)="closeRatingModal()">
+  <div class="rating-modal__card" (click)="$event.stopPropagation()">
+    <h3 class="rating-modal__title">{{ isEditingRating ? 'Modifiez votre note' : 'Notez votre professeur' }}</h3>
+    <p class="rating-modal__subtitle">Votre avis aide a ameliorer les cours.</p>
+    <p *ngIf="isEditingRating" class="rating-info">Vous avez deja note ce professeur. Vous pouvez modifier votre avis.</p>
+    <p *ngIf="isLoadingRating" class="rating-loading">Chargement de votre note...</p>
+    <div class="rating-stars">
+      <button
+        type="button"
+        class="rating-star"
+        *ngFor="let star of [1, 2, 3, 4, 5]"
+        [class.active]="ratingScore && star <= ratingScore"
+        [disabled]="isLoadingRating"
+        (click)="setRating(star)">
+        ★
+      </button>
+    </div>
+    <textarea
+      class="rating-comment"
+      rows="3"
+      [(ngModel)]="ratingComment"
+      [disabled]="isLoadingRating"
+      placeholder="Ecrivez un commentaire (optionnel)">
+    </textarea>
+    <p *ngIf="ratingError" class="rating-error">{{ ratingError }}</p>
+    <div class="rating-actions">
+      <app-button variant="ghost" (click)="closeRatingModal()">Passer</app-button>
+      <app-button
+        variant="primary"
+        (click)="submitRating()"
+        [disabled]="isSubmittingRating || isLoadingRating">
+        {{ isSubmittingRating ? 'Envoi...' : (isEditingRating ? 'Mettre a jour' : 'Envoyer') }}
+      </app-button>
+    </div>
+  </div>
+</div>

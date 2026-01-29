@@ -405,3 +405,116 @@
     justify-content: center;
   }
 }
+
+.rating-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $paddingMedium;
+  z-index: 1000;
+}
+
+.rating-modal__card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: $borderRadiusLarge;
+  box-shadow: $boxShadow;
+  width: min(420px, 100%);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.rating-modal__title {
+  margin: 0;
+  color: $PrimaryColor;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.rating-modal__subtitle {
+  margin: 0;
+  color: #64748b;
+  font-size: $smallerFontSize;
+}
+
+.rating-info {
+  margin: 0;
+  color: $PrimaryColor;
+  font-size: $smallerFontSize;
+  background: rgba($PrimaryColor, 0.06);
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
+}
+
+.rating-loading {
+  margin: 0;
+  color: #64748b;
+  font-size: $smallerFontSize;
+}
+
+.rating-stars {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.rating-star {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #94a3b8;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+  }
+
+  &.active {
+    background: rgba($colorPremium, 0.2);
+    color: $colorPremium;
+    border-color: rgba($colorPremium, 0.6);
+  }
+}
+
+.rating-star:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.rating-comment {
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.75rem;
+  font-size: $smallerFontSize;
+  font-family: 'Poppins', sans-serif;
+  resize: vertical;
+}
+
+.rating-comment:focus {
+  outline: none;
+  border-color: $SecondaryColor;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.18);
+}
+
+.rating-error {
+  margin: 0;
+  color: #ef4444;
+  font-size: $tinierFontSize;
+}
+
+.rating-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
