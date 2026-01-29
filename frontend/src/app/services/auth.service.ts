@@ -32,7 +32,6 @@ export enum GradeLevel {
 export interface LoginRequest {
   credential?: string; // Email ou Username
   password?: string;
-  isStudent: boolean;
 }
 
 export interface RegisterRequest {

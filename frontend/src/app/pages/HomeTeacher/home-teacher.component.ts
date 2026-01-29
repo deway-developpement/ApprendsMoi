@@ -9,6 +9,9 @@ import { CoursesScheduleComponent, Course } from '../../components/shared/Course
 import { AuthService, UserDto } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
 import { environment } from '../../environments/environment';
+import { RouterLink } from "@angular/router";
+import { RouterModule } from '@angular/router';
+import { TeacherReviewsComponent } from '../../components/shared/TeacherReviews/teacher-reviews.component';
 
 interface BookingRequest {
   id: number;
@@ -38,8 +41,11 @@ interface MeetingResponse {
     HeaderComponent,
     ButtonComponent,
     SmallIconComponent,
-    CoursesScheduleComponent
-  ]
+    CoursesScheduleComponent,
+    RouterLink,
+    RouterModule,
+    TeacherReviewsComponent
+]
 })
 export class HomeTeacherComponent implements OnInit {
   private readonly http = inject(HttpClient);

@@ -2,26 +2,14 @@
 
 .search-page {
   min-height: 100vh;
-  background: $backgroundColor;
   color: $PrimaryColor;
+  margin-top: 6rem;
 }
 
 .search-hero {
   padding: 3.5rem $paddingMedium 3rem;
-  background: linear-gradient(120deg, rgba($PrimaryColor, 0.08), rgba($SecondaryColor, 0.12));
   position: relative;
   overflow: hidden;
-}
-
-.search-hero::before {
-  content: "";
-  position: absolute;
-  width: 320px;
-  height: 320px;
-  right: -120px;
-  top: -140px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba($SecondaryColor, 0.35), transparent 70%);
 }
 
 .hero-content {
@@ -30,68 +18,72 @@
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  gap: 2rem;
+  gap: $marginLarge;
   align-items: start;
 }
 
 .hero-copy {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: $marginMedium; // approx 0.75rem -> 1rem
 }
 
 .eyebrow {
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  font-size: 0.8rem;
+  font-size: $tinierFontSize;
   color: $PrimaryColorHover;
+  font-weight: 600;
 }
 
 h1 {
   margin: 0;
-  font-size: clamp(2rem, 3vw, 3rem);
+  font-size: $titleFontSize;
+  line-height: 1.1;
 }
 
 .subtitle {
   margin: 0;
-  font-size: 1rem;
+  font-size: $smallerFontSize;
   color: $PrimaryColorHover;
   max-width: 520px;
+  line-height: 1.5;
 }
 
 .hero-panel {
   background: #fff;
   border-radius: $borderRadiusLarge;
   box-shadow: $boxShadow;
-  padding: 1.5rem;
+  padding: 1.5rem; // Custom padding
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: $marginMedium;
 }
 
 .hero-highlight {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  gap: $marginMedium;
 }
 
 .highlight-card {
-  padding: 1rem 1.1rem;
+  padding: $paddingMedium;
   border-radius: $borderRadius;
   background: rgba($PrimaryColor, 0.04);
   border: 1px solid rgba($PrimaryColor, 0.1);
-}
 
-.highlight-card h3 {
-  margin: 0 0 0.4rem;
-  font-size: 1rem;
-}
+  h3 {
+    margin: 0 0 0.4rem;
+    font-size: $smallerFontSize;
+    color: $PrimaryColor;
+  }
 
-.highlight-card p {
-  margin: 0;
-  color: $PrimaryColorHover;
-  font-size: 0.9rem;
+  p {
+    margin: 0;
+    color: $PrimaryColorHover;
+    font-size: $tinierFontSize;
+  }
 }
 
 .filter-pill {
@@ -103,16 +95,17 @@ h1 {
   font-weight: 600;
   cursor: pointer;
   transition: $transitionFast;
-}
+  font-size: $tinierFontSize;
 
-.filter-pill.active {
-  background: $PrimaryActive;
-  border-color: $PrimaryActive;
-  color: #fff;
-}
+  &.active {
+    background: $PrimaryActive;
+    border-color: $PrimaryActive;
+    color: #fff;
+  }
 
-.filter-pill:hover {
-  border-color: $PrimaryColorHover;
+  &:hover {
+    border-color: $PrimaryColorHover;
+  }
 }
 
 .filter-clear {
@@ -124,17 +117,17 @@ h1 {
   font-weight: 600;
   cursor: pointer;
   transition: $transitionFast;
-}
+  font-size: $tinierFontSize;
 
-.filter-clear:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
 }
 
 .results-section {
   max-width: $maxContentWidth;
   margin: 0 auto;
-  padding: 2.5rem $paddingMedium 3rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -144,14 +137,14 @@ h1 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 1rem;
+  gap: $marginMedium;
   flex-wrap: wrap;
 }
 
 .results-controls {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: $marginMedium;
   flex-wrap: wrap;
   justify-content: flex-end;
 }
@@ -161,10 +154,10 @@ h1 {
   min-width: 320px;
   max-width: 560px;
   margin-left: auto;
-}
 
-.search-inline ::ng-deep .search-bar {
-  width: 100%;
+  ::ng-deep .search-bar {
+    width: 100%;
+  }
 }
 
 .filter-row {
@@ -176,6 +169,7 @@ h1 {
 .results-count {
   margin: 0.4rem 0 0;
   color: $PrimaryColorHover;
+  font-size: $tinierFontSize;
 }
 
 .sort-control {
@@ -187,6 +181,7 @@ h1 {
 .sort-label {
   font-weight: 600;
   color: $PrimaryColorHover;
+  font-size: $tinierFontSize;
 }
 
 .results-grid {
@@ -202,8 +197,13 @@ h1 {
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: $marginMedium;
   border: 1px solid rgba($PrimaryColor, 0.08);
+  transition: transform $transitionFast;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
 }
 
 .card-top {
@@ -219,20 +219,24 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: $PrimaryColor; // Fallback
   color: #fff;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: $smallerFontSize;
 }
 
-.title-block h3 {
-  margin: 0;
-  font-size: 1.1rem;
-}
+.title-block {
+  h3 {
+    margin: 0;
+    font-size: $regularFontSize;
+    color: $PrimaryColor;
+  }
 
-.title-block p {
-  margin: 0.3rem 0 0;
-  color: $PrimaryColorHover;
-  font-size: 0.9rem;
+  p {
+    margin: 0.3rem 0 0;
+    color: $PrimaryColorHover;
+    font-size: $tinierFontSize;
+  }
 }
 
 .price {
@@ -245,48 +249,60 @@ h1 {
 
 .price-value {
   font-weight: 700;
-  font-size: 1rem;
+  font-size: $smallerFontSize;
+  color: $PrimaryColor;
 }
 
 .price-label {
-  font-size: 0.75rem;
+  font-size: 0.7rem; // Kept small intentionally
   color: $PrimaryColorHover;
+  display: block;
 }
 
 .badge-row {
   display: flex;
-  gap: 0.5rem;
+  gap: $marginSmall;
   flex-wrap: wrap;
 }
 
 .badge {
   padding: 0.25rem 0.6rem;
   border-radius: 999px;
-  font-size: 0.7rem;
+  font-size: 0.7rem; // Tiny badge text
   font-weight: 700;
   text-transform: uppercase;
-}
+  letter-spacing: 0.02em;
 
-.badge.premium {
-  background: rgba($colorPremium, 0.25);
-  color: #8a5a00;
-}
+  &.premium {
+    background: rgba($colorPremium, 0.2);
+    color: darken($colorPremium, 20%);
+    border: 1px solid rgba($colorPremium, 0.3);
+  }
 
-.badge.verified {
-  background: rgba($colorVerified, 0.2);
-  color: #0f6a3a;
-}
+  &.verified {
+    background: rgba($colorVerified, 0.15);
+    color: darken($colorVerified, 20%);
+    border: 1px solid rgba($colorVerified, 0.3);
+  }
 
-.badge.top {
-  background: rgba($colorTopProf, 0.2);
-  color: #4c1d95;
+  &.top {
+    background: rgba($colorTopProf, 0.15);
+    color: darken($colorTopProf, 15%);
+    border: 1px solid rgba($colorTopProf, 0.3);
+  }
 }
 
 .bio {
   margin: 0;
   color: $PrimaryColorHover;
   line-height: 1.5;
-  font-size: 0.95rem;
+  font-size: $tinierFontSize;
+  
+  // Optional: clamp text
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .tag-row,
@@ -302,12 +318,13 @@ h1 {
   background: rgba($PrimaryColor, 0.06);
   font-size: 0.75rem;
   font-weight: 600;
+  color: $PrimaryColor;
 }
 
 .level-pill {
   padding: 0.25rem 0.55rem;
   border-radius: 999px;
-  background: rgba($SecondaryColor, 0.12);
+  background: rgba($SecondaryColor, 0.1);
   color: $SecondaryColorActive;
   font-size: 0.7rem;
   font-weight: 600;
@@ -318,7 +335,7 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: $marginMedium;
 }
 
 .rating {
@@ -329,32 +346,36 @@ h1 {
 
 .rating-score {
   font-weight: 700;
-  font-size: 1rem;
+  font-size: $smallerFontSize;
   color: $PrimaryColor;
 }
 
 .rating-meta {
   color: $PrimaryColorHover;
-  font-size: 0.8rem;
+  font-size: $tinierFontSize;
 }
 
 .empty-state {
   background: #fff;
   border-radius: $borderRadiusLarge;
   box-shadow: $boxShadow;
-  padding: 2rem;
+  padding: $paddingLarge;
   text-align: center;
+
+  h3 {
+    margin: 0 0 0.5rem;
+    font-size: $biggerFontSize;
+    color: $PrimaryColor;
+  }
+
+  p {
+    margin: 0 0 1rem;
+    color: $PrimaryColorHover;
+    font-size: $smallerFontSize;
+  }
 }
 
-.empty-state h3 {
-  margin: 0 0 0.5rem;
-}
-
-.empty-state p {
-  margin: 0 0 1rem;
-  color: $PrimaryColorHover;
-}
-
+// Media Queries using hardcoded values where variables aren't strictly layout breakpoints
 @media (max-width: 1024px) {
   .hero-content {
     grid-template-columns: 1fr;

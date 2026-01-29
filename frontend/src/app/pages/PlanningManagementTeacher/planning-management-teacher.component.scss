@@ -2,12 +2,11 @@
 
 .planning-page {
   min-height: 100vh;
-  margin-top: 3rem;
+  margin-top: 6rem; // Keep as is or use a specific layout variable if you have one
   color: $PrimaryColor;
 }
 
 .planning-hero {
-  background: linear-gradient(120deg, $backgroundColor, rgba($PrimaryColor, 0.08));
   padding: 3rem $paddingMedium 4rem;
 }
 
@@ -16,88 +15,101 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: $marginMedium;
 }
 
 .eyebrow {
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  font-size: 0.8rem;
+  font-size: $tinierFontSize;
+  font-weight: 600;
   color: $PrimaryColorHover;
 }
 
 h1 {
   margin: 0;
-  font-size: 2.6rem;
+  font-size: $titleFontSize;
+  color: $PrimaryColor;
+  line-height: 1.1;
 }
 
 .subtitle {
   margin: 0;
   color: $PrimaryColorHover;
+  font-size: $regularFontSize;
   max-width: 720px;
+  line-height: 1.5;
 }
 
 .hero-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
+  gap: $marginMedium;
+  margin-top: $marginSmall;
 }
 
 .meta-card {
   background: white;
   border-radius: $borderRadius;
-  padding: 0.5rem 0.9rem;
+  padding: $paddingSmall $paddingMedium;
   box-shadow: $boxShadow;
   font-weight: 500;
+  font-size: $smallerFontSize;
   color: $PrimaryColor;
+  border: 1px solid rgba($PrimaryColor, 0.1);
 }
 
 .hero-actions {
   display: flex;
-  gap: 0.75rem;
-  margin-top: 1rem;
+  gap: $marginMedium;
+  margin-top: $marginMedium;
   flex-wrap: wrap;
 }
-
 
 .planning-body {
   max-width: $maxContentWidth;
   margin: -2rem auto 2rem;
-  padding: 0 0 $paddingLarge;
+  padding: 0 $paddingMedium $paddingLarge;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: $marginLarge;
 }
 
 .calendar-card {
   background: white;
   border-radius: $borderRadiusLarge;
   box-shadow: $boxShadow;
-  padding: 1.5rem;
+  padding: $paddingLarge;
+  border: 1px solid rgba($PrimaryColor, 0.05);
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: $marginMedium;
+  margin-bottom: $marginMedium;
   flex-wrap: wrap;
+
+  h2 {
+    font-size: $biggerFontSize;
+    margin: 0;
+    color: $PrimaryColor;
+  }
 }
 
 .card-subtitle {
   margin: 0.35rem 0 0;
   color: $PrimaryColorHover;
-  font-size: 0.95rem;
+  font-size: $smallerFontSize;
 }
 
 .legend {
   display: flex;
-  gap: 0.75rem;
+  gap: $marginMedium;
   flex-wrap: wrap;
-  font-size: 0.85rem;
+  font-size: $tinierFontSize;
   color: $PrimaryColorHover;
 }
 
@@ -108,30 +120,30 @@ h1 {
 }
 
 .legend-dot {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: rgba($PrimaryColor, 0.08);
   border: 1px solid rgba($PrimaryColor, 0.2);
-}
 
-.legend-dot.is-active {
-  background: $PrimaryActive;
-  border-color: $PrimaryActive;
-}
+  &.is-active {
+    background: $PrimaryActive;
+    border-color: $PrimaryActive;
+  }
 
-.legend-dot.is-booked {
-  background: $SecondaryColor;
-  border-color: $SecondaryColor;
+  &.is-booked {
+    background: $SecondaryColor;
+    border-color: $SecondaryColor;
+  }
 }
 
 .calendar-scroll {
-  overflow-x: hidden;
-  padding-bottom: 0.5rem;
+  overflow-x: auto; // Changed to auto to allow scrolling if needed on small screens
+  padding-bottom: $paddingSmall;
 }
 
 .calendar-grid {
-  min-width: 0;
+  min-width: 700px; // Ensure grid doesn't squash too much
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -151,20 +163,24 @@ h1 {
 .calendar-day {
   background: $PrimaryColor;
   border-radius: $borderRadius;
-  padding: 0.6rem 0.75rem;
+  padding: $paddingSmall;
   border: 1px solid $PrimaryColor;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 0.2rem;
+  text-align: center;
 }
 
 .day-name {
   font-weight: 600;
   color: #fff;
+  font-size: $smallerFontSize;
 }
 
 .day-date {
-  font-size: 0.85rem;
+  font-size: $tinierFontSize;
   color: rgba(#fff, 0.8);
 }
 
@@ -181,12 +197,13 @@ h1 {
 }
 
 .time-label {
-  font-size: 0.85rem;
+  font-size: $tinierFontSize;
   color: $PrimaryColorHover;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding-right: 0.5rem;
+  padding-right: $paddingSmall;
+  font-weight: 500;
 }
 
 .day-columns {
@@ -203,11 +220,11 @@ h1 {
 
 .slot {
   height: 56px;
-  border-radius: 12px;
+  border-radius: $borderRadius;
   border: 1px dashed rgba($PrimaryColor, 0.25);
   background: rgba($PrimaryColor, 0.03);
   color: $PrimaryColor;
-  font-size: 0.82rem;
+  font-size: $smallerFontSize;
   font-weight: 600;
   display: flex;
   flex-direction: column;
@@ -218,69 +235,73 @@ h1 {
   transition: $transitionFast;
   position: relative;
   overflow: hidden;
-}
 
-.slot:hover:not(:disabled) {
-  background: rgba($PrimaryColor, 0.08);
-  border-color: $PrimaryColorHover;
-  color: $PrimaryColorHover;
-}
+  &:hover:not(:disabled) {
+    background: rgba($PrimaryColor, 0.08);
+    border-color: $PrimaryColorHover;
+    color: $PrimaryColorHover;
+  }
 
-.slot:disabled {
-  cursor: not-allowed;
-  opacity: 0.8;
-}
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
 
-.slot.is-active {
-  background: $PrimaryActive;
-  color: #fff;
-  border-color: $PrimaryActive;
-}
+  &.is-active {
+    background: $PrimaryActive;
+    color: #fff;
+    border-color: $PrimaryActive;
+    border-style: solid;
 
-.slot.is-booked {
-  background: $SecondaryColor;
-  color: #fff;
-  border-color: $SecondaryColor;
-}
+    .slot-range {
+      background: rgba(#fff, 0.25);
+    }
+  }
 
-.slot.is-past {
-  background: rgba($PrimaryColor, 0.06);
-  color: rgba($PrimaryColor, 0.5);
-  border-color: rgba($PrimaryColor, 0.15);
-  cursor: not-allowed;
+  &.is-booked {
+    background: $SecondaryColor;
+    color: #fff;
+    border-color: $SecondaryColor;
+    border-style: solid;
+
+    .slot-range {
+      background: rgba(#fff, 0.25);
+    }
+  }
+
+  &.is-past {
+    background: rgba($PrimaryColor, 0.06);
+    color: rgba($PrimaryColor, 0.4);
+    border-color: rgba($PrimaryColor, 0.1);
+    cursor: not-allowed;
+    border-style: solid;
+
+    .slot-range {
+      background: rgba($PrimaryColor, 0.05);
+      opacity: 0.5;
+    }
+  }
 }
 
 .slot-label {
-  font-size: 0.78rem;
+  font-size: $tinierFontSize;
   font-weight: 700;
   letter-spacing: 0.01em;
 }
 
 .slot-range {
-  font-size: 0.68rem;
+  font-size: 0.75em; // Relative to the slot font size to keep it tiny
   font-weight: 600;
-  opacity: 0.75;
-  padding: 0.1rem 0.45rem;
+  opacity: 0.9;
+  padding: 0.1rem 0.5rem;
   border-radius: 999px;
   background: rgba($PrimaryColor, 0.08);
   color: inherit;
 }
 
-.slot.is-active .slot-range {
-  background: rgba(#fff, 0.22);
-}
-
-.slot.is-booked .slot-range {
-  background: rgba(#fff, 0.2);
-}
-
-.slot.is-past .slot-range {
-  background: rgba($PrimaryColor, 0.08);
-  opacity: 0.6;
-}
-
 .calendar-footer {
-  margin-top: 1rem;
-  font-size: 0.9rem;
+  margin-top: $marginMedium;
+  font-size: $smallerFontSize;
   color: $PrimaryColorHover;
+  text-align: center;
 }

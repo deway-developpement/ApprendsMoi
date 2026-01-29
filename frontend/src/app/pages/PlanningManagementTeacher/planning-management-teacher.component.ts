@@ -64,7 +64,7 @@ interface SummarySlot {
 @Component({
   selector: 'app-planning-management-teacher',
   standalone: true,
-  imports: [CommonModule, HeaderComponent, ButtonComponent],
+  imports: [CommonModule, HeaderComponent],
   templateUrl: './planning-management-teacher.component.html',
   styleUrls: ['./planning-management-teacher.component.scss']
 })

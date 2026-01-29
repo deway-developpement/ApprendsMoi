@@ -2,12 +2,13 @@
 
 .profile-page {
   min-height: 100vh;
-  background: $backgroundColor;
   color: $PrimaryColor;
+  margin-top: 6rem;
 }
 
+// Hero Section
 .profile-hero {
-  background: linear-gradient(120deg, rgba($PrimaryColor, 0.1), rgba($SecondaryColor, 0.12));
+  // A subtle gradient using Primary and Secondary colors
   padding: 3.5rem $paddingMedium 3rem;
 }
 
@@ -16,50 +17,60 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: $marginMedium;
 }
 
 .back-link {
   text-decoration: none;
   color: $PrimaryColorHover;
   font-weight: 600;
+  font-size: $smallerFontSize;
   display: inline-flex;
   gap: 0.5rem;
   align-items: center;
+  transition: color $transitionFast;
+
+  &:hover {
+    color: $PrimaryColor;
+  }
 }
 
 .hero-card {
   background: #fff;
   border-radius: $borderRadiusLarge;
   box-shadow: $boxShadow;
-  padding: 1.5rem;
+  padding: $paddingLarge;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 1rem;
+  gap: $marginMedium;
   align-items: center;
 }
 
 .teacher-main {
   display: flex;
-  gap: 1rem;
+  gap: $marginMedium;
   align-items: center;
 }
 
 .avatar {
-  width: 72px;
-  height: 72px;
+  width: 80px;
+  height: 80px;
   border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: #fff;
+  background-color: $PrimaryColor; // Fallback if no image
+  box-shadow: 0 4px 12px rgba($PrimaryColor, 0.2);
 }
 
 .name-block h1 {
   margin: 0;
-  font-size: clamp(1.8rem, 2.4vw, 2.4rem);
+  font-size: $titleFontSize;
+  line-height: 1.1;
+  color: $PrimaryColor;
 }
 
 .name-row {
@@ -71,172 +82,204 @@
 
 .headline {
   margin: 0.4rem 0 0.6rem;
+  font-size: $regularFontSize;
   color: $PrimaryColorHover;
 }
 
 .meta-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: $marginMedium;
   color: $PrimaryColorHover;
-  font-size: 0.9rem;
+  font-size: $smallerFontSize;
+  align-items: center;
 }
 
 .hero-actions {
   display: flex;
-  gap: 0.75rem;
+  gap: $marginMedium;
   flex-wrap: wrap;
   justify-content: flex-end;
 }
 
+// Badges
 .badge {
   padding: 0.25rem 0.6rem;
   border-radius: 999px;
-  font-size: 0.7rem;
+  font-size: $tinierFontSize;
   font-weight: 700;
   text-transform: uppercase;
-}
+  letter-spacing: 0.02em;
 
-.badge.premium {
-  background: rgba($colorPremium, 0.25);
-  color: #8a5a00;
-}
+  &.premium {
+    background: rgba($colorPremium, 0.15);
+    color: darken($colorPremium, 15%);
+    border: 1px solid rgba($colorPremium, 0.3);
+  }
 
-.badge.verified {
-  background: rgba($colorVerified, 0.2);
-  color: #0f6a3a;
-}
+  &.verified {
+    background: rgba($colorVerified, 0.15);
+    color: darken($colorVerified, 20%);
+    border: 1px solid rgba($colorVerified, 0.3);
+  }
 
-.badge.top {
-  background: rgba($colorTopProf, 0.2);
-  color: #4c1d95;
+  &.top {
+    background: rgba($colorTopProf, 0.15);
+    color: darken($colorTopProf, 15%);
+    border: 1px solid rgba($colorTopProf, 0.3);
+  }
 }
 
 .hero-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 1rem;
+  gap: $marginMedium;
 }
 
 .stat-card {
   background: #fff;
   border-radius: $borderRadius;
-  padding: 1rem 1.2rem;
+  padding: $paddingMedium;
   box-shadow: $boxShadow;
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
+  border: 1px solid rgba($PrimaryColor, 0.05);
+  transition: transform $transitionFast;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
 }
 
 .stat-value {
   font-weight: 700;
-  font-size: 1.2rem;
+  font-size: $biggerFontSize;
+  color: $PrimaryColor;
 }
 
 .stat-label {
   color: $PrimaryColorHover;
-  font-size: 0.85rem;
+  font-size: $tinierFontSize;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
+// Profile Body Layout
 .profile-body {
   max-width: $maxContentWidth;
   margin: 0 auto;
   padding: 2.5rem $paddingMedium 3rem;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: $marginLarge;
 }
 
 .profile-section {
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
-}
+  gap: $marginMedium;
 
-.profile-section.booking .section-title {
-  max-width: 520px;
+  &.booking .section-title {
+    max-width: 600px;
+  }
 }
 
 .section-title h2 {
   margin: 0;
+  font-size: $biggerFontSize;
+  color: $PrimaryColor;
 }
 
 .section-subtitle {
   margin: 0.35rem 0 0;
   color: $PrimaryColorHover;
+  font-size: $smallerFontSize;
 }
 
+// Info Cards Grid
 .info-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: $marginMedium;
 }
 
 .info-card {
   background: #fff;
-  border-radius: $borderRadius;
-  padding: 1rem 1.2rem;
+  border-radius: $borderRadiusLarge;
+  padding: $paddingMedium;
   border: 1px solid rgba($PrimaryColor, 0.08);
   box-shadow: $boxShadow;
+
+  h3 {
+    margin: 0 0 0.6rem;
+    font-size: $regularFontSize;
+    color: $PrimaryColor;
+  }
+
+  p {
+    margin: 0;
+    color: $PrimaryColorHover;
+    font-size: $smallerFontSize;
+    line-height: 1.6;
+  }
 }
 
-.info-card h3 {
-  margin: 0 0 0.6rem;
-}
-
-.info-card p {
-  margin: 0;
-  color: $PrimaryColorHover;
-  line-height: 1.6;
-}
-
+// Booking Section
 .booking-card {
   background: #fff;
   border-radius: $borderRadiusLarge;
-  padding: 1.5rem;
+  padding: $paddingLarge;
   box-shadow: $boxShadow;
   border: 1px solid rgba($PrimaryColor, 0.08);
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
+  gap: $marginMedium;
+
+  &.locked {
+    align-items: flex-start;
+  }
 }
 
 .booking-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
-  gap: 1.5rem;
+  gap: $marginLarge;
 }
 
+// Calendar Styles
 .booking-calendar {
-  background: rgba($PrimaryColor, 0.03);
+  background: rgba($PrimaryColor, 0.02);
   border: 1px solid rgba($PrimaryColor, 0.08);
-  border-radius: $borderRadius;
-  padding: 1rem;
+  border-radius: $borderRadiusLarge;
+  padding: $paddingMedium;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: $marginMedium;
 }
 
 .calendar-title {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-}
+  gap: $marginMedium;
 
-.calendar-title h3 {
-  margin: 0;
-}
+  h3 {
+    margin: 0;
+    font-size: $regularFontSize;
+  }
 
-.calendar-title p {
-  margin: 0.2rem 0 0;
-  color: $PrimaryColorHover;
-  font-size: 0.85rem;
+  p {
+    margin: 0.2rem 0 0;
+    color: $PrimaryColorHover;
+    font-size: $tinierFontSize;
+  }
 }
 
 .calendar-status {
-  font-size: 0.8rem;
+  font-size: $tinierFontSize;
   color: $PrimaryColorHover;
+  font-weight: 500;
 }
 
 .calendar-legend {
@@ -248,30 +291,34 @@
 .legend-pill {
   padding: 0.25rem 0.6rem;
   border-radius: 999px;
-  font-size: 0.7rem;
+  font-size: $tinierFontSize;
   font-weight: 600;
+
+  &.available {
+    background: rgba($green, 0.3);
+    color: $PrimaryActive;
+    border: 1px solid rgba($PrimaryActive, 0.2);
+  }
+
+  &.selected {
+    background: $PrimaryActive;
+    color: #fff;
+    border: 1px solid $PrimaryActive;
+  }
+
+  &.booked {
+    background: $SecondaryColor;
+    color: #fff;
+    border: 1px solid $SecondaryColor;
+  }
+
+  &.past {
+    background: rgba($PrimaryColor, 0.05);
+    color: rgba($PrimaryColor, 0.4);
+  }
 }
 
-.legend-pill.available {
-  background: rgba($PrimaryActive, 0.15);
-  color: $PrimaryColor;
-}
-
-.legend-pill.selected {
-  background: $PrimaryActive;
-  color: #fff;
-}
-
-.legend-pill.booked {
-  background: $SecondaryColor;
-  color: #fff;
-}
-
-.legend-pill.past {
-  background: rgba($PrimaryColor, 0.08);
-  color: rgba($PrimaryColor, 0.5);
-}
-
+// Calendar Grid
 .calendar-grid {
   display: flex;
   flex-direction: column;
@@ -292,15 +339,18 @@
   background: $PrimaryColor;
   color: #fff;
   border-radius: $borderRadius;
-  padding: 0.4rem 0.5rem;
+  padding: 0.4rem 0.2rem;
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
 }
 
 .day-name {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 700;
+  text-transform: uppercase;
 }
 
 .day-date {
@@ -327,6 +377,7 @@
   align-items: center;
   justify-content: flex-end;
   padding-right: 0.4rem;
+  font-weight: 500;
 }
 
 .day-columns {
@@ -342,7 +393,7 @@
 }
 
 .availability-slot {
-  border-radius: 10px;
+  border-radius: 6px;
   border: 1px dashed rgba($PrimaryColor, 0.2);
   background: rgba($PrimaryColor, 0.03);
   color: $PrimaryColor;
@@ -352,75 +403,96 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: $transitionFast;
+  transition: all $transitionFast;
+
+  &:hover:not(:disabled):not(.is-past) {
+    transform: scale(1.05);
+  }
+
+  &.is-available {
+    border-color: rgba($green, 1);
+    background: rgba($green, 0.3);
+    color: $PrimaryActive;
+  }
+
+  &.is-selected {
+    background: $PrimaryActive;
+    border-color: $PrimaryActive;
+    color: #fff;
+    box-shadow: 0 2px 4px rgba($PrimaryActive, 0.3);
+  }
+
+  &.is-booked {
+    background: $SecondaryColor;
+    border-color: $SecondaryColor;
+    color: #fff;
+    cursor: default;
+    opacity: 0.8;
+  }
+
+  &.is-past {
+    background: rgba($PrimaryColor, 0.04);
+    border-color: rgba($PrimaryColor, 0.1);
+    color: rgba($PrimaryColor, 0.3);
+    cursor: not-allowed;
+    border-style: solid;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
 }
 
-.availability-slot.is-available {
-  border-color: rgba($PrimaryActive, 0.4);
-  background: rgba($PrimaryActive, 0.12);
-}
-
-.availability-slot.is-selected {
-  background: $PrimaryActive;
-  border-color: $PrimaryActive;
-  color: #fff;
-}
-
-.availability-slot.is-booked {
-  background: $SecondaryColor;
-  border-color: $SecondaryColor;
-  color: #fff;
-}
-
-.availability-slot.is-past {
-  background: rgba($PrimaryColor, 0.08);
-  border-color: rgba($PrimaryColor, 0.15);
-  color: rgba($PrimaryColor, 0.5);
-  cursor: not-allowed;
-}
-
-.availability-slot:disabled {
-  cursor: not-allowed;
-}
-
-.booking-card.locked {
-  align-items: flex-start;
+// Booking Form Side
+.booking-form {
+  display: flex;
+  flex-direction: column;
+  gap: $marginMedium;
 }
 
 .booking-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+  gap: $marginMedium;
 }
 
 .field {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-}
 
-.field.full {
-  grid-column: 1 / -1;
-}
+  &.full {
+    grid-column: 1 / -1;
+  }
 
-.field label {
-  font-weight: 600;
-  color: $PrimaryColor;
-  font-size: 0.9rem;
-}
+  label {
+    font-weight: 600;
+    color: $PrimaryColor;
+    font-size: $smallerFontSize;
+  }
 
-.field input {
-  height: 44px;
-  border-radius: $borderRadius;
-  border: 1px solid rgba($PrimaryColor, 0.2);
-  padding: 0 0.75rem;
-  font-size: 0.9rem;
-  font-family: inherit;
-  color: $PrimaryColor;
+  input {
+    height: 48px;
+    border-radius: $borderRadius;
+    border: 1px solid rgba($PrimaryColor, 0.2);
+    padding: 0 0.75rem;
+    font-size: $smallerFontSize;
+    font-family: inherit;
+    color: $PrimaryColor;
+    background: #fff;
+    transition: border-color $transitionFast;
+
+    &:focus {
+      outline: none;
+      border-color: $PrimaryActive;
+      box-shadow: 0 0 0 3px rgba($PrimaryActive, 0.1);
+    }
+  }
 }
 
 .fixed-duration {
-  height: 44px;
+  height: 48px;
   border-radius: $borderRadius;
   border: 1px solid rgba($PrimaryColor, 0.15);
   background: rgba($PrimaryColor, 0.04);
@@ -429,93 +501,102 @@
   align-items: center;
   font-weight: 600;
   color: $PrimaryColor;
+  font-size: $smallerFontSize;
 }
 
 .booking-actions {
   display: flex;
-  gap: 0.75rem;
+  gap: $marginMedium;
   flex-wrap: wrap;
-}
-
-.booking-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  margin-top: $marginSmall;
 }
 
 .selected-slot {
-  background: rgba($PrimaryColor, 0.05);
+  background: rgba($PrimaryColor, 0.03);
   border: 1px solid rgba($PrimaryColor, 0.1);
   border-radius: $borderRadius;
-  padding: 0.8rem 1rem;
+  padding: $paddingMedium;
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
-}
 
-.selected-slot.empty {
-  background: rgba($PrimaryColor, 0.02);
+  &.empty {
+    background: rgba($PrimaryColor, 0.02);
+    border-style: dashed;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: 80px;
+  }
 }
 
 .selected-title {
-  font-size: 0.75rem;
+  font-size: $tinierFontSize;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.05em;
   color: $PrimaryColorHover;
+  font-weight: 600;
 }
 
 .selected-value {
   font-weight: 700;
-  font-size: 1rem;
+  font-size: $regularFontSize;
+  color: $PrimaryColor;
 }
 
 .selected-time {
-  font-size: 0.85rem;
+  font-size: $smallerFontSize;
   color: $PrimaryColorHover;
 }
 
+// Pills (Subjects / Levels)
 .pill-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 .pill {
-  padding: 0.3rem 0.65rem;
+  padding: 0.3rem 0.8rem;
   border-radius: 999px;
   background: rgba($PrimaryColor, 0.08);
-  font-size: 0.75rem;
+  font-size: $tinierFontSize;
   font-weight: 600;
+  color: $PrimaryColor;
+
+  &.soft {
+    background: rgba($SecondaryColor, 0.1);
+    color: darken($SecondaryColor, 10%);
+    border: 1px solid rgba($SecondaryColor, 0.2);
+  }
+
+  &.outline {
+    background: transparent;
+    border: 1px solid rgba($PrimaryColor, 0.2);
+    color: $PrimaryColorHover;
+  }
 }
 
-.pill.soft {
-  background: rgba($SecondaryColor, 0.15);
-  color: $SecondaryColorActive;
-}
-
-.pill.outline {
-  background: transparent;
-  border: 1px dashed rgba($PrimaryColor, 0.25);
-}
-
+// Split Section (Availability list / Details)
 .profile-section.split {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-  gap: 1.5rem;
+  gap: $marginLarge;
 }
 
 .availability-card,
 .details-card {
   background: #fff;
   border-radius: $borderRadiusLarge;
-  padding: 1.5rem;
+  padding: $paddingMedium;
   box-shadow: $boxShadow;
+  border: 1px solid rgba($PrimaryColor, 0.05);
 }
 
 .slot-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: $marginSmall;
 }
 
 .slot-item {
@@ -524,52 +605,74 @@
   align-items: center;
   padding: 0.75rem 1rem;
   border-radius: $borderRadius;
-  background: rgba($PrimaryColor, 0.05);
-  border: 1px solid rgba($PrimaryColor, 0.1);
+  background: rgba($PrimaryColor, 0.02);
+  border: 1px solid rgba($PrimaryColor, 0.08);
+  transition: background $transitionFast;
+
+  &:hover {
+    background: rgba($PrimaryColor, 0.05);
+  }
 }
 
 .slot-day {
   font-weight: 700;
+  color: $PrimaryColor;
+  font-size: $smallerFontSize;
 }
 
 .slot-time {
   display: block;
   color: $PrimaryColorHover;
-  font-size: 0.85rem;
+  font-size: $tinierFontSize;
 }
 
 .slot-format {
   padding: 0.25rem 0.6rem;
   border-radius: 999px;
-  background: rgba($SecondaryColor, 0.15);
-  color: $SecondaryColorActive;
-  font-size: 0.75rem;
+  background: rgba($SecondaryColor, 0.1);
+  color: darken($SecondaryColor, 10%);
+  font-size: $tinierFontSize;
   font-weight: 600;
 }
 
 .details-card {
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
+  gap: $marginMedium;
 }
 
 .detail-block h3 {
   margin: 0 0 0.5rem;
+  font-size: $regularFontSize;
+  color: $PrimaryColor;
 }
 
 .detail-block ul {
   margin: 0;
-  padding-left: 1.1rem;
+  padding-left: 1.2rem;
   color: $PrimaryColorHover;
+  font-size: $smallerFontSize;
+  line-height: 1.6;
+
+  li + li {
+    margin-top: 0.4rem;
+  }
 }
 
+// Responsive
 @media (max-width: 1024px) {
   .hero-card {
     grid-template-columns: 1fr;
+    gap: $marginLarge;
   }
 
   .hero-actions {
     justify-content: flex-start;
+    width: 100%;
+    
+    button {
+      flex: 1;
+    }
   }
 
   .profile-section.split {
@@ -581,14 +684,34 @@
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 768px) {
   .teacher-main {
     flex-direction: column;
     align-items: flex-start;
+    gap: $marginMedium;
   }
 
   .avatar {
     width: 64px;
     height: 64px;
+    font-size: 1.2rem;
+  }
+
+  .hero-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .booking-card {
+    padding: $paddingMedium;
+  }
+  
+  // Hide detailed calendar on very small screens if necessary
+  // or allow horizontal scroll
+  .booking-calendar {
+    overflow-x: auto;
+  }
+  
+  .calendar-grid {
+    min-width: 500px; // Ensure it doesn't break layout
   }
 }

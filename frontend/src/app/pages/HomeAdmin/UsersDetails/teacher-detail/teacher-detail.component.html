@@ -33,22 +33,6 @@
     <section class="widgets-section">
       <div class="widgets-grid">
         
-        <div class="widget-card accent-orange">
-          <div class="widget-top">
-            <div class="icon-circle orange">
-              <app-small-icon icon="assets/icons/star.svg" [size]="32"></app-small-icon>
-            </div>
-            <h3>Réputation</h3>
-          </div>
-          <div class="widget-content">
-            <div class="main-info">
-              <span class="big-number">{{ teacherStats.rating }}</span>
-              <span class="sub-info">/ 5</span>
-            </div>
-            <p class="subtext">{{ teacherStats.reviewCount }} avis parents</p>
-          </div>
-        </div>
-
         <div class="widget-card accent-green">
           <div class="widget-top">
              <div class="icon-circle green">
@@ -131,6 +115,16 @@
         </div>
       </section>
 
+    </div>
+
+    
+    <app-teacher-reviews 
+      *ngIf="user.id" 
+      [teacherId]="user.id">
+    </app-teacher-reviews>
+
+    <div *ngIf="!user.id" class="loading-placeholder">
+        <p>Chargement des avis...</p>
     </div>
   </main>
 </div>

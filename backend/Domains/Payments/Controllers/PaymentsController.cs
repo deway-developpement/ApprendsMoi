@@ -22,12 +22,8 @@ public class PaymentsController : ControllerBase {
     [RequireRole(ProfileType.Admin, ProfileType.Teacher)]
     public async Task<ActionResult<BillingDto>> CreateBillingForCourse(Guid courseId) {
         try {
-            var userId = JwtHelper.GetUserIdFromClaims(User);
-            var userProfile = JwtHelper.GetUserProfileFromClaims(User);
-
-            if (userId == null || userProfile == null) {
-                return Unauthorized();
-            }
+            var userId = JwtHelper.GetUserIdFromClaims(User)!.Value;
+            var userProfile = JwtHelper.GetUserProfileFromClaims(User)!.Value;
 
             // If teacher, verify they are the teacher of this course
             if (userProfile == ProfileType.Teacher) {
@@ -53,12 +49,8 @@ public class PaymentsController : ControllerBase {
     public async Task<ActionResult<BillingDto>> GetBilling(Guid id) {
         try {
             var billing = await _paymentService.GetBillingByIdAsync(id);
-            var userId = JwtHelper.GetUserIdFromClaims(User);
-            var userProfile = JwtHelper.GetUserProfileFromClaims(User);
-
-            if (userId == null || userProfile == null) {
-                return Unauthorized();
-            }
+            var userId = JwtHelper.GetUserIdFromClaims(User)!.Value;
+            var userProfile = JwtHelper.GetUserProfileFromClaims(User)!.Value;
 
             // Check authorization - allow admins, parents of the course, and teachers of the course
             if (userProfile != ProfileType.Admin && 
@@ -79,12 +71,8 @@ public class PaymentsController : ControllerBase {
     public async Task<IActionResult> DownloadInvoicePdf(Guid id) {
         try {
             var billing = await _paymentService.GetBillingByIdAsync(id);
-            var userId = JwtHelper.GetUserIdFromClaims(User);
-            var userProfile = JwtHelper.GetUserProfileFromClaims(User);
-
-            if (userId == null || userProfile == null) {
-                return Unauthorized();
-            }
+            var userId = JwtHelper.GetUserIdFromClaims(User)!.Value;
+            var userProfile = JwtHelper.GetUserProfileFromClaims(User)!.Value;
 
             // Check authorization - allow admins, parents of the course, and teachers of the course
             if (userProfile != ProfileType.Admin && 
@@ -118,15 +106,11 @@ public class PaymentsController : ControllerBase {
     [HttpGet("user")]
     public async Task<ActionResult<IEnumerable<BillingDto>>> GetBillingsByUser([FromQuery] Guid? targetUserId = null) {
         try {
-            var userId = JwtHelper.GetUserIdFromClaims(User);
-            var userProfile = JwtHelper.GetUserProfileFromClaims(User);
-
-            if (userId == null || userProfile == null) {
-                return Unauthorized();
-            }
+            var userId = JwtHelper.GetUserIdFromClaims(User)!.Value;
+            var userProfile = JwtHelper.GetUserProfileFromClaims(User)!.Value;
 
             // Determine which user's billings to fetch
-            var queryUserId = targetUserId ?? userId.Value;
+            var queryUserId = targetUserId ?? userId;
 
             // Non-admins can only see their own billings
             if (userProfile != ProfileType.Admin && queryUserId != userId) {
@@ -161,12 +145,9 @@ public class PaymentsController : ControllerBase {
     [RequireRole(ProfileType.Parent)]
     public async Task<ActionResult<PaymentDto>> ProcessPayment([FromBody] CreatePaymentDto dto) {
         try {
-            var userId = JwtHelper.GetUserIdFromClaims(User);
-            if (userId == null) {
-                return Unauthorized();
-            }
+            var userId = JwtHelper.GetUserIdFromClaims(User)!.Value;
             
-            var payment = await _paymentService.ProcessPaymentAsync(dto, userId.Value);
+            var payment = await _paymentService.ProcessPaymentAsync(dto, userId);
             return Ok(payment);
         }
         catch (Exception ex) {
@@ -178,15 +159,11 @@ public class PaymentsController : ControllerBase {
     [RequireRole(ProfileType.Parent, ProfileType.Teacher, ProfileType.Admin)]
     public async Task<ActionResult<PaymentHistoryDto>> GetPaymentHistory([FromQuery] Guid? targetUserId = null) {
         try {
-            var userId = JwtHelper.GetUserIdFromClaims(User);
-            var userProfile = JwtHelper.GetUserProfileFromClaims(User);
-
-            if (userId == null || userProfile == null) {
-                return Unauthorized();
-            }
+            var userId = JwtHelper.GetUserIdFromClaims(User)!.Value;
+            var userProfile = JwtHelper.GetUserProfileFromClaims(User)!.Value;
 
             // Determine which user's history to fetch
-            var queryUserId = targetUserId ?? userId.Value;
+            var queryUserId = targetUserId ?? userId;
 
             // Non-admins can only see their own history
             if (userProfile != ProfileType.Admin && queryUserId != userId) {

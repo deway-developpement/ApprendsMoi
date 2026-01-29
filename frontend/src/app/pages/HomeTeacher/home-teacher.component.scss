@@ -192,3 +192,47 @@
     padding: 0.5rem 1rem;
   }
 }
+
+.see-more-btn {
+  // Reset default browser styles (works for both <a> and <button>)
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  
+  // Layout
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem; // Space between text and icon if you add one later
+  
+  // Typography
+  font-size: $biggerFontSize;
+  font-weight: 600; // Semi-bold to make it pop
+  color: $SecondaryColor; // The orange defined in your variables
+  text-decoration: none; // No underline by default
+  
+  // Transition for smooth hover
+  transition: color $transitionFast, transform $transitionFast;
+
+  &:hover {
+    color: $SecondaryColorHover; // Darker orange on hover
+    text-decoration: underline; // Visual cue that it is clickable
+    transform: translateX(4px); // Subtle movement to encourage click
+  }
+
+  &:active {
+    color: $SecondaryColorActive;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $PrimaryColor;
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
+
+.card-header-actions {
+  display: flex;
+  justify-content: flex-end; // Pousse tout le contenu vers la droite
+  width: 100%;
+}

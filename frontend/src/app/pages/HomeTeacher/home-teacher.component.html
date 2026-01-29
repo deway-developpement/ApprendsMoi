@@ -63,7 +63,7 @@
         <div class="widget-card accent-green">
           <div class="widget-top">
             <div class="icon-circle green">
-               <app-small-icon icon="/assets/icons/wallet.svg" [size]="30"></app-small-icon>
+               <app-small-icon icon="/assets/icons/account-balance.svg" [size]="30"></app-small-icon>
             </div>
             <h3>Revenus (Oct.)</h3>
           </div>
@@ -81,7 +81,22 @@
       </div>
     </section>
 
+    <div class="card-header-actions">
+      <a class="see-more-btn" routerLink="/teacher/planning">
+        Mettre à jour mes disponibilités 
+      </a>
+    </div>
+
     <app-courses-schedule [courses]="courses"></app-courses-schedule>
+
+    <app-teacher-reviews 
+      *ngIf="currentUserId" 
+      [teacherId]="currentUserId">
+    </app-teacher-reviews>
+
+    <div *ngIf="!currentUserId" class="loading-placeholder">
+        <p>Chargement des avis...</p>
+    </div>
 
   </main>
 </div>
