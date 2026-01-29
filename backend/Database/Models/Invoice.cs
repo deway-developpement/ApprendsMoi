@@ -6,7 +6,9 @@ public class Invoice {
     public Course Course { get; set; } = null!;
     public Guid ParentId { get; set; }
     public Parent Parent { get; set; } = null!;
-    public decimal Amount { get; set; }
+    public decimal Amount { get; set; } // TTC
+    public decimal AmountHT { get; set; } // HT
+    public decimal VatAmount { get; set; } // TVA
     public decimal Commission { get; set; }
     public decimal TeacherEarning { get; set; }
     public InvoiceStatus Status { get; set; } = InvoiceStatus.PENDING;

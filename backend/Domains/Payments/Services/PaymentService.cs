@@ -48,10 +48,17 @@ public class PaymentService : IPaymentService {
         var teacherEarning = course.PriceSnapshot - course.CommissionSnapshot;
         var invoiceNumber = $"INV-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
 
+        // Calculate VAT (20%)
+        var amountTTC = course.PriceSnapshot;
+        var amountHT = amountTTC / 1.20m;
+        var vatAmount = amountTTC - amountHT;
+
         var invoice = new Invoice {
             CourseId = courseId,
             ParentId = course.Student.ParentId,
-            Amount = course.PriceSnapshot,
+            Amount = amountTTC,
+            AmountHT = amountHT,
+            VatAmount = vatAmount,
             Commission = course.CommissionSnapshot,
             TeacherEarning = teacherEarning,
             InvoiceNumber = invoiceNumber,
@@ -201,6 +208,8 @@ public class PaymentService : IPaymentService {
             ParentId = invoice.ParentId,
             ParentName = $"{invoice.Parent.User.FirstName} {invoice.Parent.User.LastName}",
             Amount = invoice.Amount,
+            AmountHT = invoice.AmountHT,
+            VatAmount = invoice.VatAmount,
             Commission = invoice.Commission,
             TeacherEarning = invoice.TeacherEarning,
             Status = invoice.Status.ToString(),

@@ -34,8 +34,17 @@ public class InvoicePdfService : IInvoicePdfService {
     
     // Conditions de paiement
     private const string PaymentTerms = "Paiement à réception";
+    private const decimal VatRate = 0.20m; // TVA 20%
     private const decimal LatePenaltyRate = 9.0m;
     private const decimal RecoveryFee = 40.0m;
+    
+    // Traductions des statuts
+    private static string GetStatusText(InvoiceStatus status) => status switch {
+        InvoiceStatus.PAID => "PAYÉE",
+        InvoiceStatus.PENDING => "EN ATTENTE",
+        InvoiceStatus.CANCELLED => "ANNULÉE",
+        _ => status.ToString()
+    };
     
     public InvoicePdfService() {
         // QuestPDF Community License - for development/testing
@@ -119,7 +128,7 @@ public class InvoicePdfService : IInvoicePdfService {
                     if (invoice.PaidAt.HasValue) {
                         col.Item().Text($"Date de paiement : {invoice.PaidAt.Value:dd/MM/yyyy}")
                             .FontSize(10)
-                            .FontColor("#4EE381");
+                            .FontColor(ColorSuccess);
                     }
                 });
 
@@ -133,7 +142,7 @@ public class InvoicePdfService : IInvoicePdfService {
 
                     col.Item().Background(statusColor)
                         .Padding(8)
-                        .Text(invoice.Status.ToString())
+                        .Text(GetStatusText(invoice.Status))
                         .FontSize(11)
                         .Bold()
                         .FontColor(Colors.White);
@@ -200,12 +209,12 @@ public class InvoicePdfService : IInvoicePdfService {
                 table.Cell().Border(1).BorderColor(ColorLightGray).Padding(8)
                     .AlignRight()
                     .AlignMiddle()
-                    .Text($"{invoice.Amount:F2} €");
+                    .Text($"{invoice.AmountHT:F2} €");
                 
                 table.Cell().Border(1).BorderColor(ColorLightGray).Padding(8)
                     .AlignRight()
                     .AlignMiddle()
-                    .Text($"{invoice.Amount:F2} €")
+                    .Text($"{invoice.AmountHT:F2} €")
                     .Bold();
             });
 
@@ -213,16 +222,16 @@ public class InvoicePdfService : IInvoicePdfService {
                 col.Item().Row(row => {
                     row.AutoItem().Width(150).Text("Sous-total HT :")
                         .FontSize(10);
-                    row.AutoItem().Width(100).AlignRight().Text($"{invoice.Amount:F2} €")
+                    row.AutoItem().Width(100).AlignRight().Text($"{invoice.AmountHT:F2} €")
                         .FontSize(10);
                 });
 
                 col.Item().PaddingTop(5).Row(row => {
-                    row.AutoItem().Width(150).Text("TVA non applicable :")
-                        .FontSize(9)
+                    row.AutoItem().Width(150).Text($"TVA ({VatRate * 100:F0}%) :")
+                        .FontSize(10)
                         .FontColor(ColorGray);
-                    row.AutoItem().Width(100).AlignRight().Text("Art. 293 B du CGI")
-                        .FontSize(8)
+                    row.AutoItem().Width(100).AlignRight().Text($"{invoice.VatAmount:F2} €")
+                        .FontSize(10)
                         .FontColor(ColorGray);
                 });
 
@@ -303,7 +312,7 @@ public class InvoicePdfService : IInvoicePdfService {
                     .FontSize(8)
                     .FontColor(ColorGray);
             });
-            column.Item().Text($"N° TVA Intracommunautaire : {CompanyTvaNumber} - TVA non applicable, art. 293 B du CGI")
+            column.Item().Text($"N° TVA Intracommunautaire : {CompanyTvaNumber}")
                 .FontSize(7)
                 .FontColor(ColorGray);
             column.Item().PaddingTop(3).Text($"{CompanyWebsite} • {CompanyEmail} • {CompanyPhone}")
