@@ -9,6 +9,9 @@ public class DocumentService(AppDbContext db, IWebHostEnvironment environment) {
     private readonly IWebHostEnvironment _environment = environment;
     private const long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
     private const int MAX_DIPLOMAS = 5;
+    
+    // PDF magic bytes (first 4 bytes of a PDF file)
+    private static readonly byte[] PDF_MAGIC_BYTES = { 0x25, 0x50, 0x44, 0x46 }; // %PDF
 
     public async Task<(bool Success, string Message, Guid? DocumentId)> UploadDocumentAsync(
         Guid teacherId, 
@@ -16,14 +19,21 @@ public class DocumentService(AppDbContext db, IWebHostEnvironment environment) {
         IFormFile file, 
         CancellationToken ct = default) {
         
-        // Validate file type
+        // Validate file type by Content-Type header
         if (!file.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase)) {
             return (false, "Only PDF files are allowed", null);
         }
 
-        // Validate file size
+        // Validate file size (before reading entire file into memory)
         if (file.Length > MAX_FILE_SIZE) {
             return (false, $"File size cannot exceed {MAX_FILE_SIZE / 1024 / 1024}MB", null);
+        }
+
+        // Validate actual file content by checking PDF magic bytes
+        // This prevents spoofed files with wrong extensions or Content-Type
+        var isPdfValid = await ValidatePdfMagicBytesAsync(file, ct);
+        if (!isPdfValid) {
+            return (false, "File is not a valid PDF. Ensure the file content matches the PDF format.", null);
         }
 
         // Check if teacher exists
@@ -263,5 +273,32 @@ public class DocumentService(AppDbContext db, IWebHostEnvironment environment) {
             ReviewedAt = document.ReviewedAt,
             ReviewedBy = document.ReviewedBy
         };
+    }
+
+    /// <summary>
+    /// Validates that the uploaded file is a genuine PDF by checking for PDF magic bytes.
+    /// PDF files always start with the bytes: %PDF (0x25 0x50 0x44 0x46)
+    /// This prevents spoofed files with incorrect extensions or Content-Type headers.
+    /// </summary>
+    private static async Task<bool> ValidatePdfMagicBytesAsync(IFormFile file, CancellationToken ct = default) {
+        // Read only the first 4 bytes to check PDF magic bytes
+        byte[] buffer = new byte[4];
+        
+        try {
+            using (var stream = file.OpenReadStream()) {
+                int bytesRead = await stream.ReadAsync(buffer, 0, 4, ct);
+                
+                // If less than 4 bytes were read, file is too small to be a valid PDF
+                if (bytesRead < 4) {
+                    return false;
+                }
+                
+                // Check if first 4 bytes match PDF magic bytes (%PDF)
+                return buffer.SequenceEqual(PDF_MAGIC_BYTES);
+            }
+        } catch {
+            // If any error occurs while reading, consider it invalid
+            return false;
+        }
     }
 }

@@ -70,7 +70,8 @@ public class ParentOrAdminAttribute : RequireRoleAttribute
 }
 
 /// <summary>
-/// Requires the user to be a verified teacher (VerificationStatus.APPROVED)
+/// Requires the user to be a verified teacher (VerificationStatus.VERIFIED or DIPLOMA_VERIFIED)
+/// Accepts teachers who have completed identity verification OR diploma verification
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false)]
 public class VerifiedTeacherOnlyAttribute : Attribute, IAsyncAuthorizationFilter
@@ -109,7 +110,8 @@ public class VerifiedTeacherOnlyAttribute : Attribute, IAsyncAuthorizationFilter
             return;
         }
 
-        if (teacher.VerificationStatus != VerificationStatus.VERIFIED)
+        if (teacher.VerificationStatus != VerificationStatus.VERIFIED && 
+            teacher.VerificationStatus != VerificationStatus.DIPLOMA_VERIFIED)
         {
             context.Result = new ObjectResult(new 
             { 

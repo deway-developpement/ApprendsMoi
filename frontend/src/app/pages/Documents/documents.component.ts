@@ -1,7 +1,8 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { HeaderComponent } from '../../components/Header/header.component';
 import { environment } from '../../environments/environment';
 import { AuthService } from '../../services/auth.service';
@@ -49,16 +50,16 @@ interface PendingDocument {
 @Component({
   selector: 'app-documents',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, HeaderComponent],
+  imports: [CommonModule, HeaderComponent],
   templateUrl: './documents.component.html',
   styleUrls: ['./documents.component.scss']
 })
-export class DocumentsComponent implements OnInit {
+export class DocumentsComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
-  private fb = inject(FormBuilder);
   private location = inject(Location);
+  private destroy$ = new Subject<void>();
 
   myDocuments: TeacherDocumentDto[] = [];
   pendingDocuments: PendingDocument[] = [];
@@ -68,42 +69,34 @@ export class DocumentsComponent implements OnInit {
   loadingDocuments = false;
   loadingPending = false;
 
-  uploadForm!: FormGroup;
   selectedIdPaper: File | null = null;
   selectedDiplomas: File[] = [];
-  validateForm!: FormGroup;
 
   DocumentType = DocumentType;
   DocumentStatus = DocumentStatus;
 
   ngOnInit(): void {
     this.checkUserRole();
-    this.initializeForms();
     this.loadMyDocuments();
     if (this.isAdmin) {
       this.loadPendingDocuments();
     }
   }
 
-  initializeForms(): void {
-    this.uploadForm = this.fb.group({
-      files: [null, Validators.required]
-    });
-
-    this.validateForm = this.fb.group({
-      documentId: ['', Validators.required],
-      approve: [false, Validators.required],
-      rejectionReason: ['']
-    });
+  checkUserRole(): void {
+    this.authService.currentUser$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => {
+        if (user) {
+          this.isTeacher = user.profileType === 1; // ProfileType.Teacher
+          this.isAdmin = user.profileType === 0; // ProfileType.Admin
+        }
+      });
   }
 
-  checkUserRole(): void {
-    this.authService.currentUser$.subscribe(user => {
-      if (user) {
-        this.isTeacher = user.profileType === 1; // ProfileType.Teacher
-        this.isAdmin = user.profileType === 0; // ProfileType.Admin
-      }
-    });
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   onFileSelected(event: Event, documentType: DocumentType): void {
@@ -281,10 +274,6 @@ export class DocumentsComponent implements OnInit {
   }
 
   getDocumentTypeLabel(documentType: any): string {
-    if (typeof documentType === 'string') {
-      return documentType === 'ID_PAPER' ? 'Pièce d\'identité' : 'Diplôme';
-    }
-    // Handle numeric enum values
     if (documentType === 0 || documentType === DocumentType.ID_PAPER) {
       return 'Pièce d\'identité';
     }
@@ -295,25 +284,14 @@ export class DocumentsComponent implements OnInit {
   }
 
   getDocumentStatusClass(status: any): string {
-    // Handle numeric values
-    if (status === 0 || status === DocumentStatus.PENDING) {
-      return 'status-pending';
-    }
-    if (status === 1 || status === DocumentStatus.APPROVED) {
-      return 'status-approved';
-    }
-    if (status === 2 || status === DocumentStatus.REJECTED) {
-      return 'status-rejected';
-    }
-    // Handle string values
     switch (status) {
-      case 'PENDING':
+      case 0:
       case DocumentStatus.PENDING:
         return 'status-pending';
-      case 'APPROVED':
+      case 1:
       case DocumentStatus.APPROVED:
         return 'status-approved';
-      case 'REJECTED':
+      case 2:
       case DocumentStatus.REJECTED:
         return 'status-rejected';
       default:
@@ -322,10 +300,7 @@ export class DocumentsComponent implements OnInit {
   }
 
   getDocumentStatusLabel(status: any): string {
-    // Convert to number if string
-    const numStatus = typeof status === 'string' ? parseInt(status, 10) : status;
-    
-    switch (numStatus) {
+    switch (status) {
       case 0:
       case DocumentStatus.PENDING:
         return 'En attente';

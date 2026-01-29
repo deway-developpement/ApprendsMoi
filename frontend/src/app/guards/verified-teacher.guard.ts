@@ -27,10 +27,7 @@ export const verifiedTeacherGuard: CanActivateFn = (route, state) => {
 
       // For all other pages, teacher must be verified
       // Accept both VERIFIED (1) and DIPLOMA_VERIFIED (3)
-      const isVerified = user.verificationStatus === 'VERIFIED' || 
-                         user.verificationStatus === 'DIPLOMA_VERIFIED' ||
-                         user.verificationStatus === 1 || 
-                         user.verificationStatus === 3;
+      const isVerified = user.verificationStatus === 1 || user.verificationStatus === 3;
       
       if (!isVerified) {
         router.navigate(['/documents'], {

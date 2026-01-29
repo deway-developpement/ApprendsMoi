@@ -69,7 +69,7 @@ export interface UserDto {
   createdAt: string;
   lastLoginAt?: string;
   // Teacher-specific fields
-  verificationStatus?: 'PENDING' | 'VERIFIED' | 'REJECTED' | 'DIPLOMA_VERIFIED' | 0 | 1 | 2 | 3;
+  verificationStatus?: 0 | 1 | 2 | 3; // 0=PENDING, 1=VERIFIED, 2=REJECTED, 3=DIPLOMA_VERIFIED
   bio?: string;
   phoneNumber?: string;
   isPremium?: boolean;
