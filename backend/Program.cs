@@ -9,6 +9,7 @@ using backend.Domains.Payments.Services;
 using backend.Domains.Ratings.Services;
 using backend.Domains.Documents;
 using backend.Domains.Stats.Services;
+using backend.Domains.Subjects.Services;
 using backend.Helpers;
 using FluentMigrator.Runner;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -106,6 +107,9 @@ builder.Services.AddScoped<ChatAttachmentService>();
 
 // Course services
 builder.Services.AddScoped<ICourseService, CourseService>();
+
+// Subject services
+builder.Services.AddScoped<ISubjectService, SubjectService>();
 
 // Payment services
 builder.Services.AddScoped<IPaymentService, PaymentService>();
