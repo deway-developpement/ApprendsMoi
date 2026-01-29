@@ -1,0 +1,163 @@
+<div class="documents-container">
+  <app-header></app-header>
+
+  <div class="content-wrapper">
+    <div class="page-header">
+      <h1>Document Management</h1>
+      <p>Upload and manage your verification documents</p>
+    </div>
+
+    <!-- Teacher Upload Section -->
+    <div *ngIf="isTeacher" class="section upload-section">
+      <h2>Upload Documents</h2>
+      <p class="section-description">
+        Upload your ID paper (required) and diplomas (optional, up to 5)
+      </p>
+
+      <div class="upload-form">
+        <div class="file-upload-group">
+          <label for="file-ID_PAPER" class="file-label">
+            <span class="file-type">ID Paper (Required)</span>
+            <span class="file-info">PDF only, max 10MB</span>
+          </label>
+          <input
+            type="file"
+            id="file-ID_PAPER"
+            accept=".pdf"
+            (change)="onFileSelected($event, DocumentType.ID_PAPER)"
+            class="file-input"
+          />
+          <div class="file-name" *ngIf="selectedIdPaper">
+            Selected: {{ selectedIdPaper.name }}
+          </div>
+        </div>
+
+        <div class="file-upload-group">
+          <label for="file-DIPLOMA" class="file-label">
+            <span class="file-type">Diploma (Optional)</span>
+            <span class="file-info">PDF only, max 10MB, up to 5 files</span>
+          </label>
+          <input
+            type="file"
+            id="file-DIPLOMA"
+            accept=".pdf"
+            (change)="onFileSelected($event, DocumentType.DIPLOMA)"
+            class="file-input"
+            multiple
+          />
+          <div class="file-name" *ngIf="selectedDiplomas.length > 0">
+            Selected: {{ selectedDiplomas.length }} diploma(s)
+          </div>
+        </div>
+
+        <button
+          (click)="uploadDocuments()"
+          [disabled]="uploading || (selectedIdPaper === null && selectedDiplomas.length === 0)"
+          class="btn btn-primary"
+        >
+          {{ uploading ? 'Uploading...' : 'Upload Documents' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- My Documents Section -->
+    <div *ngIf="isTeacher" class="section documents-section">
+      <h2>My Documents</h2>
+
+      <div *ngIf="loadingDocuments" class="loading">
+        Loading documents...
+      </div>
+
+      <div *ngIf="!loadingDocuments && myDocuments.length === 0" class="empty-state">
+        <p>No documents uploaded yet</p>
+      </div>
+
+      <div *ngIf="!loadingDocuments && myDocuments.length > 0" class="documents-list">
+        <div *ngFor="let doc of myDocuments" class="document-card">
+          <div class="document-info">
+            <div class="document-header">
+              <h3>{{ doc.documentType === 'ID_PAPER' ? 'ID Paper' : 'Diploma' }}</h3>
+              <span [ngClass]="getDocumentStatusClass(doc.status)" class="status-badge">
+                {{ doc.status }}
+              </span>
+            </div>
+            <p class="file-name">{{ doc.fileName }}</p>
+            <p class="uploaded-date">Uploaded: {{ doc.uploadedAt | date: 'short' }}</p>
+            <div *ngIf="doc.status === 'REJECTED'" class="rejection-reason">
+              <strong>Rejection Reason:</strong> {{ doc.rejectionReason }}
+            </div>
+          </div>
+
+          <div class="document-actions">
+            <button
+              (click)="downloadDocument(doc.id, doc.fileName)"
+              class="btn btn-secondary btn-small"
+            >
+              Download
+            </button>
+            <button
+              (click)="deleteDocument(doc.id)"
+              class="btn btn-danger btn-small"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Pending Documents Section -->
+    <div *ngIf="isAdmin" class="section pending-section">
+      <h2>Pending Document Reviews</h2>
+
+      <div *ngIf="loadingPending" class="loading">
+        Loading pending documents...
+      </div>
+
+      <div *ngIf="!loadingPending && pendingDocuments.length === 0" class="empty-state">
+        <p>No pending documents</p>
+      </div>
+
+      <div *ngIf="!loadingPending && pendingDocuments.length > 0" class="pending-list">
+        <div *ngFor="let doc of pendingDocuments" class="pending-card">
+          <div class="pending-info">
+            <h3>{{ doc.documentType === 'ID_PAPER' ? 'ID Paper' : 'Diploma' }}</h3>
+            <p class="file-name">{{ doc.fileName }}</p>
+            <p class="uploaded-date">Uploaded: {{ doc.uploadedAt | date: 'short' }}</p>
+            <p class="teacher-id">Teacher ID: {{ doc.teacherId }}</p>
+          </div>
+
+          <div class="pending-actions">
+            <button
+              (click)="downloadDocument(doc.id, doc.fileName)"
+              class="btn btn-secondary btn-small"
+            >
+              View
+            </button>
+            <button
+              (click)="validateDocuments([doc.id], true)"
+              class="btn btn-success btn-small"
+            >
+              Approve
+            </button>
+            <button
+              (click)="validateDocuments([doc.id], false)"
+              class="btn btn-danger btn-small"
+            >
+              Reject
+            </button>
+          </div>
+        </div>
+
+        <div class="batch-actions" *ngIf="pendingDocuments.length > 1">
+          <button
+            (click)="validateDocuments(getPendingDocumentIds(), true)"
+            class="btn btn-success"
+          >
+            Approve All
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

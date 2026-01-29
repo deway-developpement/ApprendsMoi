@@ -11,6 +11,7 @@ import { PlanningManagementTeacherComponent } from './pages/PlanningManagementTe
 import { SearchForTeachersComponent } from './pages/SearchForTeachers/search-for-teachers.component';
 import { TeacherProfileComponent } from './pages/TeacherProfile/teacher-profile.component';
 import { HomeComponent } from './pages/Home/home.component';
+import { DocumentsComponent } from './pages/Documents/documents.component';
 
 export const routes: Routes = [
   { path: '', component: HomeRouterComponent },
@@ -29,6 +30,7 @@ export const routes: Routes = [
   { path: 'search', component: SearchForTeachersComponent },
   { path: 'teachers/:id', component: TeacherProfileComponent },
   { path: 'home', component: HomeComponent },
+  { path: 'documents', component: DocumentsComponent },
   { path: '**', redirectTo: '' }
 ];
 

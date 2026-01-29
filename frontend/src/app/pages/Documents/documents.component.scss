@@ -1,0 +1,299 @@
+.documents-container {
+  min-height: 100vh;
+  background: #f8f9fa;
+}
+
+.content-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.page-header {
+  margin-bottom: 3rem;
+  text-align: center;
+
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    font-size: 1.1rem;
+    color: #666;
+  }
+}
+
+.section {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  h2 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 0.5rem;
+  }
+
+  .section-description {
+    color: #666;
+    margin-bottom: 1.5rem;
+  }
+}
+
+.upload-section {
+  .upload-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .file-upload-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .file-label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      cursor: pointer;
+      padding: 1rem;
+      background: #f0f4ff;
+      border: 2px dashed #5e72e4;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: #e8ecff;
+        border-color: #4c63d2;
+      }
+
+      .file-type {
+        font-weight: 600;
+        color: #1a1a1a;
+      }
+
+      .file-info {
+        font-size: 0.875rem;
+        color: #666;
+      }
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .file-name {
+      font-size: 0.875rem;
+      color: #28a745;
+      padding: 0.5rem 1rem;
+      background: #f0fff4;
+      border-radius: 6px;
+    }
+  }
+
+  .btn {
+    align-self: flex-start;
+  }
+}
+
+.documents-section,
+.pending-section {
+  .loading {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    color: #999;
+  }
+
+  .documents-list,
+  .pending-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+.document-card,
+.pending-card {
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: #5e72e4;
+  }
+
+  .document-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      color: #1a1a1a;
+    }
+  }
+
+  .status-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+
+    &.status-approved {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    &.status-rejected {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    &.status-pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+  }
+
+  .file-name {
+    font-size: 0.95rem;
+    color: #495057;
+    margin: 0.5rem 0;
+    word-break: break-word;
+  }
+
+  .uploaded-date,
+  .teacher-id {
+    font-size: 0.85rem;
+    color: #999;
+    margin: 0.5rem 0;
+  }
+
+  .rejection-reason {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: #fff3cd;
+    border-left: 3px solid #ffc107;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: #856404;
+
+    strong {
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+  }
+
+  .document-actions,
+  .pending-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+}
+
+.batch-actions {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e9ecef;
+
+  .btn {
+    width: 100%;
+  }
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &.btn-primary {
+    background: #5e72e4;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background: #4c63d2;
+    }
+  }
+
+  &.btn-secondary {
+    background: #6c757d;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background: #5a6268;
+    }
+  }
+
+  &.btn-success {
+    background: #28a745;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background: #218838;
+    }
+  }
+
+  &.btn-danger {
+    background: #dc3545;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background: #c82333;
+    }
+  }
+
+  &.btn-small {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    flex: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .content-wrapper {
+    padding: 1rem;
+  }
+
+  .page-header h1 {
+    font-size: 1.75rem;
+  }
+
+  .section {
+    padding: 1.5rem;
+  }
+
+  .documents-list,
+  .pending-list {
+    grid-template-columns: 1fr !important;
+  }
+}

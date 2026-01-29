@@ -54,6 +54,11 @@ public class AdminOnlyAttribute : RequireRoleAttribute
     public AdminOnlyAttribute() : base(ProfileType.Admin) { }
 }
 
+public class TeacherOnlyAttribute : RequireRoleAttribute
+{
+    public TeacherOnlyAttribute() : base(ProfileType.Teacher) { }
+}
+
 public class TeacherOrAdminAttribute : RequireRoleAttribute
 {
     public TeacherOrAdminAttribute() : base(ProfileType.Teacher, ProfileType.Admin) { }
