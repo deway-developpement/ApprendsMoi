@@ -6,7 +6,9 @@ public class BillingDto {
     public string CourseName { get; set; } = string.Empty;
     public Guid ParentId { get; set; }
     public string ParentName { get; set; } = string.Empty;
-    public decimal Amount { get; set; }
+    public decimal Amount { get; set; } // TTC
+    public decimal AmountHT { get; set; } // Hors Taxes
+    public decimal VatAmount { get; set; } // Montant TVA
     public decimal Commission { get; set; }
     public decimal TeacherEarning { get; set; }
     public string Status { get; set; } = string.Empty;
