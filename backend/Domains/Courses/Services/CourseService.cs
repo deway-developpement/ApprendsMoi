@@ -17,7 +17,6 @@ public interface ICourseService {
     Task<CourseStatsDto> GetStudentStatsAsync(Guid studentId);
     Task<CourseStatsDto> GetTeacherStatsAsync(Guid teacherId);
     Task<TeacherEarningsDto> GetTeacherEarningsAsync(Guid teacherId);
-    Task<Student?> GetStudentWithParentAsync(Guid studentId);
 }
 
 public class CourseService : ICourseService {
@@ -247,12 +246,6 @@ public class CourseService : ICourseService {
             PendingEarnings = pendingEarnings,
             TotalCourses = invoices.Count
         };
-    }
-
-    public async Task<Student?> GetStudentWithParentAsync(Guid studentId) {
-        return await _context.Students
-            .Include(s => s.Parent)
-            .FirstOrDefaultAsync(s => s.UserId == studentId);
     }
 
     private CourseDto MapToDto(Course course) {

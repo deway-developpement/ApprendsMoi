@@ -31,6 +31,7 @@ public class PaymentsController : ControllerBase {
     }
 
     [HttpGet("{id}")]
+    [RequireRole(ProfileType.Admin, ProfileType.Parent, ProfileType.Teacher)]
     public async Task<ActionResult<BillingDto>> GetBilling(Guid id) {
         try {
             var billing = await _paymentService.GetBillingByIdAsync(id);
@@ -54,6 +55,7 @@ public class PaymentsController : ControllerBase {
     }
 
     [HttpGet("invoice/{id}/pdf")]
+    [RequireRole(ProfileType.Admin, ProfileType.Parent, ProfileType.Teacher)]
     public async Task<IActionResult> DownloadInvoicePdf(Guid id) {
         try {
             var billing = await _paymentService.GetBillingByIdAsync(id);
@@ -91,8 +93,8 @@ public class PaymentsController : ControllerBase {
         }
     }
 
-    [HttpGet("user/{targetUserId?}")]
-    public async Task<ActionResult<IEnumerable<BillingDto>>> GetBillingsByUser(Guid? targetUserId = null) {
+    [HttpGet("user")]
+    public async Task<ActionResult<IEnumerable<BillingDto>>> GetBillingsByUser([FromQuery] Guid? targetUserId = null) {
         try {
             var userId = JwtHelper.GetUserIdFromClaims(User);
             var userProfile = JwtHelper.GetUserProfileFromClaims(User);
@@ -150,8 +152,9 @@ public class PaymentsController : ControllerBase {
         }
     }
 
-    [HttpGet("history/parent/{parentId}")]
-    public async Task<ActionResult<PaymentHistoryDto>> GetParentPaymentHistory(Guid parentId) {
+    [HttpGet("history")]
+    [RequireRole(ProfileType.Parent, ProfileType.Teacher, ProfileType.Admin)]
+    public async Task<ActionResult<PaymentHistoryDto>> GetPaymentHistory([FromQuery] Guid? targetUserId = null) {
         try {
             var userId = JwtHelper.GetUserIdFromClaims(User);
             var userProfile = JwtHelper.GetUserProfileFromClaims(User);
@@ -160,36 +163,32 @@ public class PaymentsController : ControllerBase {
                 return Unauthorized();
             }
 
-            // Parents can only see their own, admins can see all
-            if (userProfile != ProfileType.Admin && parentId != userId) {
+            // Determine which user's history to fetch
+            var queryUserId = targetUserId ?? userId.Value;
+
+            // Non-admins can only see their own history
+            if (userProfile != ProfileType.Admin && queryUserId != userId) {
                 return Forbid();
             }
 
-            var history = await _paymentService.GetParentPaymentHistoryAsync(parentId);
-            return Ok(history);
-        }
-        catch (Exception ex) {
-            return BadRequest(new { message = ex.Message });
-        }
-    }
-
-    [HttpGet("history/teacher/{teacherId}")]
-    public async Task<ActionResult<PaymentHistoryDto>> GetTeacherPaymentHistory(Guid teacherId) {
-        try {
-            var userId = JwtHelper.GetUserIdFromClaims(User);
-            var userProfile = JwtHelper.GetUserProfileFromClaims(User);
-
-            if (userId == null || userProfile == null) {
-                return Unauthorized();
+            // If querying own history, use their profile type
+            if (queryUserId == userId) {
+                return userProfile switch {
+                    ProfileType.Parent => Ok(await _paymentService.GetParentPaymentHistoryAsync(queryUserId)),
+                    ProfileType.Teacher => Ok(await _paymentService.GetTeacherPaymentHistoryAsync(queryUserId)),
+                    ProfileType.Admin => BadRequest(new { message = "Admins must specify a user ID" }),
+                    _ => BadRequest(new { message = "Invalid user profile type" })
+                };
             }
 
-            // Teachers can only see their own, admins can see all
-            if (userProfile != ProfileType.Admin && teacherId != userId) {
-                return Forbid();
+            // Admin querying another user - try both parent and teacher
+            var parentHistory = await _paymentService.GetParentPaymentHistoryAsync(queryUserId);
+            if (parentHistory.Billings.Any() || parentHistory.Payments.Any()) {
+                return Ok(parentHistory);
             }
 
-            var history = await _paymentService.GetTeacherPaymentHistoryAsync(teacherId);
-            return Ok(history);
+            var teacherHistory = await _paymentService.GetTeacherPaymentHistoryAsync(queryUserId);
+            return Ok(teacherHistory);
         }
         catch (Exception ex) {
             return BadRequest(new { message = ex.Message });

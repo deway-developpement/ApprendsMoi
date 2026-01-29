@@ -1,5 +1,6 @@
 using backend.Domains.Courses;
 using backend.Domains.Courses.Services;
+using backend.Domains.Users;
 using backend.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,9 +14,11 @@ namespace backend.Domains.Courses.Controllers;
 [Authorize]
 public class CoursesController : ControllerBase {
     private readonly ICourseService _courseService;
+    private readonly UserManagementService _userService;
 
-    public CoursesController(ICourseService courseService) {
+    public CoursesController(ICourseService courseService, UserManagementService userService) {
         _courseService = courseService;
+        _userService = userService;
     }
 
     [HttpPost]
@@ -42,16 +45,22 @@ public class CoursesController : ControllerBase {
     public async Task<ActionResult<CourseDto>> GetCourse(Guid id) {
         try {
             var course = await _courseService.GetCourseByIdAsync(id);
-            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-            var userProfile = User.FindFirst("profile")?.Value;
+            var userId = JwtHelper.GetUserIdFromClaims(User);
+            var userProfile = JwtHelper.GetUserProfileFromClaims(User);
+
+            if (userId == null || userProfile == null) {
+                return Unauthorized();
+            }
 
             // Check authorization
-            if (userProfile != ProfileType.Admin.ToString() && 
+            if (userProfile != ProfileType.Admin && 
                 course.TeacherId != userId && 
                 course.StudentId != userId) {
                 // Check if user is parent of student
-                var student = await _courseService.GetCourseByIdAsync(course.StudentId);
-                return Forbid();
+                var student = await _userService.GetStudentWithParentAsync(course.StudentId);
+                if (student == null || userProfile != ProfileType.Parent || student.ParentId != userId) {
+                    return Forbid();
+                }
             }
 
             return Ok(course);
@@ -105,7 +114,7 @@ public class CoursesController : ControllerBase {
             // Students can see their own, parents can see their children's, admins can see all
             if (userProfile != ProfileType.Admin && studentId != userId) {
                 // Check if user is parent of this student
-                var student = await _courseService.GetStudentWithParentAsync(studentId);
+                var student = await _userService.GetStudentWithParentAsync(studentId);
                 if (student == null) {
                     return NotFound(new { message = "Student not found" });
                 }
@@ -178,7 +187,7 @@ public class CoursesController : ControllerBase {
             // Students can see their own, parents can see their children's, admins can see all
             if (userProfile != ProfileType.Admin && studentId != userId) {
                 // Check if user is parent of this student
-                var student = await _courseService.GetStudentWithParentAsync(studentId);
+                var student = await _userService.GetStudentWithParentAsync(studentId);
                 if (student == null) {
                     return NotFound(new { message = "Student not found" });
                 }

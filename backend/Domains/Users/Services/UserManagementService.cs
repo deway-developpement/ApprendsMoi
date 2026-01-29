@@ -171,4 +171,10 @@ public class UserManagementService(AppDbContext db) {
         await _db.SaveChangesAsync(ct);
         return true;
     }
+
+    public async Task<Student?> GetStudentWithParentAsync(Guid studentId, CancellationToken ct = default) {
+        return await _db.Students
+            .Include(s => s.Parent)
+            .FirstOrDefaultAsync(s => s.UserId == studentId, ct);
+    }
 }

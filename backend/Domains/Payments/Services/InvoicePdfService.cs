@@ -10,6 +10,33 @@ public interface IInvoicePdfService {
 }
 
 public class InvoicePdfService : IInvoicePdfService {
+    // Informations légales de l'entreprise
+    private const string CompanyName = "ApprendsMoi";
+    private const string CompanyTagline = "Plateforme de cours particuliers";
+    private const string CompanyAddress1 = "30-32 Avenue de la République";
+    private const string CompanyAddress2 = "94800 Villejuif, France";
+    private const string CompanyEmail = "dev.apprendsmoi@gmail.com";
+    private const string CompanyPhone = "+33 1 23 45 67 89";
+    private const string CompanyWebsite = "www.apprendsmoi.fr";
+    
+    private const string CompanySiret = "123 456 789 00012";
+    private const string CompanyRcs = "RCS Créteil 123 456 789";
+    private const string CompanyTvaNumber = "FR12 345 678 901";
+    
+    // Couleurs du thème
+    private const string ColorPrimary = "#1a365d";
+    private const string ColorSecondary = "#f97316";
+    private const string ColorSuccess = "#4EE381";
+    private const string ColorDanger = "#ef4444";
+    private const string ColorGray = "#6b7280";
+    private const string ColorLightGray = "#e5e7eb";
+    private const string ColorLightBlue = "#f0f9ff";
+    
+    // Conditions de paiement
+    private const string PaymentTerms = "Paiement à réception";
+    private const decimal LatePenaltyRate = 9.0m;
+    private const decimal RecoveryFee = 40.0m;
+    
     public InvoicePdfService() {
         // QuestPDF Community License - for development/testing
         QuestPDF.Settings.License = LicenseType.Community;
@@ -37,34 +64,43 @@ public class InvoicePdfService : IInvoicePdfService {
         container.Row(row => {
             // Left: Company branding
             row.RelativeItem().Column(column => {
-                column.Item().Text("ApprendsMoi")
+                column.Item().Text(CompanyName)
                     .FontSize(24)
-                    .FontColor("#1a365d")
+                    .FontColor(ColorPrimary)
                     .Bold();
                 
-                column.Item().Text("Plateforme de cours particuliers")
+                column.Item().Text(CompanyTagline)
                     .FontSize(10)
-                    .FontColor("#6b7280");
+                    .FontColor(ColorGray);
                 
-                column.Item().PaddingTop(10).Text("123 Rue de l'Éducation")
+                column.Item().PaddingTop(10).Text(CompanyAddress1)
                     .FontSize(9);
-                column.Item().Text("75001 Paris, France")
+                column.Item().Text(CompanyAddress2)
                     .FontSize(9);
-                column.Item().Text("contact@apprendsmoi.fr")
+                column.Item().Text(CompanyEmail)
                     .FontSize(9)
-                    .FontColor("#f97316");
+                    .FontColor(ColorSecondary);
+                
+                column.Item().PaddingTop(8).Text(text => {
+                    text.Span("SIRET : ").FontSize(8);
+                    text.Span(CompanySiret).FontSize(8).Bold();
+                });
+                column.Item().Text(text => {
+                    text.Span("TVA : ").FontSize(8);
+                    text.Span(CompanyTvaNumber).FontSize(8).Bold();
+                });
             });
 
             // Right: Invoice info
             row.RelativeItem().AlignRight().Column(column => {
-                column.Item().Border(1).BorderColor("#1a365d")
-                    .Background("#f0f9ff")
+                column.Item().Border(1).BorderColor(ColorPrimary)
+                    .Background(ColorLightBlue)
                     .Padding(10)
                     .Column(innerColumn => {
                         innerColumn.Item().Text("FACTURE")
                             .FontSize(18)
                             .Bold()
-                            .FontColor("#1a365d");
+                            .FontColor(ColorPrimary);
                     });
             });
         });
@@ -89,10 +125,10 @@ public class InvoicePdfService : IInvoicePdfService {
 
                 row.RelativeItem().AlignRight().Column(col => {
                     var statusColor = invoice.Status switch {
-                        InvoiceStatus.PAID => "#4EE381",
-                        InvoiceStatus.PENDING => "#f97316",
-                        InvoiceStatus.CANCELLED => "#ef4444",
-                        _ => "#6b7280"
+                        InvoiceStatus.PAID => ColorSuccess,
+                        InvoiceStatus.PENDING => ColorSecondary,
+                        InvoiceStatus.CANCELLED => ColorDanger,
+                        _ => ColorGray
                     };
 
                     col.Item().Background(statusColor)
@@ -104,26 +140,26 @@ public class InvoicePdfService : IInvoicePdfService {
                 });
             });
 
-            column.Item().PaddingVertical(20).LineHorizontal(1).LineColor("#e5e7eb");
+            column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(ColorLightGray);
 
             // Client information
             column.Item().PaddingBottom(20).Column(col => {
                 col.Item().Text("Facturé à :")
                     .FontSize(11)
                     .Bold()
-                    .FontColor("#1a365d");
-                col.Item().PaddingTop(5).Text(invoice.Parent?.User?.GetFullName() ?? "Client")
+                    .FontColor(ColorPrimary);
+                col.Item().PaddingTop(5).Text(invoice.Parent?.User?.GetFullName())
                     .FontSize(10);
                 col.Item().Text(invoice.Parent?.User?.Email ?? "")
                     .FontSize(10)
-                    .FontColor("#6b7280");
+                    .FontColor(ColorGray);
             });
 
             // Course details
             column.Item().PaddingBottom(15).Text("Détails du cours")
                 .FontSize(12)
                 .Bold()
-                .FontColor("#1a365d");
+                .FontColor(ColorPrimary);
 
             // Table
             column.Item().Table(table => {
@@ -136,37 +172,37 @@ public class InvoicePdfService : IInvoicePdfService {
 
                 // Header
                 table.Header(header => {
-                    header.Cell().Background("#1a365d").Padding(8).Text("Description")
+                    header.Cell().Background(ColorPrimary).Padding(8).Text("Description")
                         .FontColor(Colors.White).Bold();
-                    header.Cell().Background("#1a365d").Padding(8).Text("Qté")
+                    header.Cell().Background(ColorPrimary).Padding(8).Text("Qté")
                         .FontColor(Colors.White).Bold();
-                    header.Cell().Background("#1a365d").Padding(8).Text("Prix unitaire")
+                    header.Cell().Background(ColorPrimary).Padding(8).Text("Prix unitaire")
                         .FontColor(Colors.White).Bold();
-                    header.Cell().Background("#1a365d").Padding(8).Text("Total")
+                    header.Cell().Background(ColorPrimary).Padding(8).Text("Total")
                         .FontColor(Colors.White).Bold();
                 });
 
                 // Content
-                table.Cell().Border(1).BorderColor("#e5e7eb").Padding(8)
+                table.Cell().Border(1).BorderColor(ColorLightGray).Padding(8)
                     .Column(col => {
                         col.Item().Text(invoice.Course?.Subject?.Name ?? "Cours particulier")
                             .Bold();
-                        col.Item().Text($"Enseignant : {invoice.Course?.Teacher?.User?.GetFullName() ?? "N/A"}")
+                        col.Item().Text($"Enseignant : {invoice.Course?.Teacher?.User?.GetFullName()}")
                             .FontSize(9)
-                            .FontColor("#6b7280");
+                            .FontColor(ColorGray);
                     });
                 
-                table.Cell().Border(1).BorderColor("#e5e7eb").Padding(8)
+                table.Cell().Border(1).BorderColor(ColorLightGray).Padding(8)
                     .AlignCenter()
                     .AlignMiddle()
                     .Text("1");
                 
-                table.Cell().Border(1).BorderColor("#e5e7eb").Padding(8)
+                table.Cell().Border(1).BorderColor(ColorLightGray).Padding(8)
                     .AlignRight()
                     .AlignMiddle()
                     .Text($"{invoice.Amount:F2} €");
                 
-                table.Cell().Border(1).BorderColor("#e5e7eb").Padding(8)
+                table.Cell().Border(1).BorderColor(ColorLightGray).Padding(8)
                     .AlignRight()
                     .AlignMiddle()
                     .Text($"{invoice.Amount:F2} €")
@@ -175,33 +211,33 @@ public class InvoicePdfService : IInvoicePdfService {
 
             column.Item().PaddingTop(20).AlignRight().Column(col => {
                 col.Item().Row(row => {
-                    row.AutoItem().Width(150).Text("Sous-total :")
+                    row.AutoItem().Width(150).Text("Sous-total HT :")
                         .FontSize(10);
                     row.AutoItem().Width(100).AlignRight().Text($"{invoice.Amount:F2} €")
                         .FontSize(10);
                 });
 
                 col.Item().PaddingTop(5).Row(row => {
-                    row.AutoItem().Width(150).Text("Commission plateforme :")
-                        .FontSize(10)
-                        .FontColor("#6b7280");
-                    row.AutoItem().Width(100).AlignRight().Text($"-{invoice.Commission:F2} €")
-                        .FontSize(10)
-                        .FontColor("#6b7280");
+                    row.AutoItem().Width(150).Text("TVA non applicable :")
+                        .FontSize(9)
+                        .FontColor(ColorGray);
+                    row.AutoItem().Width(100).AlignRight().Text("Art. 293 B du CGI")
+                        .FontSize(8)
+                        .FontColor(ColorGray);
                 });
 
-                col.Item().PaddingTop(10).Border(1).BorderColor("#1a365d")
-                    .Background("#f0f9ff")
+                col.Item().PaddingTop(10).Border(1).BorderColor(ColorPrimary)
+                    .Background(ColorLightBlue)
                     .Padding(10)
                     .Row(row => {
                         row.AutoItem().Width(150).Text("TOTAL TTC :")
                             .FontSize(12)
                             .Bold()
-                            .FontColor("#1a365d");
+                            .FontColor(ColorPrimary);
                         row.AutoItem().Width(100).AlignRight().Text($"{invoice.Amount:F2} €")
                             .FontSize(14)
                             .Bold()
-                            .FontColor("#1a365d");
+                            .FontColor(ColorPrimary);
                     });
             });
 
@@ -211,23 +247,49 @@ public class InvoicePdfService : IInvoicePdfService {
                     col.Item().Text("Informations de paiement")
                         .FontSize(11)
                         .Bold()
-                        .FontColor("#4EE381");
+                        .FontColor(ColorSuccess);
                     col.Item().PaddingTop(5).Text($"ID de transaction : {invoice.PaymentIntentId}")
                         .FontSize(9)
-                        .FontColor("#6b7280");
+                        .FontColor(ColorGray);
                 });
             }
 
-            // Footer notes
-            column.Item().PaddingTop(30).Column(col => {
-                col.Item().Text("Notes et conditions")
+            // Payment terms and legal notices
+            column.Item().PaddingTop(25).Column(col => {
+                col.Item().Text("Conditions de paiement")
                     .FontSize(10)
-                    .Bold();
-                col.Item().PaddingTop(5).Text("Merci d'avoir choisi ApprendsMoi pour vos cours particuliers.")
+                    .Bold()
+                    .FontColor(ColorPrimary);
+                
+                col.Item().PaddingTop(8).Text(PaymentTerms)
                     .FontSize(9);
-                col.Item().Text("Cette facture est générée automatiquement et ne nécessite pas de signature.")
+                
+                col.Item().PaddingTop(5).Text(text => {
+                    text.Span("En cas de retard de paiement, seront exigibles une indemnité calculée sur la base de ")
+                        .FontSize(8)
+                        .FontColor(ColorGray);
+                    text.Span($"{LatePenaltyRate:F1}% ")
+                        .FontSize(8)
+                        .FontColor(ColorGray)
+                        .Bold();
+                    text.Span("(trois fois le taux d'intérêt légal) ainsi qu'une indemnité forfaitaire pour frais de recouvrement de ")
+                        .FontSize(8)
+                        .FontColor(ColorGray);
+                    text.Span($"{RecoveryFee:F0}€")
+                        .FontSize(8)
+                        .FontColor(ColorGray)
+                        .Bold();
+                    text.Span(", conformément aux articles L. 441-10 et D. 441-5 du Code de commerce.")
+                        .FontSize(8)
+                        .FontColor(ColorGray);
+                });
+            });
+
+            // Footer notes
+            column.Item().PaddingTop(15).Column(col => {
+                col.Item().Text("Cette facture est générée électroniquement et ne nécessite pas de signature.")
                     .FontSize(8)
-                    .FontColor("#6b7280")
+                    .FontColor(ColorGray)
                     .Italic();
             });
         });
@@ -235,15 +297,18 @@ public class InvoicePdfService : IInvoicePdfService {
 
     private void ComposeFooter(IContainer container) {
         container.AlignCenter().Column(column => {
-            column.Item().LineHorizontal(1).LineColor("#e5e7eb");
+            column.Item().LineHorizontal(1).LineColor(ColorLightGray);
             column.Item().PaddingTop(10).Text(text => {
-                text.Span("ApprendsMoi SAS - SIRET : 123 456 789 00012 - TVA : FR12345678901")
+                text.Span($"{CompanyName} - SIRET : {CompanySiret} - {CompanyRcs}")
                     .FontSize(8)
-                    .FontColor("#6b7280");
+                    .FontColor(ColorGray);
             });
-            column.Item().Text("www.apprendsmoi.fr • contact@apprendsmoi.fr • +33 1 23 45 67 89")
+            column.Item().Text($"N° TVA Intracommunautaire : {CompanyTvaNumber} - TVA non applicable, art. 293 B du CGI")
+                .FontSize(7)
+                .FontColor(ColorGray);
+            column.Item().PaddingTop(3).Text($"{CompanyWebsite} • {CompanyEmail} • {CompanyPhone}")
                 .FontSize(8)
-                .FontColor("#6b7280");
+                .FontColor(ColorGray);
         });
     }
 }
