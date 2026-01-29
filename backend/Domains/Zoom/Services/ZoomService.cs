@@ -3,10 +3,18 @@ using System.Text;
 using System.Text.Json;
 using backend.Database;
 using backend.Database.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.Domains.Zoom;
 
-public class ZoomService
+public interface IZoomService
+{
+    Task<Meeting> CreateInstantMeetingAsync(Guid teacherId, Guid studentId, DateTime scheduledTime, int duration, string topic = "ApprendsMoi - Session");
+    string GenerateSignature(string meetingNumber, int role = 0);
+    string GetSdkKey();
+}
+
+public class ZoomService : IZoomService
 {
     private readonly HttpClient _httpClient;
     private readonly AppDbContext _dbContext;

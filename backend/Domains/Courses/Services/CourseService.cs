@@ -2,6 +2,7 @@ using backend.Database;
 using backend.Database.Models;
 using backend.Domains.Courses;
 using backend.Domains.Payments.Services;
+using backend.Domains.Zoom;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Domains.Courses.Services;
@@ -19,10 +20,12 @@ public interface ICourseService {
 public class CourseService : ICourseService {
     private readonly AppDbContext _context;
     private readonly IPaymentService _paymentService;
+    private readonly IZoomService _zoomService;
 
-    public CourseService(AppDbContext context, IPaymentService paymentService) {
+    public CourseService(AppDbContext context, IPaymentService paymentService, IZoomService zoomService) {
         _context = context;
         _paymentService = paymentService;
+        _zoomService = zoomService;
     }
 
     public async Task<CourseDto> CreateCourseAsync(CreateCourseDto dto) {
@@ -175,6 +178,17 @@ public class CourseService : ICourseService {
         }
 
         await _context.SaveChangesAsync();
+
+        // Auto-create zoom meeting when course is marked as CONFIRMED
+        if (course.Status == CourseStatus.CONFIRMED && previousStatus != CourseStatus.CONFIRMED) {
+            try {
+                await _zoomService.CreateInstantMeetingAsync(course.TeacherId, course.StudentId, course.StartDate, course.DurationMinutes, $"ApprendsMoi - Course {course.Id}");
+            }
+            catch (Exception ex) {
+                // Log but don't fail the course update if meeting creation fails
+                Console.WriteLine($"Warning: Failed to create meeting for course {courseId}: {ex.Message}");
+            }
+        }
 
         // Auto-create billing when course is marked as COMPLETED
         if (course.Status == CourseStatus.COMPLETED && previousStatus != CourseStatus.COMPLETED) {

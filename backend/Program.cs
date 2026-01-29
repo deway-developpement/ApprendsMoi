@@ -91,7 +91,7 @@ builder.Services.AddScoped<UserProfileService>();
 builder.Services.AddScoped<UserManagementService>();
 
 // Zoom services
-builder.Services.AddHttpClient<ZoomService>();
+builder.Services.AddHttpClient<IZoomService, ZoomService>();
 builder.Services.AddHttpClient<ZoomTokenProvider>();
 builder.Services.AddScoped<ZoomSignatureService>();
 
