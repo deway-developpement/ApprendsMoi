@@ -30,12 +30,10 @@ export class TeacherReviewsComponent implements OnInit {
   }
 
   ngOnInit() {
-    console.log('INIT', this.teacherId);
     if (!this.teacherId) {
       this.loading = false;
       return;
     }
-    console.log('FETCH STATS');
     this.parentService.getTeacherStats(this.teacherId).subscribe({
       next: (data) => {
         this.stats = data;
