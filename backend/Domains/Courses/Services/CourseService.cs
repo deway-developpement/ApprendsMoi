@@ -51,6 +51,23 @@ public class CourseService : ICourseService {
         if (teacherSubject == null) {
             throw new Exception("Teacher doesn't teach this subject");
         }
+        
+        
+        // Check for overlapping courses with the same teacher
+        var requestedEndTime = dto.StartDate.AddMinutes(dto.DurationMinutes);
+        var overlappingCourses = await _context.Courses
+            .Where(m => m.TeacherId == dto.TeacherId 
+                && m.StartDate < requestedEndTime
+                && m.StartDate.AddMinutes(m.DurationMinutes) > dto.StartDate)
+            .ToListAsync();
+        
+        if (overlappingCourses.Any())
+        {
+            var conflict = overlappingCourses.First();
+            var conflictEnd = conflict.StartDate.AddMinutes(conflict.DurationMinutes);
+            throw new ArgumentException(
+                $"Teacher already has a meeting booked from {conflict.StartDate:yyyy-MM-dd HH:mm} to {conflictEnd:HH:mm} UTC that overlaps with the requested time slot.");
+        }
 
         var platformCommissionRate = 0.15m; // We take 15% commission
 

@@ -88,11 +88,6 @@ public class CoursesController : ControllerBase {
             var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             var userProfile = User.FindFirst("profile")?.Value;
 
-            // Teachers can only see their own, admins can see all
-            if (userProfile != ProfileType.Admin.ToString() && teacherId != userId) {
-                return Forbid();
-            }
-
             var courses = await _courseService.GetCoursesByTeacherIdAsync(teacherId);
             return Ok(courses);
         }
