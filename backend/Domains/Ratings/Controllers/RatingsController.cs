@@ -82,7 +82,7 @@ public class RatingsController : ControllerBase {
             return BadRequest(new { message = ex.Message });
         }
     }
-
+    
     [HttpPut("{id}")]
     [RequireRole(ProfileType.Parent)]
     public async Task<ActionResult<RatingDto>> UpdateRating(Guid id, [FromBody] UpdateRatingDto dto) {

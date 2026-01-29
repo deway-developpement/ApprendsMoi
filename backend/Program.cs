@@ -7,6 +7,9 @@ using backend.Domains.Chat;
 using backend.Domains.Courses.Services;
 using backend.Domains.Payments.Services;
 using backend.Domains.Ratings.Services;
+using backend.Domains.Documents;
+using backend.Domains.Stats.Services;
+using backend.Domains.Subjects.Services;
 using backend.Helpers;
 using FluentMigrator.Runner;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -105,6 +108,9 @@ builder.Services.AddScoped<ChatAttachmentService>();
 // Course services
 builder.Services.AddScoped<ICourseService, CourseService>();
 
+// Subject services
+builder.Services.AddScoped<ISubjectService, SubjectService>();
+
 // Payment services
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IInvoicePdfService, InvoicePdfService>();
@@ -112,6 +118,12 @@ builder.Services.AddScoped<IInvoicePdfService, InvoicePdfService>();
 // Rating services
 builder.Services.AddScoped<IRatingService, RatingService>();
 builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
+
+// Document services
+builder.Services.AddScoped<DocumentService>();
+
+// Stats services
+builder.Services.AddScoped<IStatsService, StatsService>();
 
 // SignalR for real-time chat
 builder.Services.AddSignalR();

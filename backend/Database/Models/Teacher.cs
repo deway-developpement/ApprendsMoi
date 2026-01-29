@@ -15,4 +15,5 @@ public class Teacher {
     public ICollection<Availability> Availabilities { get; set; } = new List<Availability>();
     public ICollection<UnavailableSlot> UnavailableSlots { get; set; } = new List<UnavailableSlot>();
     public ICollection<Course> Courses { get; set; } = new List<Course>();
+    public ICollection<TeacherDocument> Documents { get; set; } = new List<TeacherDocument>();
 }

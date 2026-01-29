@@ -27,7 +27,8 @@ public class ZoomController : ControllerBase
     /// Creates a new instant Zoom meeting and saves it to the database
     /// </summary>
     [HttpPost("meeting")]
-    [RequireRole(ProfileType.Admin, ProfileType.Teacher, ProfileType.Parent, ProfileType.Student)]
+    [RequireRole(ProfileType.Admin, ProfileType.Parent, ProfileType.Student)]
+    [VerifiedTeacherOnly] // Verified teachers can also create meetings
     [Consumes("application/json")]
     [Produces("application/json")]
     [ProducesResponseType(typeof(CreateMeetingResponse), StatusCodes.Status200OK)]
