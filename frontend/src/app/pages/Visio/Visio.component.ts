@@ -1,7 +1,7 @@
 import { Component, ElementRef, ViewChild, OnInit, OnDestroy, AfterViewInit, AfterViewChecked, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { HeaderComponent } from '../../components/Header/header.component';
@@ -25,6 +25,15 @@ interface MeetingDetailsResponse {
 }
 
 interface CreateMeetingResponse extends MeetingDetailsResponse {}
+
+interface RatingDto {
+  id: string;
+  teacherId: string;
+  rating: number;
+  comment?: string | null;
+  createdAt?: string;
+  updatedAt?: string | null;
+}
 
 @Component({
   standalone: true,
@@ -66,6 +75,14 @@ export class Visio implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked
   isSendingMessage = false;
   typingUsers: Set<string> = new Set();
   isSignalRConnected = false;
+  showRatingModal = false;
+  ratingScore: number | null = null;
+  ratingComment = '';
+  ratingError = '';
+  isSubmittingRating = false;
+  isLoadingRating = false;
+  isEditingRating = false;
+  existingRatingId: string | null = null;
   private chatInitialized = false;
   private meetingTeacherId = '';
   private meetingStudentId = '';
@@ -84,7 +101,8 @@ export class Visio implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked
 
   constructor(
     private cdr: ChangeDetectorRef,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   private generateUniqueUsername(): string {
@@ -92,6 +110,7 @@ export class Visio implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked
     const timestamp = Date.now().toString().slice(-6);
     return `Participant-${randomId}-${timestamp}`;
   }
+
 
   async ngOnInit(): Promise<void> {
     this.authService.currentUser$.subscribe(user => {
@@ -220,6 +239,13 @@ export class Visio implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked
     }
 
     this.cdr.detectChanges();
+
+    if (this.currentUser?.profileType === ProfileType.Parent) {
+      this.openRatingModal();
+      return;
+    }
+
+    this.navigateHome();
   }
 
   async loadMeetingAndInit(): Promise<void> {
@@ -585,6 +611,111 @@ export class Visio implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked
     this.chatInitialized = false;
     this.meetingTeacherId = '';
     this.meetingStudentId = '';
+  }
+
+  private openRatingModal(): void {
+    if (!this.meetingTeacherId) {
+      this.toastService.warning('Aucun professeur a noter pour cette session.');
+      return;
+    }
+
+    this.showRatingModal = true;
+    this.ratingScore = null;
+    this.ratingComment = '';
+    this.ratingError = '';
+    this.isSubmittingRating = false;
+    this.isLoadingRating = true;
+    this.isEditingRating = false;
+    this.existingRatingId = null;
+
+    const parentId = this.currentUser?.id;
+    if (!parentId) {
+      this.isLoadingRating = false;
+      return;
+    }
+
+    this.http.get<RatingDto[]>(`${environment.apiUrl}/api/Ratings/parent/${parentId}`).subscribe({
+      next: (ratings) => {
+        const matching = ratings
+          .filter(r => r.teacherId === this.meetingTeacherId)
+          .sort((a, b) => {
+            const aTime = new Date(a.updatedAt || a.createdAt || 0).getTime();
+            const bTime = new Date(b.updatedAt || b.createdAt || 0).getTime();
+            return bTime - aTime;
+          });
+
+        const existing = matching[0];
+        if (existing) {
+          this.isEditingRating = true;
+          this.existingRatingId = existing.id;
+          this.ratingScore = existing.rating ?? null;
+          this.ratingComment = existing.comment ?? '';
+        }
+        this.isLoadingRating = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.isLoadingRating = false;
+      }
+    });
+  }
+
+  closeRatingModal(): void {
+    this.showRatingModal = false;
+    this.ratingError = '';
+    this.isLoadingRating = false;
+    this.isEditingRating = false;
+    this.existingRatingId = null;
+    this.navigateHome();
+  }
+
+  setRating(score: number): void {
+    this.ratingScore = score;
+    this.ratingError = '';
+  }
+
+  submitRating(): void {
+    if (!this.meetingTeacherId) {
+      this.ratingError = 'Professeur introuvable pour cette session.';
+      return;
+    }
+
+    if (!this.ratingScore) {
+      this.ratingError = 'Veuillez choisir une note.';
+      return;
+    }
+
+    this.isSubmittingRating = true;
+    const payload = {
+      rating: this.ratingScore,
+      comment: this.ratingComment?.trim() || null
+    };
+
+    const request$ = this.isEditingRating && this.existingRatingId
+      ? this.http.put(`${environment.apiUrl}/api/Ratings/${this.existingRatingId}`, payload)
+      : this.http.post(`${environment.apiUrl}/api/Ratings`, {
+          teacherId: this.meetingTeacherId,
+          ...payload
+        });
+
+    request$.subscribe({
+      next: () => {
+        this.isSubmittingRating = false;
+        this.showRatingModal = false;
+        this.toastService.success(this.isEditingRating ? 'Note mise a jour.' : 'Merci pour votre note.');
+        this.navigateHome();
+      },
+      error: (err) => {
+        console.error(err);
+        this.isSubmittingRating = false;
+        this.ratingError = "Impossible d'envoyer votre note.";
+        this.toastService.error("Impossible d'envoyer votre note.");
+      }
+    });
+  }
+
+  private navigateHome(): void {
+    this.router.navigate(['/']);
   }
 
   private getErrorMessage(err: unknown, fallback: string): string {
