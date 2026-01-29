@@ -22,7 +22,7 @@ public class StatsController : ControllerBase {
     }
 
     [HttpGet]
-    public async Task<ActionResult<StatsResponseDto>> GetStats([FromQuery] Guid? targetId = null) {
+    public async Task<ActionResult<StatsResponseDto>> GetStats([FromQuery] Guid? targetId = null, CancellationToken ct = default) {
         try {
             var userId = JwtHelper.GetUserIdFromClaims(User);
             var userProfile = JwtHelper.GetUserProfileFromClaims(User);
@@ -40,7 +40,7 @@ public class StatsController : ControllerBase {
                 // Only admins and parents can use targetId
                 if (userProfile == ProfileType.Admin) {
                     // Admin can fetch stats for any user
-                    var targetUser = await _profileService.GetUserByIdAsync(targetId.Value);
+                    var targetUser = await _profileService.GetUserByIdAsync(targetId.Value, ct);
                     if (targetUser == null) {
                         return NotFound(new { message = "Target user not found" });
                     }
@@ -49,7 +49,7 @@ public class StatsController : ControllerBase {
                 }
                 else if (userProfile == ProfileType.Parent) {
                     // Parents can only fetch stats for their own children
-                    var student = await _userManagementService.GetStudentWithParentAsync(targetId.Value);
+                    var student = await _userManagementService.GetStudentWithParentAsync(targetId.Value, ct);
                     if (student == null) {
                         return NotFound(new { message = "Student not found" });
                     }
@@ -69,11 +69,11 @@ public class StatsController : ControllerBase {
 
             // Fetch stats based on effective user's profile
             object stats = effectiveProfile switch {
-                ProfileType.Admin => await _statsService.GetAdminStatsAsync(),
-                ProfileType.Teacher => await _statsService.GetTeacherStatsAsync(effectiveUserId),
-                ProfileType.Parent => await _statsService.GetParentStatsAsync(effectiveUserId),
-                ProfileType.Student => await _statsService.GetStudentStatsAsync(effectiveUserId),
-                _ => throw new Exception("Invalid user profile")
+                ProfileType.Admin => await _statsService.GetAdminStatsAsync(ct),
+                ProfileType.Teacher => await _statsService.GetTeacherStatsAsync(effectiveUserId, ct),
+                ProfileType.Parent => await _statsService.GetParentStatsAsync(effectiveUserId, ct),
+                ProfileType.Student => await _statsService.GetStudentStatsAsync(effectiveUserId, ct),
+                _ => throw new InvalidOperationException("Invalid user profile")
             };
 
             return Ok(new StatsResponseDto {
@@ -81,8 +81,17 @@ public class StatsController : ControllerBase {
                 Stats = stats
             });
         }
-        catch (Exception ex) {
-            return BadRequest(new { message = ex.Message });
+        catch (Exception ex) when (ex.Message.Contains("not found")) {
+            return NotFound(new { message = "Resource not found" });
+        }
+        catch (InvalidOperationException) {
+            return BadRequest(new { message = "Invalid operation" });
+        }
+        catch (OperationCanceledException) {
+            return StatusCode(499, new { message = "Request cancelled" });
+        }
+        catch (Exception) {
+            return StatusCode(500, new { message = "An error occurred while processing your request" });
         }
     }
 }

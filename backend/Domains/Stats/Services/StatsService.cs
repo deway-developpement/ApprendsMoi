@@ -6,10 +6,10 @@ using Microsoft.EntityFrameworkCore;
 namespace backend.Domains.Stats.Services;
 
 public interface IStatsService {
-    Task<AdminStatsDto> GetAdminStatsAsync();
-    Task<TeacherStatsDto> GetTeacherStatsAsync(Guid teacherId);
-    Task<ParentStatsDto> GetParentStatsAsync(Guid parentId);
-    Task<StudentStatsDto> GetStudentStatsAsync(Guid studentId);
+    Task<AdminStatsDto> GetAdminStatsAsync(CancellationToken ct = default);
+    Task<TeacherStatsDto> GetTeacherStatsAsync(Guid teacherId, CancellationToken ct = default);
+    Task<ParentStatsDto> GetParentStatsAsync(Guid parentId, CancellationToken ct = default);
+    Task<StudentStatsDto> GetStudentStatsAsync(Guid studentId, CancellationToken ct = default);
 }
 
 public class StatsService : IStatsService {
@@ -21,7 +21,7 @@ public class StatsService : IStatsService {
         _ratingService = ratingService;
     }
 
-    public async Task<AdminStatsDto> GetAdminStatsAsync() {
+    public async Task<AdminStatsDto> GetAdminStatsAsync(CancellationToken ct = default) {
         var now = DateTime.UtcNow;
         var startOfLastMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-1);
         var endOfLastMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(-1);
@@ -33,21 +33,21 @@ public class StatsService : IStatsService {
                        u.LastLoginAt != null && 
                        u.LastLoginAt.Value >= startOfLastMonth && 
                        u.LastLoginAt.Value <= endOfLastMonth)
-            .CountAsync();
+            .CountAsync(ct);
 
         // Sum commissions from completed courses this month
         var commissionsThisMonth = await _context.Courses
             .Where(c => c.Status == CourseStatus.COMPLETED &&
                        c.EndDate >= startOfThisMonth &&
                        c.EndDate <= now)
-            .SumAsync(c => c.CommissionSnapshot);
+            .SumAsync(c => c.CommissionSnapshot, ct);
 
         // Count completed courses this month
         var completedCoursesThisMonth = await _context.Courses
             .Where(c => c.Status == CourseStatus.COMPLETED &&
                        c.EndDate >= startOfThisMonth &&
                        c.EndDate <= now)
-            .CountAsync();
+            .CountAsync(ct);
 
         return new AdminStatsDto {
             ActiveUsersLastMonth = activeUsersLastMonth,
@@ -56,10 +56,9 @@ public class StatsService : IStatsService {
         };
     }
 
-    public async Task<TeacherStatsDto> GetTeacherStatsAsync(Guid teacherId) {
+    public async Task<TeacherStatsDto> GetTeacherStatsAsync(Guid teacherId, CancellationToken ct = default) {
         var teacher = await _context.Teachers
-            .Include(t => t.User)
-            .FirstOrDefaultAsync(t => t.UserId == teacherId);
+            .FirstOrDefaultAsync(t => t.UserId == teacherId, ct);
 
         if (teacher == null) {
             throw new Exception("Teacher not found");
@@ -73,13 +72,12 @@ public class StatsService : IStatsService {
         var startOfThisMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
 
         var earningsThisMonth = await _context.Invoices
-            .Include(i => i.Course)
-            .Where(i => i.Course.TeacherId == teacherId &&
+            .Where(i => _context.Courses.Any(c => c.Id == i.CourseId && c.TeacherId == teacherId) &&
                        i.Status == InvoiceStatus.PAID &&
                        i.PaidAt != null &&
                        i.PaidAt.Value >= startOfThisMonth &&
                        i.PaidAt.Value <= now)
-            .SumAsync(i => i.TeacherEarning);
+            .SumAsync(i => i.TeacherEarning, ct);
 
         // Count current students following (students with at least one completed or upcoming course)
         var currentStudents = await _context.Courses
@@ -89,7 +87,7 @@ public class StatsService : IStatsService {
                         c.Status == CourseStatus.PENDING))
             .Select(c => c.StudentId)
             .Distinct()
-            .CountAsync();
+            .CountAsync(ct);
 
         return new TeacherStatsDto {
             AverageRating = ratingStats.AverageRating,
@@ -99,10 +97,9 @@ public class StatsService : IStatsService {
         };
     }
 
-    public async Task<ParentStatsDto> GetParentStatsAsync(Guid parentId) {
+    public async Task<ParentStatsDto> GetParentStatsAsync(Guid parentId, CancellationToken ct = default) {
         var parent = await _context.Parents
-            .Include(p => p.User)
-            .FirstOrDefaultAsync(p => p.UserId == parentId);
+            .FirstOrDefaultAsync(p => p.UserId == parentId, ct);
 
         if (parent == null) {
             throw new Exception("Parent not found");
@@ -111,27 +108,23 @@ public class StatsService : IStatsService {
         // Calculate total debt (pending invoices)
         var totalDebt = await _context.Invoices
             .Where(i => i.ParentId == parentId && i.Status == InvoiceStatus.PENDING)
-            .SumAsync(i => i.Amount);
+            .SumAsync(i => i.Amount, ct);
 
         // Count courses booked this month (courses created this month for their children)
         var now = DateTime.UtcNow;
         var startOfThisMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        var studentIds = await _context.Students
-            .Where(s => s.ParentId == parentId)
-            .Select(s => s.UserId)
-            .ToListAsync();
-
         var coursesBookedThisMonth = await _context.Courses
-            .Where(c => studentIds.Contains(c.StudentId) &&
-                       c.CreatedAt >= startOfThisMonth &&
-                       c.CreatedAt <= now)
-            .CountAsync();
+            .Where(c =>
+                _context.Students.Any(s => s.ParentId == parentId && s.UserId == c.StudentId) &&
+                c.CreatedAt >= startOfThisMonth &&
+                c.CreatedAt <= now)
+            .CountAsync(ct);
 
         // Count number of children registered
         var numberOfChildren = await _context.Students
             .Where(s => s.ParentId == parentId)
-            .CountAsync();
+            .CountAsync(ct);
 
         return new ParentStatsDto {
             TotalDebt = totalDebt,
@@ -140,10 +133,9 @@ public class StatsService : IStatsService {
         };
     }
 
-    public async Task<StudentStatsDto> GetStudentStatsAsync(Guid studentId) {
+    public async Task<StudentStatsDto> GetStudentStatsAsync(Guid studentId, CancellationToken ct = default) {
         var student = await _context.Students
-            .Include(s => s.User)
-            .FirstOrDefaultAsync(s => s.UserId == studentId);
+            .FirstOrDefaultAsync(s => s.UserId == studentId, ct);
 
         if (student == null) {
             throw new Exception("Student not found");
@@ -153,15 +145,14 @@ public class StatsService : IStatsService {
         var now = DateTime.UtcNow;
         var startOfThisMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        var coursesThisMonth = await _context.Courses
+        var coursesThisMonthQuery = _context.Courses
             .Where(c => c.StudentId == studentId &&
                        c.Status == CourseStatus.COMPLETED &&
                        c.EndDate >= startOfThisMonth &&
-                       c.EndDate <= now)
-            .ToListAsync();
-
-        var totalHoursThisMonth = coursesThisMonth.Sum(c => c.DurationMinutes) / 60.0m;
-        var numberOfCoursesThisMonth = coursesThisMonth.Count;
+                       c.EndDate <= now);
+        var totalMinutesThisMonth = await coursesThisMonthQuery.SumAsync(c => c.DurationMinutes, ct);
+        var totalHoursThisMonth = totalMinutesThisMonth / 60.0m;
+        var numberOfCoursesThisMonth = await coursesThisMonthQuery.CountAsync(ct);
 
         return new StudentStatsDto {
             TotalHoursThisMonth = totalHoursThisMonth,
