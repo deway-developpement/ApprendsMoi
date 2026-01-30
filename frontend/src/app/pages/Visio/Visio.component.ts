@@ -22,6 +22,7 @@ interface MeetingDetailsResponse {
   joinUrl: string;
   teacherId: string;
   studentId: string;
+  courseId?: string | null;
 }
 
 interface CreateMeetingResponse extends MeetingDetailsResponse {}
@@ -52,8 +53,10 @@ export class Visio implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked
   private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
   private readonly apiBaseUrl = `${environment.apiUrl}/api/zoom`;
+  private readonly coursesBaseUrl = `${environment.apiUrl}/api/courses`;
   private viewReady = false;
   
+  courseId: string | null = null;
   meetingId: number | null = null;
   zoomMeetingUrl = '';
   isInitializingSdk = false;
@@ -165,6 +168,7 @@ export class Visio implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked
       if (id) {
         this.resetChatState();
         this.meetingId = parseInt(id, 10);
+        this.courseId = null; // Will be set from meeting response
         // Defer to next tick to avoid ExpressionChangedAfterItHasBeenCheckedError
         setTimeout(() => this.loadMeetingAndInit(), 0);
       } else {
@@ -219,7 +223,7 @@ export class Visio implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked
     }
   }
 
-  leaveVisio(): void {
+  async leaveVisio(): Promise<void> {
     if (this.zoomClient) {
       try {
         this.zoomClient.leaveMeeting?.();
@@ -240,12 +244,34 @@ export class Visio implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked
 
     this.cdr.detectChanges();
 
+    // If teacher is leaving, mark the course as completed
+    console.log('Current user profile type:', this.currentUser?.profileType, 'Course ID:', this.courseId);
+    if (this.currentUser?.profileType === ProfileType.Teacher && this.courseId) {
+      await this.markCourseAsCompleted();
+    }
+
     if (this.currentUser?.profileType === ProfileType.Parent) {
       this.openRatingModal();
       return;
     }
 
     this.navigateHome();
+  }
+
+  private async markCourseAsCompleted(): Promise<void> {
+    if (!this.courseId) return;
+
+    try {
+      console.log('Marking course as completed:', this.courseId);
+      await firstValueFrom(
+        this.http.put(`${this.coursesBaseUrl}/${this.courseId}`, {
+          status: 'COMPLETED'
+        })
+      );
+      console.log('Course marked as completed');
+    } catch (err) {
+      console.error('Error marking course as completed:', err);
+    }
   }
 
   async loadMeetingAndInit(): Promise<void> {
@@ -272,6 +298,11 @@ export class Visio implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked
       this.hasRetriedAsParticipant = false;
       this.meetingTeacherId = data.teacherId;
       this.meetingStudentId = data.studentId;
+      
+      // Extract courseId from response
+      if (data.courseId) {
+        this.courseId = data.courseId;
+      }
 
       this.cdr.detectChanges();
 

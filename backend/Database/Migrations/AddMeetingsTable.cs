@@ -18,7 +18,8 @@ public class AddMeetingsTable : Migration
             .WithColumn("scheduled_start_time").AsDateTime().Nullable()
             .WithColumn("duration").AsInt32().NotNullable()
             .WithColumn("teacher_id").AsGuid().NotNullable()
-            .WithColumn("student_id").AsGuid().NotNullable();
+            .WithColumn("student_id").AsGuid().NotNullable()
+            .WithColumn("course_id").AsGuid().Nullable();
 
         Create.ForeignKey("fk_meetings_teacher_id")
             .FromTable("meetings").ForeignColumn("teacher_id")
@@ -28,6 +29,11 @@ public class AddMeetingsTable : Migration
         Create.ForeignKey("fk_meetings_student_id")
             .FromTable("meetings").ForeignColumn("student_id")
             .ToTable("users").PrimaryColumn("id")
+            .OnDelete(System.Data.Rule.None);
+
+        Create.ForeignKey("fk_meetings_course_id")
+            .FromTable("meetings").ForeignColumn("course_id")
+            .ToTable("courses").PrimaryColumn("id")
             .OnDelete(System.Data.Rule.None);
     }
 

@@ -294,6 +294,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             b.Property(e => e.Duration).HasColumnName("duration");
             b.Property(e => e.TeacherId).HasColumnName("teacher_id");
             b.Property(e => e.StudentId).HasColumnName("student_id");
+            b.Property(e => e.CourseId).HasColumnName("course_id");
 
             b.HasOne(m => m.Teacher)
                 .WithMany()

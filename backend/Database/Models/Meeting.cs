@@ -12,6 +12,9 @@ public class Meeting
     public DateTime? ScheduledStartTime { get; set; }
     public int Duration { get; set; } // in minutes
     
+    // Foreign key to Course
+    public Guid? CourseId { get; set; }
+    
     // Foreign keys for Teacher and Student
     public Guid TeacherId { get; set; }
     public User Teacher { get; set; } = null!;

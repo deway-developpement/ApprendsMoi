@@ -296,7 +296,8 @@ public class ZoomController : ControllerBase
                 ParticipantSignature = participantSignature,
                 SdkKey = _zoomService.GetSdkKey(),
                 TeacherId = meeting.TeacherId,
-                StudentId = meeting.StudentId
+                StudentId = meeting.StudentId,
+                CourseId = meeting.CourseId
             });
         }
         catch (Exception ex)

@@ -182,7 +182,7 @@ public class CourseService : ICourseService {
         // Auto-create zoom meeting when course is marked as CONFIRMED
         if (course.Status == CourseStatus.CONFIRMED && previousStatus != CourseStatus.CONFIRMED) {
             try {
-                await _zoomService.CreateInstantMeetingAsync(course.TeacherId, course.StudentId, course.StartDate, course.DurationMinutes, $"ApprendsMoi - Course {course.Id}");
+                await _zoomService.CreateInstantMeetingAsync(course.TeacherId, course.StudentId, course.StartDate, course.DurationMinutes, $"ApprendsMoi - Course {course.Id}", courseId);
             }
             catch (Exception ex) {
                 // Log but don't fail the course update if meeting creation fails
