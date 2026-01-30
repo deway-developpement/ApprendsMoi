@@ -14,7 +14,7 @@
   padding: 0.5rem 4rem;
   margin:0;
   height: 80px;
-  width: 100%; /* or 100% to avoid horizontal scrollbars */
+  width: 100vw; /* or 100% to avoid horizontal scrollbars */
   font-family: 'Poppins', sans-serif;
   font-size: $regularFontSize;
   box-sizing: border-box;
