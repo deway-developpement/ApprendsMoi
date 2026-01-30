@@ -3,9 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { SubjectService, SubjectDto, TeacherSubjectDto, CreateTeacherSubjectDto } from '../../../services/subject.service';
-import { AuthService } from '../../../services/auth.service';
-import { ToastService } from '../../../services/toast.service';
+import { SubjectService, SubjectDto, TeacherSubjectDto, CreateTeacherSubjectDto } from '../../../../services/subject.service';
+import { AuthService } from '../../../../services/auth.service';
+import { ToastService } from '../../../../services/toast.service';
 
 @Component({
   selector: 'app-subject-selector',
