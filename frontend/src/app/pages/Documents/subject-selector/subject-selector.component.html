@@ -1,0 +1,97 @@
+<div class="subject-selector">
+  <h2>Matières enseignées</h2>
+  <p class="section-description">
+    Sélectionnez les matières que vous souhaitez enseigner et définissez votre tarif horaire
+  </p>
+
+  <!-- Liste des matières enseignées -->
+  <div class="teacher-subjects-list" *ngIf="teacherSubjects.length > 0">
+    <h3>Vos matières</h3>
+    <div class="subject-item" *ngFor="let subject of teacherSubjects">
+      <div class="subject-info">
+        <span class="subject-name">{{ subject.subjectName }}</span>
+        <span class="subject-price">{{ subject.pricePerHour }}€/h</span>
+      </div>
+      
+      <div class="subject-actions">
+        <button
+          *ngIf="confirmingDeleteId !== subject.subjectId"
+          (click)="confirmRemoveSubject(subject.subjectId)"
+          [attr.aria-label]="'Retirer ' + subject.subjectName"
+          class="btn btn-danger btn-small"
+        >
+          Retirer
+        </button>
+        
+        <div *ngIf="confirmingDeleteId === subject.subjectId" class="confirm-delete">
+          <span class="confirm-text">Confirmer ?</span>
+          <button
+            (click)="removeSubject(subject.subjectId)"
+            class="btn btn-danger btn-small"
+          >
+            Oui
+          </button>
+          <button
+            (click)="cancelRemove()"
+            class="btn btn-secondary btn-small"
+          >
+            Non
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="teacherSubjects.length === 0">
+    <p>Vous n'avez pas encore sélectionné de matières à enseigner</p>
+  </div>
+
+  <!-- Formulaire d'ajout -->
+  <div class="add-subject-form">
+    <h3>Ajouter une matière</h3>
+    
+    <div class="form-row">
+      <div class="form-group">
+        <label for="subject-select">Matière</label>
+        <select
+          id="subject-select"
+          [(ngModel)]="selectedSubjectId"
+          [disabled]="loading || getAvailableSubjects().length === 0"
+          class="form-control"
+        >
+          <option value="">-- Sélectionnez une matière --</option>
+          <option *ngFor="let subject of getAvailableSubjects()" [value]="subject.id">
+            {{ subject.name }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="price-input">Prix par heure (€)</label>
+        <input
+          type="number"
+          id="price-input"
+          [(ngModel)]="pricePerHour"
+          [disabled]="loading"
+          min="0"
+          step="0.5"
+          class="form-control"
+          placeholder="Ex: 25"
+        />
+      </div>
+
+      <button
+        (click)="addSubject()"
+        [disabled]="loading || !selectedSubjectId || pricePerHour <= 0"
+        [attr.aria-busy]="loading"
+        class="btn btn-primary"
+      >
+        {{ loading ? 'Ajout en cours...' : 'Ajouter' }}
+      </button>
+    </div>
+
+    <p class="info-text" *ngIf="getAvailableSubjects().length === 0 && allSubjects.length > 0">
+      Vous enseignez déjà toutes les matières disponibles
+    </p>
+  </div>
+</div>
