@@ -1,6 +1,7 @@
 ﻿import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { HeaderComponent } from '../../components/Header/header.component';
 import { ButtonComponent } from '../../components/shared/Button/button.component';
@@ -44,6 +45,7 @@ export class HomeStudentComponent implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
+  private readonly router = inject(Router);
   private readonly apiBaseUrl = `${environment.apiUrl}/api/zoom`;
   private readonly usersBaseUrl = `${environment.apiUrl}/api/Users`;
   private readonly userCache = new Map<string, UserDto>();
@@ -173,5 +175,17 @@ export class HomeStudentComponent implements OnInit {
 
     if (err instanceof Error) return err.message;
     return fallback;
+  }
+
+  openVisio(course: Course): void {
+    if (!course?.id) {
+      this.toastService.warning('Visio indisponible pour ce cours.');
+      return;
+    }
+    if (course.mode !== 'Visio') {
+      this.toastService.info('Ce cours ne se fait pas en visio.');
+      return;
+    }
+    this.router.navigate(['/visio', course.id]);
   }
 }

@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IconButtonComponent } from '../IconButton/icon-button.component'; // Ajustez le chemin selon votre structure
 
@@ -22,6 +22,7 @@ export interface Course {
 })
 export class CoursesScheduleComponent {
   @Input() courses: Course[] = [];
+  @Output() action = new EventEmitter<Course>();
   
   currentTab: 'upcoming' | 'history' = 'upcoming';
 
@@ -35,5 +36,9 @@ export class CoursesScheduleComponent {
 
   toggleTab(tab: 'upcoming' | 'history') {
     this.currentTab = tab;
+  }
+
+  onActionClick(course: Course) {
+    this.action.emit(course);
   }
 }

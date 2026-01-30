@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 
 // Components
 import { HeaderComponent } from '../../components/Header/header.component';
@@ -66,6 +66,7 @@ export class HomeParentComponent implements OnInit {
   private parentService = inject(ParentService);
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
+  private router = inject(Router);
 
   // État de l'utilisateur
   userName = ''; 
@@ -254,4 +255,16 @@ export class HomeParentComponent implements OnInit {
         });
       }
     }
+
+  openVisio(course: Course): void {
+    if (!course?.id) {
+      this.toastService.warning('Visio indisponible pour ce cours.');
+      return;
+    }
+    if (course.mode !== 'Visio') {
+      this.toastService.info('Ce cours ne se fait pas en visio.');
+      return;
+    }
+    this.router.navigate(['/visio', course.id]);
+  }
 }

@@ -10,7 +10,7 @@ import { AuthService, UserDto } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
 import { environment } from '../../environments/environment';
 import { RouterLink } from "@angular/router";
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { TeacherReviewsComponent } from '../../components/shared/TeacherReviews/teacher-reviews.component';
 
 interface BookingRequest {
@@ -51,6 +51,7 @@ export class HomeTeacherComponent implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
+  private readonly router = inject(Router);
   private readonly apiBaseUrl = `${environment.apiUrl}/api/zoom`;
   private readonly usersBaseUrl = `${environment.apiUrl}/api/Users`;
   private readonly userCache = new Map<string, UserDto>();
@@ -173,6 +174,18 @@ export class HomeTeacherComponent implements OnInit {
     this.pendingRevenue = this.courses
       .filter(c => c.status === 'Confirmé')
       .reduce((acc, curr) => acc + curr.price, 0);
+  }
+
+  openVisio(course: Course): void {
+    if (!course?.id) {
+      this.toastService.warning('Visio indisponible pour ce cours.');
+      return;
+    }
+    if (course.mode !== 'Visio') {
+      this.toastService.info('Ce cours ne se fait pas en visio.');
+      return;
+    }
+    this.router.navigate(['/visio', course.id]);
   }
 
   private parseUtcDate(dateString: string | null | undefined): Date {

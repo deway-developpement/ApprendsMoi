@@ -55,7 +55,12 @@
             {{ course.status }}
           </td>
           <td class="align-right">
-             <app-icon-button icon="/assets/icons/chevron_right.svg" [size]="24"></app-icon-button>
+             <app-icon-button
+               icon="/assets/icons/chevron_right.svg"
+               [size]="24"
+               (pressed)="onActionClick(course)"
+               title="Ouvrir la visio">
+             </app-icon-button>
           </td>
         </tr>
         <tr *ngIf="(currentTab === 'upcoming' ? upcomingCourses : historyCourses).length === 0">

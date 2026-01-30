@@ -102,7 +102,11 @@
       </a>
     </div>
 
-    <app-courses-schedule *ngIf="isVerified" [courses]="courses"></app-courses-schedule>
+    <app-courses-schedule
+      *ngIf="isVerified"
+      [courses]="courses"
+      (action)="openVisio($event)">
+    </app-courses-schedule>
 
     <app-teacher-reviews 
       *ngIf="isVerified && currentUserId" 
