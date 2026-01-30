@@ -72,6 +72,7 @@ public class ParentOrAdminAttribute : RequireRoleAttribute
 /// <summary>
 /// Requires the user to be a verified teacher (VerificationStatus.VERIFIED or DIPLOMA_VERIFIED)
 /// Accepts teachers who have completed identity verification OR diploma verification
+/// Non-teacher roles (Admin, Parent, Student) are allowed to pass through without verification
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false)]
 public class VerifiedTeacherOnlyAttribute : Attribute, IAsyncAuthorizationFilter
@@ -87,13 +88,14 @@ public class VerifiedTeacherOnlyAttribute : Attribute, IAsyncAuthorizationFilter
 
         // Check if user is a teacher
         var profileClaim = JwtHelper.GetUserProfileFromClaims(context.HttpContext.User);
+        
+        // If user is not a teacher (Admin, Parent, Student), allow access
         if (profileClaim != ProfileType.Teacher)
         {
-            context.Result = new ForbidResult();
-            return;
+            return; // Allow non-teachers to pass through
         }
 
-        // Get teacher verification status from database
+        // For teachers, verify their verification status
         var userId = JwtHelper.GetUserIdFromClaims(context.HttpContext.User);
         if (userId == null)
         {
