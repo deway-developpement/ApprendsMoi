@@ -104,17 +104,40 @@
             >
               Télécharger
             </button>
+            
             <button
-              (click)="deleteDocument(doc.id)"
+              *ngIf="confirmingDeleteId !== doc.id"
+              (click)="confirmDeleteDocument(doc.id)"
               [attr.aria-label]="'Supprimer ' + getDocumentTypeLabel(doc.documentType)"
               class="btn btn-danger btn-small"
             >
               Supprimer
             </button>
+            
+            <div *ngIf="confirmingDeleteId === doc.id" class="confirm-delete">
+              <span class="confirm-text">Confirmer ?</span>
+              <button
+                (click)="deleteDocument(doc.id)"
+                class="btn btn-danger btn-small"
+              >
+                Oui
+              </button>
+              <button
+                (click)="cancelDelete()"
+                class="btn btn-secondary btn-small"
+              >
+                Non
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
+
+      <!-- Subject Selector Section -->
+      <div *ngIf="isTeacher" class="section subject-selector-section">
+        <app-subject-selector></app-subject-selector>
+      </div>
 
     <!-- Admin Pending Documents Section -->
     <div *ngIf="isAdmin" class="section pending-section">

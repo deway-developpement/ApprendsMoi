@@ -7,50 +7,21 @@ import { HeaderComponent } from '../../components/Header/header.component';
 import { environment } from '../../environments/environment';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
-
-interface DocumentUploadResult {
-  fileName: string;
-  documentType: string;
-  success: boolean;
-  message: string;
-  documentId?: string;
-}
-
-interface BatchUploadResponse {
-  results: DocumentUploadResult[];
-  successCount: number;
-  failureCount: number;
-}
-
-interface TeacherDocumentDto {
-  id: string;
-  teacherId: string;
-  teacherFirstName?: string;
-  teacherLastName?: string;
-  documentType: number | string;
-  fileName: string;
-  status: number | string;
-  rejectionReason?: string;
-  uploadedAt: string;
-  reviewedAt?: string;
-  reviewedBy?: string;
-}
-
-interface PendingDocument {
-  id: string;
-  teacherId: string;
-  teacherFirstName?: string;
-  teacherLastName?: string;
-  documentType: number | string;
-  fileName: string;
-  status: number | string;
-  uploadedAt: string;
-}
+import {
+  DocumentUploadResult,
+  BatchUploadResponse,
+  TeacherDocumentDto,
+  PendingDocument,
+  DocumentType,
+  DocumentStatus
+} from './documents.models';
+import { DocumentUtils } from './documents.utils';
+import { SubjectSelectorComponent } from './components/subject-selector/subject-selector.component';
 
 @Component({
   selector: 'app-documents',
   standalone: true,
-  imports: [CommonModule, HeaderComponent],
+  imports: [CommonModule, HeaderComponent, SubjectSelectorComponent],
   templateUrl: './documents.component.html',
   styleUrls: ['./documents.component.scss']
 })
@@ -68,6 +39,7 @@ export class DocumentsComponent implements OnInit, OnDestroy {
   uploading = false;
   loadingDocuments = false;
   loadingPending = false;
+  confirmingDeleteId: string | null = null;
 
   selectedIdPaper: File | null = null;
   selectedDiplomas: File[] = [];
@@ -246,19 +218,27 @@ export class DocumentsComponent implements OnInit, OnDestroy {
     }
   }
 
-  async deleteDocument(documentId: string): Promise<void> {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce document ?')) {
-      try {
-        await this.http
-          .delete(`${environment.apiUrl}/api/documents/${documentId}`)
-          .toPromise();
+  confirmDeleteDocument(documentId: string): void {
+    this.confirmingDeleteId = documentId;
+  }
 
-        this.toastService.success('Document supprimé avec succès');
-        await this.loadMyDocuments();
-      } catch (error: any) {
-        console.error('Delete error:', error);
-        this.toastService.error('Impossible de supprimer le document');
-      }
+  cancelDelete(): void {
+    this.confirmingDeleteId = null;
+  }
+
+  async deleteDocument(documentId: string): Promise<void> {
+    try {
+      await this.http
+        .delete(`${environment.apiUrl}/api/documents/${documentId}`)
+        .toPromise();
+
+      this.toastService.success('Document supprimé avec succès');
+      this.confirmingDeleteId = null;
+      await this.loadMyDocuments();
+    } catch (error: any) {
+      console.error('Delete error:', error);
+      this.toastService.error('Impossible de supprimer le document');
+      this.confirmingDeleteId = null;
     }
   }
 
@@ -267,52 +247,19 @@ export class DocumentsComponent implements OnInit, OnDestroy {
   }
 
   getTeacherName(firstN: any, lastN: any): string {
-    const firstName = firstN || '';
-    const lastName = lastN || '';
-    const fullName = `${firstName} ${lastName}`.trim();
-    return fullName || 'Nom inconnu';
+    return DocumentUtils.getTeacherName(firstN, lastN);
   }
 
   getDocumentTypeLabel(documentType: any): string {
-    if (documentType === 0 || documentType === DocumentType.ID_PAPER) {
-      return 'Pièce d\'identité';
-    }
-    if (documentType === 1 || documentType === DocumentType.DIPLOMA) {
-      return 'Diplôme';
-    }
-    return 'Document';
+    return DocumentUtils.getDocumentTypeLabel(documentType);
   }
 
   getDocumentStatusClass(status: any): string {
-    switch (status) {
-      case 0:
-      case DocumentStatus.PENDING:
-        return 'status-pending';
-      case 1:
-      case DocumentStatus.APPROVED:
-        return 'status-approved';
-      case 2:
-      case DocumentStatus.REJECTED:
-        return 'status-rejected';
-      default:
-        return '';
-    }
+    return DocumentUtils.getDocumentStatusClass(status);
   }
 
   getDocumentStatusLabel(status: any): string {
-    switch (status) {
-      case 0:
-      case DocumentStatus.PENDING:
-        return 'En attente';
-      case 1:
-      case DocumentStatus.APPROVED:
-        return 'Approuvé';
-      case 2:
-      case DocumentStatus.REJECTED:
-        return 'Rejeté';
-      default:
-        return status?.toString() || 'Inconnu';
-    }
+    return DocumentUtils.getDocumentStatusLabel(status);
   }
 
   goBack(): void {
@@ -320,13 +267,3 @@ export class DocumentsComponent implements OnInit, OnDestroy {
   }
 }
 
-enum DocumentType {
-  ID_PAPER = 0,
-  DIPLOMA = 1
-}
-
-enum DocumentStatus {
-  PENDING = 0,
-  APPROVED = 1,
-  REJECTED = 2
-}

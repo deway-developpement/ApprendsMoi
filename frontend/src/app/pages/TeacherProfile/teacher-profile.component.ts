@@ -14,6 +14,7 @@ import { TeacherReviewsComponent } from '../../components/shared/TeacherReviews/
 import { AuthService, ProfileType, UserDto } from '../../services/auth.service';
 import { ParentService, Child } from '../../services/parent.service';
 import { ToastService } from '../../services/toast.service';
+import { SubjectService } from '../../services/subject.service';
 import { 
   TeacherBookingService, 
   CalendarDay, 
@@ -89,6 +90,7 @@ export class TeacherProfileComponent implements OnInit {
   private readonly parentService = inject(ParentService);
   private readonly toastService = inject(ToastService);
   private readonly bookingService = inject(TeacherBookingService);
+  private readonly subjectService = inject(SubjectService);
   private readonly route = inject(ActivatedRoute);
 
   teacher: TeacherProfile | null = null;
@@ -146,17 +148,19 @@ export class TeacherProfileComponent implements OnInit {
   }
 
   private loadSubjects(): void {
-    this.bookingService.getSubjects().subscribe({
-      next: (subjects: SubjectDto[]) => {
-        this.subjectOptions = subjects.map(s => ({
-          label: s.name,
-          value: s.id
+    if (!this.teacherId) return;
+
+    this.subjectService.getTeacherSubjects(this.teacherId).subscribe({
+      next: (teacherSubjects) => {
+        this.subjectOptions = teacherSubjects.map(ts => ({
+          label: `${ts.subjectName} (${ts.pricePerHour}€/h)`,
+          value: ts.subjectId
         }));
         if (this.subjectOptions.length > 0) {
           this.selectedSubjectId = this.subjectOptions[0].value;
         }
       },
-      error: () => this.toastService.error('Impossible de charger les matières.')
+      error: () => this.toastService.error('Impossible de charger les matières de ce professeur.')
     });
   }
 

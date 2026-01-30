@@ -63,8 +63,8 @@
               <p class="subtext">{{ pendingRequests[0].subject }} • {{ pendingRequests[0].date | date:'dd/MM HH:mm' }}</p>
             </div>
             <div class="widget-action-row">
-              <app-button variant="primary" class="small-btn">Accepter</app-button>
-              <app-button variant="ghost" class="small-btn">Refuser</app-button>
+              <app-button variant="primary" class="small-btn" (click)="acceptRequest(pendingRequests[0])">Accepter</app-button>
+              <app-button variant="ghost" class="small-btn" (click)="rejectRequest(pendingRequests[0])">Refuser</app-button>
             </div>
           </div>
           <ng-template #noRequests>
@@ -96,7 +96,7 @@
       </div>
     </section>
 
-    <div class="card-header-actions">
+    <div *ngIf="isVerified" class="card-header-actions">
       <a class="see-more-btn" routerLink="/teacher/planning">
         Mettre à jour mes disponibilités 
       </a>
@@ -117,7 +117,7 @@
         <p>Chargement des avis...</p>
     </div>
 
-    <section class="documents-section">
+    <section *ngIf="isVerified" class="documents-section">
       <div class="section-header">
         <h3>📄 Mes documents de vérification</h3>
       </div>

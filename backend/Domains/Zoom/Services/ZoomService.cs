@@ -9,7 +9,7 @@ namespace backend.Domains.Zoom;
 
 public interface IZoomService
 {
-    Task<Meeting> CreateInstantMeetingAsync(Guid teacherId, Guid studentId, DateTime scheduledTime, int duration, string topic = "ApprendsMoi - Session");
+    Task<Meeting> CreateInstantMeetingAsync(Guid teacherId, Guid studentId, DateTime scheduledTime, int duration, string topic = "ApprendsMoi - Session", Guid? courseId = null);
     string GenerateSignature(string meetingNumber, int role = 0);
     string GetSdkKey();
 }
@@ -35,7 +35,7 @@ public class ZoomService : IZoomService
         return await _tokenProvider.GetAccessTokenAsync();
     }
 
-    public async Task<Meeting> CreateInstantMeetingAsync(Guid teacherId, Guid studentId, DateTime scheduledTime, int duration, string topic = "ApprendsMoi - Session")
+    public async Task<Meeting> CreateInstantMeetingAsync(Guid teacherId, Guid studentId, DateTime scheduledTime, int duration, string topic = "ApprendsMoi - Session", Guid? courseId = null)
     {
         var token = await GetAccessTokenAsync();
         
@@ -98,7 +98,8 @@ public class ZoomService : IZoomService
             ScheduledStartTime = NormalizeZoomStartTime(zoomMeeting.StartTime),
             Duration = zoomMeeting.Duration,
             TeacherId = teacherId,
-            StudentId = studentId
+            StudentId = studentId,
+            CourseId = courseId
         };
         
         _dbContext.Meetings.Add(newMeeting);

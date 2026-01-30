@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom, forkJoin } from 'rxjs';
 import { HeaderComponent } from '../../components/Header/header.component';
@@ -72,6 +72,7 @@ export class PlanningManagementTeacherComponent implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
+  private readonly location = inject(Location);
   private readonly apiBaseUrl = `${environment.apiUrl}/api/availabilities`;
 
   weekDays: CalendarDay[] = [];
@@ -99,6 +100,10 @@ export class PlanningManagementTeacherComponent implements OnInit {
     if (this.teacherId) {
       await this.loadAvailabilities();
     }
+  }
+
+  goBack(): void {
+    this.location.back();
   }
 
   async reload(): Promise<void> {

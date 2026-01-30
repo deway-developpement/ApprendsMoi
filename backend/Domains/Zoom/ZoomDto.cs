@@ -74,6 +74,7 @@ public class MeetingDetailsResponse
     public string SdkKey { get; set; } = string.Empty;
     public Guid TeacherId { get; set; }
     public Guid StudentId { get; set; }
+    public Guid? CourseId { get; set; }
 }
 
 public class SignatureResponse
