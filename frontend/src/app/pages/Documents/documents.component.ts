@@ -16,7 +16,7 @@ import {
   DocumentStatus
 } from './documents.models';
 import { DocumentUtils } from './documents.utils';
-import { SubjectSelectorComponent } from './subject-selector/subject-selector.component';
+import { SubjectSelectorComponent } from './components/subject-selector/subject-selector.component';
 
 @Component({
   selector: 'app-documents',

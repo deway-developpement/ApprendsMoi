@@ -15,9 +15,31 @@ import { TeacherReviewsComponent } from '../../components/shared/TeacherReviews/
 
 interface BookingRequest {
   id: number;
+  courseId: string;
   parentName: string;
   subject: string;
   date: Date;
+}
+
+interface CourseDto {
+  id: string;
+  teacherId: string;
+  teacherName: string;
+  studentId: string;
+  studentName: string;
+  subjectId: string;
+  subjectName: string;
+  status: string;
+  format: string;
+  startDate: string;
+  endDate: string;
+  durationMinutes: number;
+  priceSnapshot: number;
+  commissionSnapshot: number;
+  meetingLink?: string | null;
+  studentAttended: boolean;
+  attendanceMarkedAt?: string | null;
+  createdAt: string;
 }
 
 interface MeetingResponse {
@@ -53,6 +75,7 @@ export class HomeTeacherComponent implements OnInit {
   private readonly toastService = inject(ToastService);
   private readonly router = inject(Router);
   private readonly apiBaseUrl = `${environment.apiUrl}/api/zoom`;
+  private readonly coursesBaseUrl = `${environment.apiUrl}/api/courses`;
   private readonly usersBaseUrl = `${environment.apiUrl}/api/Users`;
   private readonly userCache = new Map<string, UserDto>();
 
@@ -72,6 +95,9 @@ export class HomeTeacherComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     await this.loadUser();
     await this.loadMeetings();
+    if (this.currentUserId) {
+      await this.loadPendingCourses();
+    }
   }
 
   private async loadUser(): Promise<void> {
@@ -139,6 +165,35 @@ export class HomeTeacherComponent implements OnInit {
     }
   }
 
+  private async loadPendingCourses(): Promise<void> {
+    if (!this.currentUserId) return;
+
+    try {
+      const courses = await firstValueFrom(
+        this.http.get<CourseDto[]>(`${this.coursesBaseUrl}/teacher/${this.currentUserId}`)
+      );
+
+      const pendingCourses = courses.filter(c => c.status === 'PENDING');
+
+      this.pendingRequests = await Promise.all(
+        pendingCourses.map(async (course) => {
+          const parentName = await this.getUserName(course.studentId, 'Parent');
+          const courseDate = this.parseUtcDate(course.startDate);
+
+          return {
+            id: parseInt(course.id.substring(0, 8), 16),
+            courseId: course.id,
+            parentName,
+            subject: course.subjectName,
+            date: courseDate
+          } as BookingRequest;
+        })
+      );
+    } catch (err) {
+      this.toastService.error(this.getErrorMessage(err, 'Impossible de charger les demandes en attente.'));
+    }
+  }
+
   private async getUserName(userId: string, fallback: string): Promise<string> {
     if (!userId) {
       return fallback;
@@ -186,6 +241,35 @@ export class HomeTeacherComponent implements OnInit {
       return;
     }
     this.router.navigate(['/visio', course.id]);
+  }
+
+  async acceptRequest(request: BookingRequest): Promise<void> {
+    try {
+      await firstValueFrom(
+        this.http.put(`${this.coursesBaseUrl}/${request.courseId}`, {
+          status: 'CONFIRMED'
+        })
+      );
+      
+      this.toastService.success('Demande acceptée avec succès');
+      await this.loadPendingCourses();
+      await this.loadMeetings();
+    } catch (err) {
+      this.toastService.error(this.getErrorMessage(err, 'Impossible d\'accepter la demande.'));
+    }
+  }
+
+  async rejectRequest(request: BookingRequest): Promise<void> {
+    try {
+      await firstValueFrom(
+        this.http.delete(`${this.coursesBaseUrl}/${request.courseId}`)
+      );
+      
+      this.toastService.success('Demande refusée');
+      await this.loadPendingCourses();
+    } catch (err) {
+      this.toastService.error(this.getErrorMessage(err, 'Impossible de refuser la demande.'));
+    }
   }
 
   private parseUtcDate(dateString: string | null | undefined): Date {
