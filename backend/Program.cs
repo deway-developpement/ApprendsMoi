@@ -10,6 +10,7 @@ using backend.Domains.Ratings.Services;
 using backend.Domains.Documents;
 using backend.Domains.Stats.Services;
 using backend.Domains.Subjects.Services;
+using backend.Domains.TeacherSubjects.Services;
 using backend.Helpers;
 using FluentMigrator.Runner;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -110,6 +111,9 @@ builder.Services.AddScoped<ICourseService, CourseService>();
 
 // Subject services
 builder.Services.AddScoped<ISubjectService, SubjectService>();
+
+// TeacherSubject services
+builder.Services.AddScoped<ITeacherSubjectService, TeacherSubjectService>();
 
 // Payment services
 builder.Services.AddScoped<IPaymentService, PaymentService>();
