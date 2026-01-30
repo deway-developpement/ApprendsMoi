@@ -96,7 +96,7 @@
       </div>
     </section>
 
-    <div class="card-header-actions">
+    <div *ngIf="isVerified" class="card-header-actions">
       <a class="see-more-btn" routerLink="/teacher/planning">
         Mettre à jour mes disponibilités 
       </a>
@@ -117,7 +117,7 @@
         <p>Chargement des avis...</p>
     </div>
 
-    <section class="documents-section">
+    <section *ngIf="isVerified" class="documents-section">
       <div class="section-header">
         <h3>📄 Mes documents de vérification</h3>
       </div>
