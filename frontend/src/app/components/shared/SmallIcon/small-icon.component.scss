@@ -7,12 +7,27 @@
   border-radius: 50%;
   padding: 0;
   user-select: none;
+  flex-shrink: 0; // Prevent squishing in flex containers
 
   .small-icon__img {
     width: 55%;
     height: 55%;
     object-fit: contain;
-    /* L'icône elle-même reste blanche sur le fond coloré */
     filter: brightness(0) invert(1);
+  }
+
+  &.small-icon--inverted {
+    border-radius: 0; // Remove circle if only showing the icon
+
+    .small-icon__mask {
+      width: 100%;
+      height: 100%;
+      mask-size: contain;
+      mask-repeat: no-repeat;
+      mask-position: center;
+      -webkit-mask-size: contain;
+      -webkit-mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+    }
   }
 }

@@ -11,8 +11,21 @@
       <p class="subtitle">Cliquez sur un créneau pour ajouter ou retirer une disponibilité. Les créneaux enregistrés apparaissent remplis.</p>
 
       <div class="hero-meta">
-        <div class="meta-card">Semaine : {{ weekRangeLabel }}</div>
-        <div class="meta-card">{{ timeZoneLabel }}</div>
+        <div class="week-navigation">
+          <button class="nav-btn" (click)="changeWeek(-1)" [disabled]="isLoading">
+            <span class="arrow">←</span> Semaine précédente
+          </button>
+          
+          <div class="meta-card range">
+            <span class="icon-calendar">📅</span> {{ weekRangeLabel }}
+          </div>
+
+          <button class="nav-btn" (click)="changeWeek(1)" [disabled]="isLoading">
+            Semaine suivante <span class="arrow">→</span>
+          </button>
+        </div>
+        
+        <div class="meta-card tz">{{ timeZoneLabel }}</div>
       </div>
 
     </div>

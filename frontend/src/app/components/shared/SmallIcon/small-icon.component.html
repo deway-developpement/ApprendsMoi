@@ -1,13 +1,22 @@
 <div
   class="small-icon"
+  [class.small-icon--inverted]="invertColor"
   [style.width.px]="size"
   [style.height.px]="size"
-  [style.background-color]="color" 
+  [style.background-color]="invertColor ? 'transparent' : color" 
 >
   <img
-    *ngIf="icon"
+    *ngIf="icon && !invertColor"
     [src]="icon"
     alt="icon"
     class="small-icon__img"
   />
+
+  <div 
+    *ngIf="icon && invertColor"
+    class="small-icon__mask"
+    [style.background-color]="color"
+    [style.mask-image]="'url(' + icon + ')'"
+    [style.-webkit-mask-image]="'url(' + icon + ')'">
+  </div>
 </div>

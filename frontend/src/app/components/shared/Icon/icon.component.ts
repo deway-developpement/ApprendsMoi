@@ -11,4 +11,5 @@ import { CommonModule } from '@angular/common';
 export class IconComponent {
   @Input() icon!: string;
   @Input() size = 32;
+  @Input() invertColor = false; // New boolean to toggle behavior
 }

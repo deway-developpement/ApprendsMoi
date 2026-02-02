@@ -23,7 +23,9 @@
             [color]="getStarColor(stats.averageRating)"
             class="star-icon"
             [class.filled]="star === 1"
-            [size]="40">
+            [size]="40"
+            [invertColor]="true"
+            >
           </app-small-icon>
         </div>
         <span class="total-reviews">({{ stats.totalRatings }} avis)</span>
@@ -44,7 +46,9 @@
                [icon]="i <= review.rating ? 'assets/icons/star-fill.svg' : 'assets/icons/star.svg'"
                [color]="getStarColor(review.rating)"
                class="mini-star"
-               [size]="30">
+               [size]="30"
+               [invertColor]="true"
+               >
              </app-small-icon>
           </div>
         </div>

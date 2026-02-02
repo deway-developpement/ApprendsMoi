@@ -10,6 +10,7 @@ import { ButtonComponent } from '../../components/shared/Button/button.component
 import { SelectComponent, SelectOption } from '../../components/shared/Select/select.component';
 import { ToastService } from '../../services/toast.service';
 import { environment } from '../../environments/environment';
+import { IconComponent } from '../../components/shared/Icon/icon.component';
 
 interface SearchCriteria {
   subject: string | number | null;
@@ -46,6 +47,7 @@ interface TeacherCard {
   isVerified: boolean;
   isTop: boolean;
   avatarColor: string;
+  verificationStatus?: number | null;
 }
 
 @Component({
@@ -57,7 +59,8 @@ interface TeacherCard {
     HeaderComponent,
     SearchBarComponent,
     ButtonComponent,
-    SelectComponent
+    SelectComponent,
+    IconComponent
   ],
   templateUrl: './search-for-teachers.component.html',
   styleUrls: ['./search-for-teachers.component.scss']
@@ -154,6 +157,7 @@ export class SearchForTeachersComponent implements OnInit {
 
     try {
       const data = await firstValueFrom(this.http.get<TeacherDto[]>(url));
+      console.log(data);
       this.teachers = (data ?? []).map((teacher) => this.mapTeacherCard(teacher));
       this.updateResults();
     } catch (err) {
@@ -167,6 +171,9 @@ export class SearchForTeachersComponent implements OnInit {
 
   private updateResults() {
     let result = [...this.teachers];
+
+    console.log("UPDATE")
+    console.log("res", result);
 
     if (this.premiumOnly) {
       result = result.filter(teacher => teacher.isPremium);
@@ -205,7 +212,7 @@ export class SearchForTeachersComponent implements OnInit {
   }
 
   private mapTeacherCard(teacher: TeacherDto): TeacherCard {
-    const fullName = `${teacher.firstName} ${teacher.lastName}`.trim();
+    let fullName = `${teacher.firstName} ${teacher.lastName}`.trim();
     const city = teacher.city || 'Ville inconnue';
     const travelRadius = teacher.travelRadiusKm ?? 0;
     const format = travelRadius >= 10 ? 'Hybride' : travelRadius > 0 ? 'Domicile' : 'Visio';
@@ -226,7 +233,8 @@ export class SearchForTeachersComponent implements OnInit {
       isPremium: teacher.isPremium,
       isVerified: teacher.verificationStatus === 1,
       isTop: teacher.isPremium,
-      avatarColor: this.pickAvatarColor(teacher.id)
+      avatarColor: this.pickAvatarColor(teacher.id),
+      verificationStatus: teacher.verificationStatus
     };
   }
 

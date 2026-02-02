@@ -4,7 +4,22 @@
   
   <div class="dashboard-header-bg">
     <div class="header-content">
-      <h1 class="welcome-title">Bonjour {{ teacherName }} 👋</h1>
+      <div class="teacher-header">
+        <h3 class="welcome-title">Bonjour {{ teacherName }}</h3>
+        
+        <app-icon 
+          *ngIf="verificationStatus === 3"
+          [icon]="'assets/icons/verified-user.svg'" 
+          [size]="25"
+          class="verified-icon"
+          title="Profil Vérifié"
+          [invertColor]="true"
+        >
+        </app-icon>
+
+        <h3 class="welcome-title">👋</h3>
+
+      </div>
       <p class="welcome-subtitle" *ngIf="isVerified">Voici le résumé de votre activité pour ce mois.</p>
       <p class="welcome-subtitle warning" *ngIf="!isVerified">⚠️ Votre compte n'est pas encore vérifié. Veuillez soumettre vos documents d'identité.</p>
     </div>

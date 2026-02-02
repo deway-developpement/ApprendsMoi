@@ -65,7 +65,19 @@
             {{ teacher.name.split(' ')[0].charAt(0) }}{{ teacher.name.split(' ')[1]?.charAt(0) || '' }}
           </div>
           <div class="title-block">
-            <h3>{{ teacher.name }}</h3>
+            <div class="teacher-header">
+              <h3 class="teacher-name">{{ teacher.name }}</h3>
+              
+              <app-icon 
+                *ngIf="teacher.verificationStatus === 3"
+                [icon]="'assets/icons/verified-user.svg'" 
+                [size]="35"
+                class="verified-icon"
+                title="Profil Vérifié"
+                [invertColor]="true"
+              >
+              </app-icon>
+            </div>
             <p>{{ teacher.city }} • {{ teacher.format }}</p>
           </div>
           <div class="price">

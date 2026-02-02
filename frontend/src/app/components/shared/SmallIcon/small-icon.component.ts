@@ -11,5 +11,6 @@ import { CommonModule } from '@angular/common';
 export class SmallIconComponent {
   @Input() icon!: string;
   @Input() size = 24;
-  @Input() color = '#22c55e'; // Ton vert par défaut (ex: $green)
+  @Input() color = '#4EE381'; // Defaulting to your $green hex
+  @Input() invertColor = false; // Toggle between Box mode and Icon-only mode
 }
