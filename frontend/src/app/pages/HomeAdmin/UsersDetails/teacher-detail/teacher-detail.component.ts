@@ -9,6 +9,7 @@ import { UserDto } from '../../../../services/auth.service';
 import { ButtonComponent } from '../../../../components/shared/Button/button.component';
 import { SmallIconComponent } from '../../../../components/shared/SmallIcon/small-icon.component';
 import { TeacherReviewsComponent } from '../../../../components/shared/TeacherReviews/teacher-reviews.component';
+import { IconComponent } from '../../../../components/shared/Icon/icon.component';
 
 @Component({
   selector: 'app-teacher-detail',
@@ -18,7 +19,8 @@ import { TeacherReviewsComponent } from '../../../../components/shared/TeacherRe
     RouterModule,
     ButtonComponent,
     SmallIconComponent,
-    TeacherReviewsComponent
+    TeacherReviewsComponent,
+    IconComponent
   ],
   templateUrl: './teacher-detail.component.html',
   styleUrls: ['./teacher-detail.component.scss']

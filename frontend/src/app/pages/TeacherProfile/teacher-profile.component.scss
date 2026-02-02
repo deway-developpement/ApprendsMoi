@@ -724,3 +724,31 @@
     min-width: 500px; // Ensure it doesn't break layout
   }
 }
+
+.teacher-header {
+  display: flex;
+  align-items: center;
+  gap: $marginSmall;
+
+  .teacher-name {
+    font-size: $titleFontSize;
+    color: $PrimaryColor;
+    margin: 0;
+  }
+
+  .verified-icon {
+    // We use colorVerified from variables.scss
+    // If the icon is an SVG mask or font-icon, we apply the color here
+    color: $colorVerified;
+    display: flex;
+    align-items: center;
+    
+    // Smooth entrance if the status loads dynamically
+    animation: fadeIn $transitionFast;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}

@@ -15,6 +15,7 @@ import { AuthService, ProfileType, UserDto } from '../../services/auth.service';
 import { ParentService, Child } from '../../services/parent.service';
 import { ToastService } from '../../services/toast.service';
 import { SubjectService } from '../../services/subject.service';
+import { IconComponent } from '../../components/shared/Icon/icon.component';
 import { 
   TeacherBookingService, 
   CalendarDay, 
@@ -56,6 +57,7 @@ interface TeacherProfile {
   isPremium: boolean;
   isVerified: boolean;
   isTop: boolean;
+  verificationStatus?: number;
 }
 
 interface TeacherDto {
@@ -80,7 +82,8 @@ interface TeacherDto {
     HeaderComponent,
     ButtonComponent,
     SelectComponent,
-    TeacherReviewsComponent
+    TeacherReviewsComponent,
+    IconComponent,
   ],
   templateUrl: './teacher-profile.component.html',
   styleUrls: ['./teacher-profile.component.scss']
@@ -351,7 +354,8 @@ export class TeacherProfileComponent implements OnInit {
       highlights: [{ label: 'Élèves', value: '80+' }, { label: 'Réponse', value: '< 2h' }, { label: 'Cours', value: '300+' }],
       availability: [{ label: 'Lun', time: '18:00', format: radius > 0 ? 'Domicile' : 'Visio' }],
       languages: ['Français'], education: ['Enseignant'], certifications: ['En cours'],
-      avatarColor: dto.isPremium ? '#fbbf24' : '#1a365d', isPremium: dto.isPremium, isVerified: dto.verificationStatus === 1, isTop: dto.isPremium
+      avatarColor: dto.isPremium ? '#fbbf24' : '#1a365d', isPremium: dto.isPremium, isVerified: dto.verificationStatus === 1, isTop: dto.isPremium,
+      verificationStatus: dto.verificationStatus
     };
   }
 

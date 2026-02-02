@@ -14,7 +14,19 @@
           </div>
           <div class="name-block">
             <div class="name-row">
-              <h1>{{ t.name }}</h1>
+              <div class="teacher-header">
+                <h3 class="teacher-name">{{ t.name }}</h3>
+                
+                <app-icon 
+                  *ngIf="t.verificationStatus === 3"
+                  [icon]="'assets/icons/verified-user.svg'" 
+                  [size]="35"
+                  class="verified-icon"
+                  title="Profil Vérifié"
+                  [invertColor]="true"
+                >
+                </app-icon>
+              </div>
               <span class="badge premium" *ngIf="t.isPremium">Premium</span>
               <span class="badge verified" *ngIf="t.isVerified">Vérifié</span>
               <span class="badge top" *ngIf="t.isTop">Top prof</span>

@@ -12,6 +12,7 @@ import { environment } from '../../environments/environment';
 import { RouterLink } from "@angular/router";
 import { RouterModule, Router } from '@angular/router';
 import { TeacherReviewsComponent } from '../../components/shared/TeacherReviews/teacher-reviews.component';
+import { IconComponent } from '../../components/shared/Icon/icon.component';
 
 interface BookingRequest {
   id: number;
@@ -66,7 +67,9 @@ interface MeetingResponse {
     CoursesScheduleComponent,
     RouterLink,
     RouterModule,
-    TeacherReviewsComponent
+    TeacherReviewsComponent,
+    IconComponent
+    
 ]
 })
 export class HomeTeacherComponent implements OnInit {
@@ -82,6 +85,7 @@ export class HomeTeacherComponent implements OnInit {
   teacherName = 'Professeur';
   currentUserId: string | null = null;
   isVerified = false;
+  verificationStatus: 0 | 1 | 2 | 3 | undefined = 0;
 
   // Data
   nextCourse: Course | null = null;
@@ -125,6 +129,7 @@ export class HomeTeacherComponent implements OnInit {
     if (displayName) {
       this.teacherName = displayName;
     }
+    this.verificationStatus = user.verificationStatus;
   }
 
   private async loadMeetings(): Promise<void> {

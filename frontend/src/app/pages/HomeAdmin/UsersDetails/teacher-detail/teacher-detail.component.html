@@ -8,7 +8,18 @@
           {{ user.firstName?.charAt(0) }}
         </div>
         <div class="text-info">
+          <div class="teacher-header">
           <h1 class="teacher-name">{{ user.firstName }} {{ user.lastName }}</h1>
+          <app-icon 
+            *ngIf="user.verificationStatus === 3"
+            [icon]="'assets/icons/verified-user.svg'" 
+            [size]="35"
+            class="verified-icon"
+            title="Profil Vérifié"
+            [invertColor]="true"
+          >
+          </app-icon>
+        </div>
           <div class="badges-row">
             <span class="badge-role">Professeur</span>
             <span class="teacher-email">{{ user.email }}</span>
