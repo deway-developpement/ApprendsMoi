@@ -329,3 +329,59 @@ h1 {
   color: $PrimaryColorHover;
   text-align: center;
 }
+
+.hero-meta {
+  display: flex;
+  flex-direction: column;
+  gap: $marginMedium;
+  margin-top: $marginLarge;
+
+  .week-navigation {
+    display: flex;
+    align-items: center;
+    gap: $marginSmall;
+    
+    .nav-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 0.6rem 1rem;
+      border-radius: $borderRadius;
+      cursor: pointer;
+      font-size: $smallerFontSize;
+      transition: all $transitionFast;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      &:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-1px);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      
+      .arrow {
+        font-weight: bold;
+      }
+    }
+  }
+
+  .meta-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.6rem 1rem;
+    border-radius: $borderRadius;
+    font-size: $smallerFontSize;
+    width: fit-content;
+
+    &.range {
+      font-weight: 600;
+      background: $SecondaryColor; // On met la semaine en avant avec la couleur secondaire
+      border: none;
+      color: white;
+    }
+  }
+}

@@ -96,6 +96,8 @@ export class TeacherProfileComponent implements OnInit {
   private readonly subjectService = inject(SubjectService);
   private readonly route = inject(ActivatedRoute);
 
+  currentReferenceDate: Date = new Date();
+
   teacher: TeacherProfile | null = null;
   teacherId: string | null = null;
 
@@ -132,11 +134,11 @@ export class TeacherProfileComponent implements OnInit {
     const idParam = this.route.snapshot.paramMap.get('id');
     this.teacherId = idParam;
     
-    this.weekDays = this.bookingService.buildCalendarDays(new Date());
+    // On génère les créneaux horaires une seule fois
     this.timeSlots = this.bookingService.generateTimeSlots();
 
     if (this.teacherId) {
-      this.loadTeacherData();
+      this.loadTeacherData(); // Cette méthode appellera refreshCalendar
     }
     this.loadUser();
     this.loadSubjects();
@@ -170,21 +172,19 @@ export class TeacherProfileComponent implements OnInit {
   private loadTeacherData(): void {
     if (!this.teacherId) return;
     this.availabilityLoading = true;
+    
+    // Mise à jour des jours affichés selon la date de référence
+    this.weekDays = this.bookingService.buildCalendarDays(this.currentReferenceDate);
+    
     this.availableSlotKeys.clear();
     this.bookedSlotKeys.clear();
+    this.selectedSlotKey = null; // Reset de la sélection lors du changement de semaine
 
     this.bookingService.getTeacherBookingData(this.teacherId).subscribe({
       next: (res) => {
         this.teacher = this.mapTeacherProfile(res.profile);
-
-        // --- MODIFICATION ICI : INVERSER L'ORDRE ---
-        // 1. On marque d'abord ce qui est réservé (Orange)
         this.applyExistingCourses(res.existingCourses); 
-        
-        // 2. On calcule les dispos ensuite (Bleu)
         this.applyAvailabilities(res.availabilities);
-        // -------------------------------------------
-
         this.availabilityLoading = false;
       },
       error: (err) => {
@@ -193,6 +193,21 @@ export class TeacherProfileComponent implements OnInit {
       }
     });
   }
+
+  nextWeek(): void {
+    this.currentReferenceDate = new Date(this.currentReferenceDate.setDate(this.currentReferenceDate.getDate() + 7));
+    this.loadTeacherData();
+  }
+
+  previousWeek(): void {
+    // Optionnel : Empêcher de revenir avant la semaine actuelle
+    const startOfThisWeek = new Date(); // Logique simplifiée
+    if (this.currentReferenceDate <= startOfThisWeek) return;
+
+    this.currentReferenceDate = new Date(this.currentReferenceDate.setDate(this.currentReferenceDate.getDate() - 7));
+    this.loadTeacherData();
+  }
+
   async bookSession(): Promise<void> {
   if (!this.canBook) {
     this.toastService.warning('La réservation est disponible pour les parents.');

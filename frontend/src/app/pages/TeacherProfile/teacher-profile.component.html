@@ -110,7 +110,30 @@
               <span class="legend-pill past">Passé</span>
             </div>
 
+            <div class="calendar-nav">
+              <app-button 
+                variant="ghost" 
+                size="small" 
+                (click)="previousWeek()"
+                [disabled]="availabilityLoading">
+                ← Semaine précédente
+              </app-button>
+
+              <span class="nav-date-range" *ngIf="weekDays.length > 0">
+                {{ weekDays[0].dateLabel }} — {{ weekDays[6].dateLabel }}
+              </span>
+
+              <app-button 
+                variant="ghost" 
+                size="small" 
+                (click)="nextWeek()"
+                [disabled]="availabilityLoading">
+                Semaine suivante →
+              </app-button>
+            </div>
+
             <div class="calendar-grid">
+              
               <div class="calendar-header">
                 <div class="calendar-corner"></div>
                 <div class="calendar-day" *ngFor="let day of weekDays">

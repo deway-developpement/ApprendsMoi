@@ -75,6 +75,8 @@ export class PlanningManagementTeacherComponent implements OnInit {
   private readonly location = inject(Location);
   private readonly apiBaseUrl = `${environment.apiUrl}/api/availabilities`;
 
+  private currentReferenceDate: Date = new Date();
+
   weekDays: CalendarDay[] = [];
   timeSlots: TimeSlot[] = [];
   summarySlots: SummarySlot[] = [];
@@ -95,8 +97,25 @@ export class PlanningManagementTeacherComponent implements OnInit {
   private readonly bookedSlotKeys = new Set<string>();
 
   async ngOnInit(): Promise<void> {
-    this.buildCalendar();
+    this.buildCalendar(this.currentReferenceDate); // Passer la date ici
     await this.loadTeacher();
+    if (this.teacherId) {
+      await this.loadAvailabilities();
+    }
+  }
+
+  async changeWeek(offset: number): Promise<void> {
+    if (this.isLoading || this.isSaving) return;
+
+    // Calculer la nouvelle date de référence (+7 ou -7 jours)
+    const newDate = new Date(this.currentReferenceDate);
+    newDate.setDate(newDate.getDate() + (offset * 7));
+    this.currentReferenceDate = newDate;
+
+    // Reconstruire le calendrier local
+    this.buildCalendar(this.currentReferenceDate);
+
+    // Recharger les données depuis l'API pour cette nouvelle période
     if (this.teacherId) {
       await this.loadAvailabilities();
     }
@@ -357,8 +376,8 @@ export class PlanningManagementTeacherComponent implements OnInit {
     });
   }
 
-  private buildCalendar(): void {
-    this.weekStart = this.getStartOfCurrentWeek(new Date());
+  private buildCalendar(baseDate: Date): void {
+    this.weekStart = this.getStartOfCurrentWeek(baseDate); // Utilise baseDate au lieu de new Date()
     this.weekEnd = this.addDays(this.weekStart, 6);
 
     this.weekDays = Array.from({ length: 7 }, (_, index) => {
@@ -374,24 +393,27 @@ export class PlanningManagementTeacherComponent implements OnInit {
       };
     });
 
-    this.timeSlots = Array.from({ length: 12 }, (_, index) => {
-      const hour = 8 + index;
-      const startTime = this.formatTime(hour, 0);
-      const endTime = this.formatTime(hour + 1, 0);
-      const label = `${this.pad(hour)}:00`;
-      return {
-        startMinutes: hour * 60,
-        endMinutes: (hour + 1) * 60,
-        label,
-        rangeLabel: `${label} - ${this.pad(hour + 1)}:00`,
-        startTime,
-        endTime
-      };
-    });
-
+    // Le reste de buildCalendar (timeSlots, weekRangeLabel) ne change pas car il utilise weekStart/End
     this.weekRangeLabel = `${this.formatShortDate(this.weekStart)} - ${this.formatShortDate(this.weekEnd)}`;
     const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Heure locale';
     this.timeZoneLabel = `Fuseau horaire : ${timeZone}`;
+    
+    // Important : on génère les créneaux horaires si ce n'est pas déjà fait
+    if (this.timeSlots.length === 0) {
+      this.timeSlots = Array.from({ length: 12 }, (_, index) => {
+          const hour = 8 + index;
+          const startTime = this.formatTime(hour, 0);
+          const label = `${this.pad(hour)}:00`;
+          return {
+            startMinutes: hour * 60,
+            endMinutes: (hour + 1) * 60,
+            label,
+            rangeLabel: `${label} - ${this.pad(hour + 1)}:00`,
+            startTime,
+            endTime: this.formatTime(hour + 1, 0)
+          };
+        });
+    }
   }
 
   private getStartOfCurrentWeek(baseDate: Date): Date {
