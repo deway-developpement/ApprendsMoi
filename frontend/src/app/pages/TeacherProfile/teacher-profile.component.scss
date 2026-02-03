@@ -260,9 +260,13 @@
 
 .calendar-title {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: $marginMedium;
+
+  > div:first-child {
+    flex: 1;
+  }
 
   h3 {
     margin: 0;
@@ -288,33 +292,40 @@
   gap: 0.5rem;
 }
 
-.legend-pill {
-  padding: 0.25rem 0.6rem;
-  border-radius: 999px;
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   font-size: $tinierFontSize;
-  font-weight: 600;
+  font-weight: 500;
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba($PrimaryColor, 0.08);
+  border: 1px solid rgba($PrimaryColor, 0.2);
+  flex-shrink: 0;
 
   &.available {
     background: rgba($green, 0.3);
-    color: $PrimaryActive;
-    border: 1px solid rgba($PrimaryActive, 0.2);
+    border: 1px dashed $green;
   }
 
   &.selected {
     background: $PrimaryActive;
-    color: #fff;
-    border: 1px solid $PrimaryActive;
+    border-color: $PrimaryActive;
   }
 
   &.booked {
     background: $SecondaryColor;
-    color: #fff;
-    border: 1px solid $SecondaryColor;
+    border-color: $SecondaryColor;
   }
 
   &.past {
-    background: rgba($PrimaryColor, 0.05);
-    color: rgba($PrimaryColor, 0.4);
+    background: rgba($PrimaryColor, 0.1);
+    border-color: rgba($PrimaryColor, 0.2);
   }
 }
 
@@ -759,7 +770,6 @@
   justify-content: space-between;
   margin-bottom: $marginMedium;
   padding: $paddingSmall;
-  background-color: #f8fafc; // Très léger gris pour détacher la nav
   border-radius: $borderRadius;
 
   .nav-date-range {

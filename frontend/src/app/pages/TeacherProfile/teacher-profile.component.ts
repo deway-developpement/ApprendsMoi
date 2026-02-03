@@ -100,6 +100,16 @@ export class TeacherProfileComponent implements OnInit {
 
   currentReferenceDate: Date = new Date();
 
+  get isCurrentWeek(): boolean {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const weekStart = this.bookingService.getStartOfCurrentWeek(this.currentReferenceDate);
+    weekStart.setHours(0, 0, 0, 0);
+    const weekEnd = this.bookingService.addDays(weekStart, 6);
+    weekEnd.setHours(0, 0, 0, 0);
+    return today >= weekStart && today <= weekEnd;
+  }
+
   formatOptions: SelectOption[] = [
     { label: '💻 Visioconférence', value: CourseFormat.VISIO },
     { label: '🏠 À domicile', value: CourseFormat.HOME }
