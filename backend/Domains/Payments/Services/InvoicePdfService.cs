@@ -40,9 +40,9 @@ public class InvoicePdfService : IInvoicePdfService {
     
     // Traductions des statuts
     private static string GetStatusText(InvoiceStatus status) => status switch {
-        InvoiceStatus.PAID => "PAYÉE",
+        InvoiceStatus.PAID => "PAYÉ",
         InvoiceStatus.PENDING => "EN ATTENTE",
-        InvoiceStatus.CANCELLED => "ANNULÉE",
+        InvoiceStatus.CANCELLED => "ANNULÉ",
         _ => status.ToString()
     };
     
