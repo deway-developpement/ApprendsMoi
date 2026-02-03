@@ -171,11 +171,18 @@ export class DocumentsComponent implements OnInit, OnDestroy {
     }
   }
 
-  async validateDocuments(documentIds: string[], approve: boolean): Promise<void> {
+  async validateDocuments(documents: PendingDocument[] | string[], approve: boolean): Promise<void> {
+    // Convert string IDs to documents if needed
+    const docsToValidate = documents.map(doc => 
+      typeof doc === 'string' 
+        ? this.pendingDocuments.find(d => d.id === doc)
+        : doc
+    ).filter((doc): doc is PendingDocument => doc !== undefined);
+
     // Ask for confirmation when batch approving multiple documents
-    if (approve && documentIds.length > 1) {
+    if (approve && docsToValidate.length > 1) {
       const confirmed = await this.modalService.confirm(
-        `Êtes-vous sûr de vouloir approuver ${documentIds.length} document(s) ?`,
+        `Êtes-vous sûr de vouloir approuver ${docsToValidate.length} document(s) ?`,
         'Confirmation'
       );
       if (!confirmed) {
@@ -185,12 +192,12 @@ export class DocumentsComponent implements OnInit, OnDestroy {
 
     const validationItems = [];
     
-    for (const id of documentIds) {
+    for (const doc of docsToValidate) {
       let rejectionReason = null;
       
       if (!approve) {
         rejectionReason = await this.modalService.prompt(
-          `Raison du rejet du document ${id}`,
+          `Raison du rejet de ${doc.fileName}`,
           'Raison du rejet',
           'Entrez la raison du rejet...'
         );
@@ -202,7 +209,7 @@ export class DocumentsComponent implements OnInit, OnDestroy {
       }
       
       validationItems.push({
-        documentId: id,
+        documentId: doc.id,
         approve: approve,
         rejectionReason: rejectionReason
       });
@@ -271,8 +278,8 @@ export class DocumentsComponent implements OnInit, OnDestroy {
     }
   }
 
-  getPendingDocumentIds(): string[] {
-    return this.pendingDocuments.map(d => d.id);
+  getPendingDocuments(): PendingDocument[] {
+    return this.pendingDocuments;
   }
 
   getTeacherName(firstN: any, lastN: any): string {

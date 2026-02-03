@@ -14,9 +14,9 @@ public class MoveTeacherDocumentsToDatabase : Migration {
     }
 
     public override void Down() {
-        // Restore file_path column
+        // Restore file_path column with a default value
         Alter.Table("teacher_documents")
-            .AddColumn("file_path").AsString(500).NotNullable();
+            .AddColumn("file_path").AsString(500).NotNullable().WithDefaultValue("");
         
         // Remove file_content column
         Delete.Column("file_content").FromTable("teacher_documents");
