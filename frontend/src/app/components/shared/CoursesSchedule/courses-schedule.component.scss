@@ -41,7 +41,7 @@
   }
 
   .table-container {
-    overflow-x: auto;
+    overflow-x: hidden;
   }
 
   .courses-table {
@@ -60,9 +60,8 @@
     tbody tr {
       background: white;
       transition: transform $transitionFast;
-      
       &:hover {
-        transform: scale(1.01);
+        box-shadow: $boxShadow;
       }
     }
 
