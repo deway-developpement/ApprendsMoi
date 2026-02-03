@@ -51,7 +51,7 @@
           [class.chat-message--own]="message.senderId === currentUser?.id">
           <span class="chat-author">{{ message.senderName }}</span>
           <p class="chat-text">{{ message.content }}</p>
-          <div *ngIf="message.attachments?.length" class="chat-attachments">
+          <div *ngIf="message.attachments.length" class="chat-attachments">
             <a
               *ngFor="let attachment of message.attachments"
               [href]="attachment.fileUrl"
