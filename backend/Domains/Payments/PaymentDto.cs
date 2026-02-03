@@ -3,15 +3,15 @@ namespace backend.Domains.Payments;
 public class BillingDto {
     public Guid Id { get; set; }
     public Guid CourseId { get; set; }
-    public string CourseName { get; set; } = string.Empty;
-    public Guid ParentId { get; set; }
-    public string ParentName { get; set; } = string.Empty;
-    public Guid TeacherId { get; set; }
+    public string SubjectName { get; set; } = string.Empty;
+    public string ChildName { get; set; } = string.Empty;
+    public string TeacherName { get; set; } = string.Empty;
+    public Guid ParentId { get; set; } // For authorization checks
+    public Guid TeacherId { get; set; } // For authorization checks
     public decimal Amount { get; set; } // TTC - Total amount parent pays (includes commission)
     public decimal AmountHT { get; set; } // Hors Taxes
     public decimal VatAmount { get; set; } // Montant TVA
-    public decimal Commission { get; set; } // Platform commission (15%)
-    public decimal TeacherEarning { get; set; } // Amount teacher receives (Amount - Commission)
+    public decimal TeacherEarning { get; set; } // Amount teacher receives (for teacher view only)
     public string Status { get; set; } = string.Empty;
     public DateTime IssuedAt { get; set; }
     public DateTime? PaidAt { get; set; }
