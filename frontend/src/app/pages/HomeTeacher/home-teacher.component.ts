@@ -4,6 +4,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { HeaderComponent } from '../../components/Header/header.component';
+import { ButtonComponent } from '../../components/shared/Button/button.component';
 import { SmallIconComponent } from '../../components/shared/SmallIcon/small-icon.component';
 import { CoursesScheduleComponent, Course } from '../../components/shared/CoursesSchedule/courses-schedule.component';
 import { AuthService, UserDto } from '../../services/auth.service';
@@ -21,6 +22,21 @@ interface MeetingResponse {
   duration: number;
   teacherId: string;
   studentId: string;
+}
+
+interface BookingRequest {
+  courseId: string;
+  parentName: string;
+  subject: string;
+  date: Date;
+}
+
+interface CourseDto {
+  id: string;
+  studentId: string;
+  subjectName?: string | null;
+  status?: string | null;
+  startDate: string;
 }
 
 interface TeacherStatsDto {
@@ -43,6 +59,7 @@ interface StatsResponseDto {
   imports: [
     CommonModule,
     HeaderComponent,
+    ButtonComponent,
     SmallIconComponent,
     CoursesScheduleComponent,
     RouterLink,
@@ -56,6 +73,7 @@ export class HomeTeacherComponent implements OnInit {
   private readonly toastService = inject(ToastService);
   private readonly router = inject(Router);
   private readonly apiBaseUrl = `${environment.apiUrl}/api/zoom`;
+  private readonly coursesBaseUrl = `${environment.apiUrl}/api/Courses`;
   private readonly statsUrl = `${environment.apiUrl}/api/stats`;
   private readonly usersBaseUrl = `${environment.apiUrl}/api/Users`;
   private readonly userCache = new Map<string, UserDto>();
@@ -74,12 +92,14 @@ export class HomeTeacherComponent implements OnInit {
 
   // Real backend data
   courses: Course[] = [];
+  pendingRequests: BookingRequest[] = [];
   teacherStats: TeacherStatsDto = this.createDefaultStats();
 
   async ngOnInit(): Promise<void> {
     await this.loadUser();
     await Promise.all([
       this.loadTeacherStats(),
+      this.currentUserId ? this.loadPendingCourses() : Promise.resolve(),
       this.loadMeetings()
     ]);
   }
@@ -186,6 +206,40 @@ export class HomeTeacherComponent implements OnInit {
     return Number.isFinite(numericValue) ? numericValue : 0;
   }
 
+  private async loadPendingCourses(): Promise<void> {
+    if (!this.currentUserId) {
+      this.pendingRequests = [];
+      return;
+    }
+
+    try {
+      const courses = await firstValueFrom(
+        this.http.get<CourseDto[]>(`${this.coursesBaseUrl}/teacher/${this.currentUserId}`)
+      );
+
+      const pendingCourses = (courses ?? []).filter(course => this.isPendingStatus(course.status));
+
+      this.pendingRequests = await Promise.all(
+        pendingCourses.map(async course => ({
+          courseId: course.id,
+          parentName: await this.getUserName(course.studentId, 'Eleve'),
+          subject: (course.subjectName ?? '').trim() || 'Cours',
+          date: this.parseUtcDate(course.startDate)
+        }))
+      );
+
+      this.pendingRequests.sort((a, b) => a.date.getTime() - b.date.getTime());
+    } catch (err) {
+      this.pendingRequests = [];
+      this.toastService.error(this.getErrorMessage(err, 'Impossible de charger les notifications.'));
+    }
+  }
+
+  private isPendingStatus(status: string | null | undefined): boolean {
+    const normalized = (status ?? '').trim().toUpperCase();
+    return normalized.includes('PENDING') || normalized.includes('ATTENTE');
+  }
+
   private async loadMeetings(): Promise<void> {
     try {
       const meetings = await firstValueFrom(
@@ -259,6 +313,37 @@ export class HomeTeacherComponent implements OnInit {
     }
 
     this.router.navigate(['/visio', course.id]);
+  }
+
+  async acceptRequest(request: BookingRequest): Promise<void> {
+    try {
+      await firstValueFrom(
+        this.http.put(`${this.coursesBaseUrl}/${request.courseId}`, {
+          status: 'CONFIRMED'
+        })
+      );
+
+      this.toastService.success('Demande acceptee avec succes.');
+      await Promise.all([
+        this.loadPendingCourses(),
+        this.loadMeetings()
+      ]);
+    } catch (err) {
+      this.toastService.error(this.getErrorMessage(err, "Impossible d'accepter la demande."));
+    }
+  }
+
+  async rejectRequest(request: BookingRequest): Promise<void> {
+    try {
+      await firstValueFrom(
+        this.http.delete(`${this.coursesBaseUrl}/${request.courseId}`)
+      );
+
+      this.toastService.success('Demande refusee.');
+      await this.loadPendingCourses();
+    } catch (err) {
+      this.toastService.error(this.getErrorMessage(err, 'Impossible de refuser la demande.'));
+    }
   }
 
   private parseUtcDate(dateString: string | null | undefined): Date {
