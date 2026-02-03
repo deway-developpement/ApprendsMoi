@@ -45,7 +45,9 @@ public class DocumentService(AppDbContext db, IWebHostEnvironment environment) {
         // Validate document type constraints
         if (documentType == DocumentType.ID_PAPER) {
             var existingIdPaper = await _db.TeacherDocuments
-                .Where(d => d.TeacherId == teacherId && d.DocumentType == DocumentType.ID_PAPER)
+                .Where(d => d.TeacherId == teacherId && 
+                           d.DocumentType == DocumentType.ID_PAPER &&
+                           d.Status != DocumentStatus.REJECTED)
                 .ToListAsync(ct);
             
             if (existingIdPaper.Any()) {
@@ -228,6 +230,11 @@ public class DocumentService(AppDbContext db, IWebHostEnvironment environment) {
             .FirstOrDefaultAsync(d => d.Id == documentId && d.TeacherId == teacherId, ct);
 
         if (document == null) {
+            return false;
+        }
+
+        // Prevent deletion of approved documents
+        if (document.Status == DocumentStatus.APPROVED) {
             return false;
         }
 
