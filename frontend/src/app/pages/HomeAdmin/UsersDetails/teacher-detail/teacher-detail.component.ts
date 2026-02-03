@@ -1,9 +1,10 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 // Services
 import { UserDto } from '../../../../services/auth.service';
+import { ToastService } from '../../../../services/toast.service';
 
 // UI Components
 import { ButtonComponent } from '../../../../components/shared/Button/button.component';
@@ -56,13 +57,15 @@ export class TeacherDetailComponent implements OnInit {
     // In a real app, you would fetch these details using this.user.id
   }
 
+  toastService = inject(ToastService);
+
   validateDocument(docName: string) {
-    alert(`Validation du document : ${docName}`);
+    this.toastService.success(`Validation du document : ${docName}`);
   }
 
   suspendAccount() {
     if(confirm('Voulez-vous vraiment suspendre ce professeur ?')) {
-      alert('Compte suspendu');
+      this.toastService.success('Compte suspendu');
     }
   }
 }

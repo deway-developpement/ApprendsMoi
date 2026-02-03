@@ -1,0 +1,42 @@
+<div class="modal-backdrop" 
+     *ngIf="modal$ | async as modal"
+     [@modalAnimation]
+     (click)="onBackdropClick()">
+  
+  <div class="modal-dialog" 
+       [@dialogAnimation]
+       (click)="onDialogClick($event)">
+    
+    <div class="modal-header">
+      <h2 class="modal-title">{{ modal.title }}</h2>
+    </div>
+    
+    <div class="modal-body">
+      <p class="modal-message">{{ modal.message }}</p>
+      
+      <input 
+        *ngIf="modal.type === 'prompt'"
+        type="text"
+        class="modal-input"
+        [(ngModel)]="inputValue"
+        [placeholder]="modal.inputPlaceholder || ''"
+        (keyup.enter)="onConfirm(modal)"
+        (keyup.escape)="onCancel()"
+        autofocus>
+    </div>
+    
+    <div class="modal-footer">
+      <app-button
+        [variant]="'ghost'"
+        (click)="onCancel()">
+        {{ modal.cancelText || 'Annuler' }}
+      </app-button>
+      
+      <app-button
+        [variant]="'primary'"
+        (click)="onConfirm(modal)">
+        {{ modal.confirmText || 'Confirmer' }}
+      </app-button>
+    </div>
+  </div>
+</div>

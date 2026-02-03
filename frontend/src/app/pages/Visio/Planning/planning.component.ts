@@ -6,6 +6,7 @@ import { firstValueFrom } from 'rxjs';
 import { HeaderComponent } from '../../../components/Header/header.component';
 import { ButtonComponent } from '../../../components/shared/Button/button.component';
 import { environment } from '../../../environments/environment';
+import { ToastService } from '../../../services/toast.service';
 
 interface Meeting {
   id: number;
@@ -32,6 +33,7 @@ interface CreateMeetingResponse {
 })
 export class PlanningComponent implements OnInit {
   private readonly http = inject(HttpClient);
+  private readonly toastService = inject(ToastService);
   private readonly apiBaseUrl = `${environment.apiUrl}/api/zoom`;
   
   meetings: Meeting[] = [];
@@ -112,14 +114,14 @@ export class PlanningComponent implements OnInit {
     event.stopPropagation();
     const link = `${window.location.origin}/visio/${meeting.id}`;
     navigator.clipboard.writeText(link).then(() => {
-      alert('Lien copié dans le presse-papiers!');
+      this.toastService.success('Lien copié dans le presse-papiers!');
     });
   }
 
   copyZoomLink(meeting: Meeting, event: Event): void {
     event.stopPropagation();
     navigator.clipboard.writeText(meeting.joinUrl).then(() => {
-      alert('Lien Zoom copié dans le presse-papiers!');
+      this.toastService.success('Lien Zoom copié dans le presse-papiers!');
     });
   }
 

@@ -1,0 +1,89 @@
+@import "variables";
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: $paddingMedium;
+}
+
+.modal-dialog {
+  background: white;
+  border-radius: $borderRadiusLarge;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  padding: $paddingLarge;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: $biggerFontSize;
+  font-weight: 600;
+  color: $PrimaryColor;
+}
+
+.modal-body {
+  padding: $paddingLarge;
+}
+
+.modal-message {
+  margin: 0 0 $marginMedium 0;
+  font-size: $regularFontSize;
+  color: #374151;
+  line-height: 1.6;
+}
+
+.modal-input {
+  width: 100%;
+  padding: $paddingSmall $paddingMedium;
+  font-size: $regularFontSize;
+  border: 2px solid #e5e7eb;
+  border-radius: $borderRadius;
+  outline: none;
+  transition: border-color $transitionFast;
+  font-family: inherit;
+  
+  &:focus {
+    border-color: $PrimaryColor;
+  }
+  
+  &::placeholder {
+    color: #9ca3af;
+  }
+}
+
+.modal-footer {
+  padding: $paddingMedium $paddingLarge $paddingLarge;
+  display: flex;
+  gap: $marginSmall;
+  justify-content: flex-end;
+}
+
+// Responsive
+@media (max-width: 640px) {
+  .modal-dialog {
+    margin: $marginSmall;
+  }
+  
+  .modal-footer {
+    flex-direction: column;
+    
+    app-button {
+      width: 100%;
+    }
+  }
+}
