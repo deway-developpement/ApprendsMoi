@@ -103,6 +103,16 @@ export class PlanningManagementTeacherComponent implements OnInit {
 
   private readonly recurringSlotKeys = new Set<string>();
 
+  get isCurrentWeek(): boolean {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const weekStart = new Date(this.weekStart);
+    weekStart.setHours(0, 0, 0, 0);
+    const weekEnd = new Date(this.weekEnd);
+    weekEnd.setHours(0, 0, 0, 0);
+    return today >= weekStart && today <= weekEnd;
+  }
+
   async ngOnInit(): Promise<void> {
     this.buildCalendar(this.currentReferenceDate); // Passer la date ici
     await this.loadTeacher();
@@ -113,6 +123,10 @@ export class PlanningManagementTeacherComponent implements OnInit {
 
   async changeWeek(offset: number): Promise<void> {
     if (this.isLoading || this.isSaving) return;
+
+    // Réinitialiser la sélection lors du changement de semaine
+    this.activeSelection = null;
+    this.isRecurringSelected = false;
 
     // Calculer la nouvelle date de référence (+7 ou -7 jours)
     const newDate = new Date(this.currentReferenceDate);
@@ -155,6 +169,15 @@ export class PlanningManagementTeacherComponent implements OnInit {
     const [hour, minute] = slot.startTime.split(':').map((part) => Number(part));
     slotDate.setHours(hour, minute || 0, 0, 0);
     return slotDate < now;
+  }
+
+  isSlotInPastOrCurrent(day: CalendarDay, slot: TimeSlot): boolean {
+    const now = new Date();
+    const slotDate = new Date(day.date);
+    const [hour, minute] = slot.startTime.split(':').map((part) => Number(part));
+    slotDate.setHours(hour, minute || 0, 0, 0);
+    // Slot est dans le passé ou en cours (heure actuelle)
+    return slotDate <= now;
   }
 
   isDayInPast(day: CalendarDay): boolean {
@@ -339,10 +362,21 @@ export class PlanningManagementTeacherComponent implements OnInit {
   private applyAvailabilityToSlots(availability: AvailabilityResponse): void {
     const dates = this.resolveAvailabilityDates(availability);
     const startMinutes = this.timeToMinutes(availability.startTime);
+    const now = new Date();
 
     dates.forEach((date) => {
       this.timeSlots.forEach((slot) => {
         if (slot.startMinutes >= startMinutes && slot.startMinutes < this.timeToMinutes(availability.endTime)) {
+          // Pour les récurrents, ne pas afficher sur les heures passées
+          if (availability.isRecurring) {
+            const slotDateTime = new Date(date);
+            const [hour, minute] = slot.startTime.split(':').map((part) => Number(part));
+            slotDateTime.setHours(hour, minute || 0, 0, 0);
+            if (slotDateTime < now) {
+              return; // Skip ce slot car il est dans le passé
+            }
+          }
+
           const key = this.buildSlotKey(this.toDateKey(date), slot.startTime);
           this.selectedSlotKeys.add(key);
           if (availability.isRecurring) this.recurringSlotKeys.add(key);

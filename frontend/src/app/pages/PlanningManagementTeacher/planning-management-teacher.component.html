@@ -14,7 +14,11 @@
 
       <div class="hero-meta">
         <div class="week-navigation">
-          <button class="nav-btn" (click)="changeWeek(-1)" [disabled]="isLoading || isSaving">
+          <button 
+            class="nav-btn" 
+            (click)="changeWeek(-1)" 
+            [disabled]="isLoading || isSaving"
+            *ngIf="!isCurrentWeek">
             <span class="arrow">←</span> Semaine précédente
           </button>
           
@@ -39,7 +43,7 @@
         <div class="card-header">
           <div>
             <h2>Calendrier hebdomadaire</h2>
-            <p class="card-subtitle">Les créneaux avec 🔄 sont programmés chaque semaine.</p>
+            <p class="card-subtitle">Ajoutez vos créneaux disponibles pour que les parents puissent réserver.</p>
           </div>
           <div class="legend">
             <span class="legend-item">
@@ -82,11 +86,10 @@
                     [class.is-booked]="isSlotBooked(day, slot)"
                     [class.is-past]="isSlotPast(day, slot)"
                     [class.is-selected]="activeSelection?.day === day && activeSelection?.slot === slot"
-                    [disabled]="isSlotPending(day, slot) || isSlotBooked(day, slot) || isLoading || (!isSlotActive(day, slot) && isDayInPast(day))"
+                    [disabled]="isSlotPending(day, slot) || isSlotBooked(day, slot) || isLoading || (!isSlotActive(day, slot) && (isDayInPast(day) || isSlotInPastOrCurrent(day, slot)))"
                     (click)="toggleAvailability(day, slot)"
                     [attr.aria-label]="day.label + ' ' + day.dateLabel + ' ' + slot.rangeLabel">
                     
-                    <span class="recurring-badge" *ngIf="isSlotRecurring(day, slot)">🔄</span>
                     <span class="slot-label">{{ slot.label }}</span>
                     <span class="slot-range">{{ slot.rangeLabel }}</span>
                   </button>
@@ -122,7 +125,7 @@
 
           <hr class="divider">
 
-          <div class="config-form">
+          <div class="config-form" *ngIf="!isSlotActive(activeSelection.day, activeSelection.slot)">
             <label class="recurring-toggle">
               <div class="toggle-control">
                 <input type="checkbox" [(ngModel)]="isRecurringSelected">
@@ -151,8 +154,12 @@
             </button>
           </div>
 
-          <div class="helper-text" *ngIf="isRecurringSelected">
+          <div class="helper-text" *ngIf="isRecurringSelected && !isSlotActive(activeSelection.day, activeSelection.slot)">
             <p>💡 Note : En rendant ce cours récurrent, il apparaîtra sur votre planning indéfiniment jusqu'à ce que vous le supprimiez.</p>
+          </div>
+
+          <div class="helper-text" *ngIf="isSlotActive(activeSelection.day, activeSelection.slot) && isSlotRecurring(activeSelection.day, activeSelection.slot)">
+            <p>⚠️ Attention : Cette disponibilité est récurrente. La supprimer retirera ce créneau de toutes les semaines futures.</p>
           </div>
         </div>
 
