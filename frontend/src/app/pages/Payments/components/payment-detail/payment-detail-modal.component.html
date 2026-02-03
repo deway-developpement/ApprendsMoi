@@ -1,0 +1,97 @@
+<div class="modal-overlay" *ngIf="billing" (click)="onClose()">
+  <div class="modal-content payment-detail-modal" (click)="$event.stopPropagation()">
+    
+    <header class="modal-header">
+      <div class="modal-icon">
+        <app-small-icon icon="/assets/icons/account-balance.svg" [size]="40"></app-small-icon>
+      </div>
+      <h2>Détails de la facture</h2>
+      <p class="invoice-number-display">{{ billing.invoiceNumber || 'N/A' }}</p>
+    </header>
+
+    <div class="modal-body">
+      
+      <div class="detail-section">
+        <h3>Informations du cours</h3>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="detail-label">Élève</span>
+            <span class="detail-value">{{ billing.childName }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Professeur</span>
+            <span class="detail-value">{{ billing.teacherName }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Matière</span>
+            <span class="detail-value">{{ billing.subjectName }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h3>Montants</h3>
+        <div class="detail-grid amounts">
+          <div class="detail-item">
+            <span class="detail-label">Montant HT</span>
+            <span class="detail-value">{{ billing.amountHT | number:'1.2-2' }} €</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">TVA (20%)</span>
+            <span class="detail-value">{{ billing.vatAmount | number:'1.2-2' }} €</span>
+          </div>
+          <div class="detail-item total">
+            <span class="detail-label">Total TTC</span>
+            <span class="detail-value total-amount">{{ billing.amount | number:'1.2-2' }} €</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h3>Informations de paiement</h3>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="detail-label">Date d'émission</span>
+            <span class="detail-value">{{ formatDate(billing.issuedAt) }}</span>
+          </div>
+          <div class="detail-item" *ngIf="billing.paidAt">
+            <span class="detail-label">Date de paiement</span>
+            <span class="detail-value">{{ formatDate(billing.paidAt) }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Statut</span>
+            <span class="status-badge" [ngClass]="getStatusClass(billing.status)">
+              {{ getStatusLabel(billing.status) }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-actions">
+      <app-button 
+        variant="ghost" 
+        (click)="onDownload()"
+      >
+        Télécharger la facture
+      </app-button>
+
+      <app-button 
+        variant="ghost" 
+        (click)="onClose()"
+      >
+        Fermer
+      </app-button>
+
+      <app-button 
+        variant="primary" 
+        (click)="onPay()"
+        [disabled]="isProcessing"
+        *ngIf="billing.status === 'PENDING'"
+      >
+        {{ isProcessing ? 'Traitement...' : 'Payer maintenant' }}
+      </app-button>
+    </div>
+  </div>
+</div>

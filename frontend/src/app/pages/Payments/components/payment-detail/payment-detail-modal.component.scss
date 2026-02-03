@@ -1,0 +1,155 @@
+@import "variables";
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: $paddingMedium;
+}
+
+.modal-content {
+  background: white;
+  border-radius: $borderRadiusLarge;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  &.payment-detail-modal {
+    .modal-header {
+      background: linear-gradient(135deg, $PrimaryColor 0%, darken($PrimaryColor, 10%) 100%);
+      color: white;
+      padding: 2rem;
+      text-align: center;
+      border-radius: $borderRadiusLarge $borderRadiusLarge 0 0;
+
+      .modal-icon {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+      }
+
+      h2 {
+        margin: 0 0 0.5rem;
+        font-size: 1.5rem;
+        font-weight: 600;
+      }
+
+      .invoice-number-display {
+        opacity: 0.9;
+        font-size: 0.9rem;
+        margin: 0;
+      }
+    }
+
+    .modal-body {
+      padding: 2rem;
+
+      .detail-section {
+        margin-bottom: 2rem;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        h3 {
+          font-size: 1.1rem;
+          font-weight: 600;
+          color: $PrimaryColor;
+          margin: 0 0 1rem;
+          padding-bottom: 0.5rem;
+          border-bottom: 2px solid #f0f0f0;
+        }
+
+        .detail-grid {
+          display: grid;
+          gap: 1rem;
+
+          &.amounts {
+            .detail-item.total {
+              margin-top: 0.5rem;
+              padding-top: 1rem;
+              border-top: 2px solid #e0e0e0;
+
+              .detail-label {
+                font-weight: 700;
+                color: $PrimaryColor;
+              }
+
+              .total-amount {
+                font-size: 1.3rem;
+                font-weight: 700;
+                color: $green;
+              }
+            }
+          }
+
+          .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            .detail-label {
+              color: #666;
+              font-size: 0.9rem;
+            }
+
+            .detail-value {
+              font-weight: 500;
+              color: $PrimaryColor;
+            }
+          }
+        }
+      }
+    }
+
+    .modal-actions {
+      padding: 1.5rem 2rem;
+      background: #f9fafb;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      border-radius: 0 0 $borderRadiusLarge $borderRadiusLarge;
+
+      @media (max-width: 640px) {
+        flex-direction: column;
+
+        app-button {
+          width: 100%;
+        }
+      }
+    }
+  }
+}
+
+.status-badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: $borderRadius;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-block;
+
+  &.status-paid {
+    background: #dcfce7;
+    color: $green;
+  }
+
+  &.status-pending {
+    background: #fef3c7;
+    color: #f59e0b;
+  }
+}
