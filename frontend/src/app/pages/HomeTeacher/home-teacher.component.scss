@@ -1,26 +1,24 @@
 @import "variables";
 
-// Layout Wrapper
 .dashboard-wrapper {
   min-height: 100vh;
-  margin-top: 3rem; // Account for fixed header if needed
+  margin-top: 3rem;
 }
 
-// 1. Hero Background
 .dashboard-header-bg {
   color: $PrimaryColor;
-  padding: 3rem $paddingMedium 6rem $paddingMedium; // Bottom padding allows widgets to overlap
-  
+  padding: 3rem $paddingMedium 6rem $paddingMedium;
+
   .header-content {
     max-width: $maxContentWidth;
     margin: 0 auto;
-    
+
     .welcome-title {
       font-size: 2.5rem;
       font-weight: 700;
       margin-bottom: $marginSmall;
     }
-    
+
     .welcome-subtitle {
       font-size: 1.1rem;
       opacity: 0.9;
@@ -46,19 +44,23 @@
   padding: 0 $paddingMedium $paddingLarge $paddingMedium;
   display: flex;
   flex-direction: column;
-  gap: 3rem;
+  gap: 2rem;
 }
 
-// 2. Floating Widgets
 .widgets-section {
-  margin-top: -4rem; // Negative margin for overlap effect
+  margin-top: -4rem;
 }
 
 .widgets-grid {
   display: grid;
-  // Two columns max for student view
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); 
-  gap: $marginLarge;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+
+  &.four-columns {
+    @media (min-width: 1200px) {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -70,17 +72,24 @@
   border-radius: $borderRadiusLarge;
   padding: 2rem;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  min-height: 200px;
-  position: relative;
-  overflow: hidden;
+  min-height: 210px;
   border-top: 4px solid transparent;
 
-  // Color Accents
-  &.accent-blue { border-top-color: $statusInfo; }
-  &.accent-orange { border-top-color: $SecondaryColor; }
+  &.accent-blue {
+    border-top-color: $statusInfo;
+  }
+
+  &.accent-orange {
+    border-top-color: $SecondaryColor;
+  }
+
+  &.accent-green {
+    border-top-color: #10b981;
+  }
+
+  &.accent-purple {
+    border-top-color: #8b5cf6;
+  }
 
   .widget-top {
     display: flex;
@@ -95,9 +104,22 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      
-      &.blue { background: #e0f2fe; color: $statusInfo; }
-      &.orange { background: #ffedd5; color: $SecondaryColor; }
+
+      &.blue {
+        background: #e0f2fe;
+      }
+
+      &.orange {
+        background: #ffedd5;
+      }
+
+      &.green {
+        background: rgba(16, 185, 129, 0.12);
+      }
+
+      &.purple {
+        background: rgba(139, 92, 246, 0.12);
+      }
     }
 
     h3 {
@@ -109,126 +131,49 @@
   }
 
   .widget-content {
-    flex: 1;
     display: flex;
     flex-direction: column;
+    gap: 0.5rem;
 
-    .main-info {
-      display: flex;
-      align-items: baseline;
-      gap: 1rem;
-      margin-bottom: 0.5rem;
-
-      .big-date {
-        font-size: 1.8rem;
-        font-weight: 800;
-        color: $PrimaryColor;
-      }
-      .time {
-        font-size: 1.1rem;
-        color: #64748b;
-      }
-    }
-
-    .message-preview {
-      font-size: 1.1rem;
-      font-style: italic;
-      color: #334155;
-      margin-bottom: 0.5rem;
-      line-height: 1.5;
+    .metric-value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: $PrimaryColor;
+      margin: 0;
     }
 
     .subtext {
-      font-size: 1rem;
+      font-size: 0.95rem;
       color: #64748b;
-      margin-bottom: auto;
-    }
-
-    .widget-action {
-      margin-top: 1.5rem;
-    }
-  }
-  
-  .empty-state {
-    color: #94a3b8;
-    font-style: italic;
-  }
-}
-
-// ... styles existants (dashboard-wrapper, header-content, etc.) ...
-
-.widgets-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-
-  // Add this class for the teacher dashboard if you want strictly 3 columns on large screens
-  &.three-columns {
-    @media (min-width: 1200px) {
-      grid-template-columns: repeat(3, 1fr);
+      margin: 0;
     }
   }
 }
 
-.widget-card {
-  // ... existing styles ...
-
-  // New Accent for Revenue
-  &.accent-green {
-    border-top: 4px solid #10B981; // Emerald green
-    
-    .icon-circle.green {
-      background-color: rgba(16, 185, 129, 0.1);
-      color: #10B981;
-    }
-  }
-}
-
-// Specific typography for Revenue
-.big-amount {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1F2937;
-}
-
-// Action row for Accept/Refuse buttons
-.widget-action-row {
+.card-header-actions {
   display: flex;
-  gap: 0.5rem;
-  margin-top: 1rem;
-  
-  .small-btn {
-    font-size: 0.875rem;
-    padding: 0.5rem 1rem;
-  }
+  justify-content: flex-end;
+  width: 100%;
 }
 
 .see-more-btn {
-  // Reset default browser styles (works for both <a> and <button>)
   background: transparent;
   border: none;
   padding: 0;
   cursor: pointer;
-  
-  // Layout
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem; // Space between text and icon if you add one later
-  
-  // Typography
+  gap: 0.5rem;
   font-size: $biggerFontSize;
-  font-weight: 600; // Semi-bold to make it pop
-  color: $SecondaryColor; // The orange defined in your variables
-  text-decoration: none; // No underline by default
-  
-  // Transition for smooth hover
+  font-weight: 600;
+  color: $SecondaryColor;
+  text-decoration: none;
   transition: color $transitionFast, transform $transitionFast;
 
   &:hover {
-    color: $SecondaryColorHover; // Darker orange on hover
-    text-decoration: underline; // Visual cue that it is clickable
-    transform: translateX(4px); // Subtle movement to encourage click
+    color: $SecondaryColorHover;
+    text-decoration: underline;
+    transform: translateX(4px);
   }
 
   &:active {
@@ -242,12 +187,6 @@
   }
 }
 
-.card-header-actions {
-  display: flex;
-  justify-content: flex-end; // Pousse tout le contenu vers la droite
-  width: 100%;
-}
-
 .documents-section {
   background: white;
   border-radius: $borderRadiusLarge;
@@ -256,7 +195,7 @@
 
   .section-header {
     margin-bottom: 1rem;
-    
+
     h3 {
       font-size: 1.5rem;
       font-weight: 600;
@@ -299,7 +238,7 @@
   border: 2px solid #ffc107;
   border-radius: $borderRadiusLarge;
   padding: 2rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
 
   h3 {
@@ -354,28 +293,25 @@
   align-items: center;
   gap: $marginSmall;
 
-  .teacher-name {
-    font-size: $titleFontSize;
-    color: $PrimaryColor;
-    margin: 0;
-  }
-
   .verified-icon {
-    // We use colorVerified from variables.scss
-    // If the icon is an SVG mask or font-icon, we apply the color here
     color: $colorVerified;
     display: flex;
     align-items: center;
-    margin:0;
+    margin: 0;
     margin-top: 1.5rem;
-    padding:0;
-    
-    // Smooth entrance if the status loads dynamically
+    padding: 0;
     animation: fadeIn $transitionFast;
   }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.8); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
