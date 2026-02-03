@@ -170,33 +170,22 @@
           </div>
 
           <div class="booking-form">
-            <div class="selected-slot" *ngIf="selectedSlotKey; else noSelection">
-              <span class="selected-title">Sélectionné slot</span>
-              <span class="selected-value">{{ selectedSlotLabel }}</span>
-              <span class="selected-time">{{ selectedSlotRange }}</span>
-            </div>
-            <ng-template #noSelection>
-              <div class="selected-slot empty">
-                <span class="selected-title">Aucun créneau sélectionné</span>
-                <span class="selected-time">Choisissez une heure à gauche pour continuer.</span>
-              </div>
-            </ng-template>
-
             <div class="booking-grid">
               <div class="field">
                 <label>Durée</label>
-                <div class="fixed-duration" *ngIf="needsStudentSelection; else durationSelect">
-                  60 min
-                </div>
-                <ng-template #durationSelect>
-                  <app-select
-                    [options]="durationOptions"
-                    [(value)]="bookingDuration"
-                    placeholder="Durée">
-                  </app-select>
-                </ng-template>
+                <div class="fixed-duration">60 min</div>
               </div>
-              <div class="field" *ngIf="needsStudentSelection">
+
+              <div class="field">
+                <label>Format du cours</label>
+                <app-select
+                  [options]="formatOptions"
+                  [(value)]="selectedFormat"
+                  placeholder="Lieu du cours">
+                </app-select>
+              </div>
+
+              <div class="field full" *ngIf="needsStudentSelection">
                 <label>Élève</label>
                 <app-select
                   [options]="studentOptions"
@@ -204,19 +193,20 @@
                   placeholder="Sélectionner un élève">
                 </app-select>
               </div>
-                <div class="field full">
-                  <app-select
-                    label="Matière"
-                    placeholder="Choisissez la matière du cours"
-                    [options]="subjectOptions"
-                    [value]="selectedSubjectId"
-                    (valueChange)="selectedSubjectId = $event">
-                  </app-select>
-                </div>
+
+              <div class="field full">
+                <app-select
+                  label="Matière"
+                  placeholder="Choisissez la matière du cours"
+                  [options]="subjectOptions"
+                  [value]="selectedSubjectId"
+                  (valueChange)="selectedSubjectId = $event">
+                </app-select>
+              </div>
             </div>
 
             <div class="booking-actions">
-              <app-button variant="primary" (click)="bookSession()" [disabled]="isBooking">
+              <app-button variant="primary" (click)="bookSession()" [disabled]="isBooking || !selectedSlotKey">
                 {{ isBooking ? 'Réservation...' : 'Réserver la séance' }}
               </app-button>
               <app-button variant="ghost" (click)="resetBooking()" [disabled]="isBooking">

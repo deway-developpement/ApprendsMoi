@@ -157,7 +157,6 @@ export class SearchForTeachersComponent implements OnInit {
 
     try {
       const data = await firstValueFrom(this.http.get<TeacherDto[]>(url));
-      console.log(data);
       this.teachers = (data ?? []).map((teacher) => this.mapTeacherCard(teacher));
       this.updateResults();
     } catch (err) {
@@ -171,9 +170,6 @@ export class SearchForTeachersComponent implements OnInit {
 
   private updateResults() {
     let result = [...this.teachers];
-
-    console.log("UPDATE")
-    console.log("res", result);
 
     if (this.premiumOnly) {
       result = result.filter(teacher => teacher.isPremium);

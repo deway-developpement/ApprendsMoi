@@ -7,6 +7,8 @@ import { ButtonComponent } from '../../components/shared/Button/button.component
 import { AuthService, ProfileType, UserDto } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
 import { environment } from '../../environments/environment';
+import { SmallIconComponent } from '../../components/shared/SmallIcon/small-icon.component';
+import { FormsModule } from '@angular/forms';
 
 interface AvailabilityResponse {
   id: string;
@@ -64,7 +66,7 @@ interface SummarySlot {
 @Component({
   selector: 'app-planning-management-teacher',
   standalone: true,
-  imports: [CommonModule, HeaderComponent],
+  imports: [CommonModule, HeaderComponent, FormsModule],
   templateUrl: './planning-management-teacher.component.html',
   styleUrls: ['./planning-management-teacher.component.scss']
 })
@@ -95,6 +97,11 @@ export class PlanningManagementTeacherComponent implements OnInit {
   private readonly slotDetails = new Map<string, SummarySlot>();
   private readonly slotAvailabilityIds = new Map<string, string>();
   private readonly bookedSlotKeys = new Set<string>();
+
+  activeSelection: { day: CalendarDay; slot: TimeSlot } | null = null;
+  isRecurringSelected = false;
+
+  private readonly recurringSlotKeys = new Set<string>();
 
   async ngOnInit(): Promise<void> {
     this.buildCalendar(this.currentReferenceDate); // Passer la date ici
@@ -158,17 +165,59 @@ export class PlanningManagementTeacherComponent implements OnInit {
     return date < today;
   }
 
-  async toggleAvailability(day: CalendarDay, slot: TimeSlot): Promise<void> {
-    if (this.isSlotPending(day, slot) || this.isLoading) return;
+  toggleAvailability(day: CalendarDay, slot: TimeSlot): void {
+      if (this.isSlotPending(day, slot) || this.isLoading || this.isSlotBooked(day, slot)) return;
 
-    if (this.isSlotBooked(day, slot)) return;
+      // Si on clique sur un slot déjà actif, on le sélectionne pour suppression
+      // Si on clique sur un vide, on le sélectionne pour création
+      this.activeSelection = { day, slot };
+      
+      const key = this.buildSlotKey(day.key, slot.startTime);
+      this.isRecurringSelected = this.recurringSlotKeys.has(key);
+    }
+
+  async confirmAction(): Promise<void> {
+    if (!this.activeSelection) return;
+    const { day, slot } = this.activeSelection;
+    const key = this.buildSlotKey(day.key, slot.startTime);
 
     if (this.isSlotActive(day, slot)) {
       await this.removeAvailability(day, slot);
     } else {
-      await this.addAvailability(day, slot);
+      await this.saveNewAvailability(day, slot);
+    }
+    this.activeSelection = null;
+  }
+
+  private async saveNewAvailability(day: CalendarDay, slot: TimeSlot): Promise<void> {
+    const key = this.buildSlotKey(day.key, slot.startTime);
+    if (!this.teacherId) return;
+
+    const payload: CreateAvailabilityRequest = {
+      dayOfWeek: day.dayOfWeek,
+      availabilityDate: this.isRecurringSelected ? null : day.key,
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+      isRecurring: this.isRecurringSelected
+    };
+
+    this.isSaving = true;
+    this.pendingSlotKeys.add(key);
+
+    try {
+      const created = await firstValueFrom(this.http.post<AvailabilityResponse>(this.apiBaseUrl, payload));
+      this.applyAvailabilityToSlots(created);
+      this.toastService.success(`Disponibilité ${this.isRecurringSelected ? 'récurrente' : ''} ajoutée.`);
+      this.refreshSummary();
+    } catch (err) {
+      this.toastService.error(this.getErrorMessage(err, 'Erreur lors de l\'enregistrement.'));
+    } finally {
+      this.pendingSlotKeys.delete(key);
+      this.isSaving = false;
     }
   }
+
+
 
   async addAvailability(day: CalendarDay, slot: TimeSlot): Promise<void> {
     const key = this.buildSlotKey(day.key, slot.startTime);
@@ -289,26 +338,23 @@ export class PlanningManagementTeacherComponent implements OnInit {
 
   private applyAvailabilityToSlots(availability: AvailabilityResponse): void {
     const dates = this.resolveAvailabilityDates(availability);
-    if (!dates.length) return;
-
     const startMinutes = this.timeToMinutes(availability.startTime);
-    const endMinutes = this.timeToMinutes(availability.endTime);
 
     dates.forEach((date) => {
       this.timeSlots.forEach((slot) => {
-        if (slot.startMinutes >= startMinutes && slot.endMinutes <= endMinutes) {
+        if (slot.startMinutes >= startMinutes && slot.startMinutes < this.timeToMinutes(availability.endTime)) {
           const key = this.buildSlotKey(this.toDateKey(date), slot.startTime);
           this.selectedSlotKeys.add(key);
+          if (availability.isRecurring) this.recurringSlotKeys.add(key);
           this.slotAvailabilityIds.set(key, availability.id);
-          this.slotDetails.set(key, {
-            key,
-            date,
-            startTime: slot.startTime,
-            endTime: slot.endTime
-          });
+          this.slotDetails.set(key, { key, date, startTime: slot.startTime, endTime: slot.endTime });
         }
       });
     });
+  }
+
+  isSlotRecurring(day: CalendarDay, slot: TimeSlot): boolean {
+    return this.recurringSlotKeys.has(this.buildSlotKey(day.key, slot.startTime));
   }
 
   private async removeAvailability(day: CalendarDay, slot: TimeSlot): Promise<void> {

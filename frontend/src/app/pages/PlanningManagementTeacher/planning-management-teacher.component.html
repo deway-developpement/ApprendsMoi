@@ -7,12 +7,14 @@
         ← Retour
       </button>
       <p class="eyebrow">Planning professeur</p>
-      <h1>Définissez vos disponibilités pour la semaine prochaine</h1>
-      <p class="subtitle">Cliquez sur un créneau pour ajouter ou retirer une disponibilité. Les créneaux enregistrés apparaissent remplis.</p>
+      <h1>Gérez vos disponibilités</h1>
+      <p class="subtitle">
+        Sélectionnez un créneau dans le calendrier pour configurer sa récurrence et l'ajouter à votre emploi du temps.
+      </p>
 
       <div class="hero-meta">
         <div class="week-navigation">
-          <button class="nav-btn" (click)="changeWeek(-1)" [disabled]="isLoading">
+          <button class="nav-btn" (click)="changeWeek(-1)" [disabled]="isLoading || isSaving">
             <span class="arrow">←</span> Semaine précédente
           </button>
           
@@ -20,82 +22,149 @@
             <span class="icon-calendar">📅</span> {{ weekRangeLabel }}
           </div>
 
-          <button class="nav-btn" (click)="changeWeek(1)" [disabled]="isLoading">
+          <button class="nav-btn" (click)="changeWeek(1)" [disabled]="isLoading || isSaving">
             Semaine suivante <span class="arrow">→</span>
           </button>
         </div>
         
         <div class="meta-card tz">{{ timeZoneLabel }}</div>
       </div>
-
     </div>
   </section>
 
   <main class="planning-body">
-    <section class="calendar-card">
-      <div class="card-header">
-        <div>
-          <h2>Calendrier hebdomadaire</h2>
-          <p class="card-subtitle">Cliquez sur un créneau pour ajouter ou retirer une disponibilité pour cette heure.</p>
-        </div>
-        <div class="legend">
-          <span class="legend-item">
-            <span class="legend-dot is-active"></span>
-            Enregistré
-          </span>
-          <span class="legend-item">
-            <span class="legend-dot is-booked"></span>
-            Réservé
-          </span>
-          <span class="legend-item">
-            <span class="legend-dot"></span>
-            Disponible
-          </span>
-        </div>
-      </div>
-
-      <div class="calendar-scroll">
-        <div class="calendar-grid">
-          <div class="calendar-header">
-            <div class="calendar-corner"></div>
-            <div class="calendar-day" *ngFor="let day of weekDays">
-              <span class="day-name">{{ day.label }}</span>
-              <span class="day-date">{{ day.dateLabel }}</span>
-            </div>
+    <div class="layout-grid">
+      
+      <section class="calendar-card">
+        <div class="card-header">
+          <div>
+            <h2>Calendrier hebdomadaire</h2>
+            <p class="card-subtitle">Les créneaux avec 🔄 sont programmés chaque semaine.</p>
           </div>
+          <div class="legend">
+            <span class="legend-item">
+              <span class="legend-dot is-active"></span> Ponctuel
+            </span>
+            <span class="legend-item">
+              <span class="legend-dot is-recurring"></span> Récurrent
+            </span>
+            <span class="legend-item">
+              <span class="legend-dot is-booked"></span> Réservé
+            </span>
+          </div>
+        </div>
 
-          <div class="calendar-body">
-            <div class="time-column">
-              <div class="time-label" *ngFor="let slot of timeSlots">
-                {{ slot.label }}
+        <div class="calendar-scroll">
+          <div class="calendar-grid">
+            <div class="calendar-header">
+              <div class="calendar-corner"></div>
+              <div class="calendar-day" *ngFor="let day of weekDays">
+                <span class="day-name">{{ day.label }}</span>
+                <span class="day-date">{{ day.dateLabel }}</span>
               </div>
             </div>
 
-            <div class="day-columns">
-              <div class="day-column" *ngFor="let day of weekDays">
-                <button
-                  class="slot"
-                  type="button"
-                  *ngFor="let slot of timeSlots"
-                  [class.is-active]="isSlotActive(day, slot)"
-                  [class.is-booked]="isSlotBooked(day, slot)"
-                  [class.is-past]="isSlotPast(day, slot)"
-                  [disabled]="isSlotPending(day, slot) || isSlotBooked(day, slot) || isLoading || (!isSlotActive(day, slot) && isDayInPast(day))"
-                  (click)="toggleAvailability(day, slot)"
-                  [attr.aria-label]="(isSlotActive(day, slot) ? 'Retirer' : 'Ajouter') + ' une disponibilité le ' + day.label + ' ' + day.dateLabel + ' à ' + slot.rangeLabel">
-                  <span class="slot-label">{{ slot.label }}</span>
-                  <span class="slot-range">{{ slot.rangeLabel }}</span>
-                </button>
+            <div class="calendar-body">
+              <div class="time-column">
+                <div class="time-label" *ngFor="let slot of timeSlots">
+                  {{ slot.label }}
+                </div>
+              </div>
+
+              <div class="day-columns">
+                <div class="day-column" *ngFor="let day of weekDays">
+                  <button
+                    class="slot"
+                    type="button"
+                    *ngFor="let slot of timeSlots"
+                    [class.is-active]="isSlotActive(day, slot)"
+                    [class.is-recurring]="isSlotRecurring(day, slot)"
+                    [class.is-booked]="isSlotBooked(day, slot)"
+                    [class.is-past]="isSlotPast(day, slot)"
+                    [class.is-selected]="activeSelection?.day === day && activeSelection?.slot === slot"
+                    [disabled]="isSlotPending(day, slot) || isSlotBooked(day, slot) || isLoading || (!isSlotActive(day, slot) && isDayInPast(day))"
+                    (click)="toggleAvailability(day, slot)"
+                    [attr.aria-label]="day.label + ' ' + day.dateLabel + ' ' + slot.rangeLabel">
+                    
+                    <span class="recurring-badge" *ngIf="isSlotRecurring(day, slot)">🔄</span>
+                    <span class="slot-label">{{ slot.label }}</span>
+                    <span class="slot-range">{{ slot.rangeLabel }}</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="calendar-footer">
-        <span *ngIf="isLoading">Chargement des disponibilités...</span>
-        <span *ngIf="!isLoading">Total de créneaux enregistrés : {{ summarySlots.length }}</span>
-      </div>
-    </section>
+        <div class="calendar-footer">
+          <span *ngIf="isLoading" class="loader-text">Chargement de vos créneaux...</span>
+          <span *ngIf="!isLoading">Total de créneaux actifs : <strong>{{ summarySlots.length }}</strong></span>
+        </div>
+      </section>
+
+      <aside class="config-panel" [class.has-selection]="activeSelection">
+        <div class="panel-inner" *ngIf="activeSelection; else noSelection">
+          <div class="panel-header">
+            <h3>Configuration</h3>
+            <button class="close-panel" (click)="activeSelection = null">✕</button>
+          </div>
+
+          <div class="selection-summary">
+            <div class="info-row">
+              <span class="label">Date :</span>
+              <span class="value">{{ activeSelection.day.label }} {{ activeSelection.day.dateLabel }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Heure :</span>
+              <span class="value">{{ activeSelection.slot.rangeLabel }}</span>
+            </div>
+          </div>
+
+          <hr class="divider">
+
+          <div class="config-form">
+            <label class="recurring-toggle">
+              <div class="toggle-control">
+                <input type="checkbox" [(ngModel)]="isRecurringSelected">
+                <span class="slider"></span>
+              </div>
+              <div class="toggle-text">
+                <span class="title">Répéter chaque semaine</span>
+                <span class="description">Le créneau sera ouvert automatiquement pour les semaines suivantes.</span>
+              </div>
+            </label>
+          </div>
+
+          <div class="panel-actions">
+            <button 
+              class="btn-primary" 
+              (click)="confirmAction()" 
+              [disabled]="isSaving">
+              <span *ngIf="!isSaving">
+                {{ isSlotActive(activeSelection.day, activeSelection.slot) ? 'Supprimer la disponibilité' : 'Confirmer la disponibilité' }}
+              </span>
+              <span *ngIf="isSaving">Traitement...</span>
+            </button>
+            
+            <button class="btn-ghost" (click)="activeSelection = null" [disabled]="isSaving">
+              Annuler
+            </button>
+          </div>
+
+          <div class="helper-text" *ngIf="isRecurringSelected">
+            <p>💡 Note : En rendant ce cours récurrent, il apparaîtra sur votre planning indéfiniment jusqu'à ce que vous le supprimiez.</p>
+          </div>
+        </div>
+
+        <ng-template #noSelection>
+          <div class="panel-empty">
+            <div class="empty-icon">📅</div>
+            <h4>Aucun créneau sélectionné</h4>
+            <p>Cliquez sur une case du calendrier pour configurer vos horaires.</p>
+          </div>
+        </ng-template>
+      </aside>
+
+    </div>
   </main>
 </div>
