@@ -1,0 +1,111 @@
+<app-header theme="light"></app-header>
+
+<div class="payments-wrapper">
+  
+  <div class="payments-header-bg">
+    <div class="header-content">
+      <h1 class="page-title">💳 Factures et Paiements</h1>
+      <p class="page-subtitle">Gérez vos factures et consultez l'historique de vos paiements</p>
+    </div>
+  </div>
+
+  <main class="payments-container">
+
+    <!-- Summary Cards -->
+    <section class="summary-section">
+      <div class="summary-grid">
+        <div class="summary-card pending">
+          <div class="summary-icon">
+            <app-small-icon icon="/assets/icons/schedule.svg" [size]="32"></app-small-icon>
+          </div>
+          <div class="summary-content">
+            <p class="summary-label">En attente</p>
+            <p class="summary-value">{{ totalPending | number:'1.2-2' }} €</p>
+            <p class="summary-count">{{ pendingBillings.length }} facture(s)</p>
+          </div>
+        </div>
+
+        <div class="summary-card paid">
+          <div class="summary-icon">
+            <app-small-icon icon="/assets/icons/account-balance.svg" [size]="32"></app-small-icon>
+          </div>
+          <div class="summary-content">
+            <p class="summary-label">Payé</p>
+            <p class="summary-value">{{ totalPaid | number:'1.2-2' }} €</p>
+            <p class="summary-count">{{ paidBillings.length }} facture(s)</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Payments List -->
+    <section class="payments-list-section">
+      <h2 class="section-title">Toutes les factures</h2>
+
+      <div class="loading-state" *ngIf="isLoading">
+        <p>Chargement des factures...</p>
+      </div>
+
+      <div class="empty-state" *ngIf="!isLoading && billings.length === 0">
+        <app-icon icon="/assets/icons/account-balance.svg" [size]="64"></app-icon>
+        <h3>Aucune facture</h3>
+        <p>Vous n'avez pas encore de factures.</p>
+      </div>
+
+      <div class="payments-table" *ngIf="!isLoading && billings.length > 0">
+        <div class="table-header">
+          <div class="col-date">Date</div>
+          <div class="col-invoice">N° Facture</div>
+          <div class="col-subject">Matière</div>
+          <div class="col-amount">Montant</div>
+          <div class="col-status">Statut</div>
+          <div class="col-actions">Actions</div>
+        </div>
+
+        <div 
+          class="table-row" 
+          *ngFor="let billing of billings"
+          (click)="openDetailModal(billing)"
+        >
+          <div class="col-date">
+            {{ formatDate(billing.issuedAt) }}
+          </div>
+          <div class="col-invoice">
+            <span class="invoice-number">{{ billing.invoiceNumber || 'N/A' }}</span>
+          </div>
+          <div class="col-subject">
+            <strong>{{ billing.subjectName }}</strong>
+          </div>
+          <div class="col-amount">
+            <span class="amount-value">{{ billing.amount | number:'1.2-2' }} €</span>
+          </div>
+          <div class="col-status">
+            <span class="status-badge" [ngClass]="getStatusClass(billing.status)">
+              {{ getStatusLabel(billing.status) }}
+            </span>
+          </div>
+          <div class="col-actions">
+            <app-button 
+              variant="ghost" 
+              (click)="downloadInvoice(billing, $event)"
+            >
+              <app-small-icon icon="/assets/icons/download.svg" [size]="20"></app-small-icon>
+              PDF
+            </app-button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Detail Modal -->
+<app-payment-detail-modal
+  *ngIf="showDetailModal"
+  [billing]="selectedBilling"
+  [isProcessing]="isProcessingPayment"
+  (close)="closeDetailModal()"
+  (download)="onModalDownload($event)"
+  (pay)="processPayment()"
+></app-payment-detail-modal>

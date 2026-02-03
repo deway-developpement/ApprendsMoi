@@ -1,0 +1,317 @@
+@import "variables";
+
+// Layout Wrapper
+.payments-wrapper {
+  min-height: 100vh;
+  margin-top: 3rem;
+  background: #f8fafc;
+}
+
+// Header Section
+.payments-header-bg {
+  background: linear-gradient(135deg, $PrimaryColor 0%, darken($PrimaryColor, 10%) 100%);
+  color: white;
+  padding: 3rem $paddingMedium 6rem $paddingMedium;
+  
+  .header-content {
+    max-width: $maxContentWidth;
+    margin: 0 auto;
+    
+    .page-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: $marginSmall;
+    }
+    
+    .page-subtitle {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      font-weight: 300;
+    }
+  }
+}
+
+// Main Container
+.payments-container {
+  max-width: $maxContentWidth;
+  margin: 0 auto;
+  padding: 0 $paddingMedium $paddingLarge $paddingMedium;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+// Summary Section
+.summary-section {
+  margin-top: -4rem;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: $marginLarge;
+}
+
+.summary-card {
+  background: white;
+  border-radius: $borderRadiusLarge;
+  padding: 2rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: $marginLarge;
+  border-top: 4px solid transparent;
+  
+  &.pending {
+    border-top-color: $SecondaryColor;
+    
+    .summary-icon {
+      background: #ffedd5;
+      color: $SecondaryColor;
+    }
+  }
+  
+  &.paid {
+    border-top-color: $green;
+    
+    .summary-icon {
+      background: #dcfce7;
+      color: $green;
+    }
+  }
+  
+  .summary-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  
+  .summary-content {
+    flex: 1;
+    
+    .summary-label {
+      font-size: 0.875rem;
+      color: #64748b;
+      margin-bottom: 0.25rem;
+      font-weight: 500;
+    }
+    
+    .summary-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: $PrimaryColor;
+      margin-bottom: 0.25rem;
+    }
+    
+    .summary-count {
+      font-size: 0.875rem;
+      color: #94a3b8;
+    }
+  }
+}
+
+// Payments List Section
+.payments-list-section {
+  background: white;
+  border-radius: $borderRadiusLarge;
+  padding: 2rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: $PrimaryColor;
+    margin-bottom: $marginLarge;
+  }
+}
+
+// Loading and Empty States
+.loading-state, .empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #64748b;
+  
+  h3 {
+    color: $PrimaryColor;
+    margin-top: $marginMedium;
+    margin-bottom: $marginSmall;
+  }
+}
+
+// Payments Table
+.payments-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  
+  .table-header {
+    display: grid;
+    grid-template-columns: 120px 180px 1fr 120px 140px 150px;
+    gap: $marginMedium;
+    padding: 1rem $marginMedium;
+    background: #f1f5f9;
+    border-radius: $borderRadius;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #475569;
+    margin-bottom: $marginSmall;
+  }
+  
+  .table-row {
+    display: grid;
+    grid-template-columns: 120px 180px 1fr 120px 140px 150px;
+    gap: $marginMedium;
+    padding: 1.25rem $marginMedium;
+    border-bottom: 1px solid #e2e8f0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    align-items: center;
+    
+    &:hover {
+      background: #f8fafc;
+      transform: translateX(4px);
+    }
+    
+    &:last-child {
+      border-bottom: none;
+    }
+    
+    .col-date {
+      font-size: 0.875rem;
+      color: #64748b;
+    }
+    
+    .col-invoice {
+      .invoice-number {
+        font-family: 'Courier New', monospace;
+        font-size: 0.875rem;
+        color: $PrimaryColor;
+        font-weight: 500;
+      }
+    }
+    
+    .col-subject {
+      strong {
+        color: $PrimaryColor;
+      }
+    }
+    
+    .col-amount {
+      .amount-value {
+        font-weight: 600;
+        color: $PrimaryColor;
+        font-size: 1.125rem;
+      }
+    }
+    
+    .col-status {
+      .status-badge {
+        display: inline-block;
+        padding: 0.375rem 0.75rem;
+        border-radius: $borderRadius;
+        font-size: 0.875rem;
+        font-weight: 500;
+        
+        &.status-paid {
+          background: #dcfce7;
+          color: darken($green, 10%);
+        }
+        
+        &.status-pending {
+          background: #ffedd5;
+          color: darken($SecondaryColor, 10%);
+        }
+      }
+    }
+    
+    .col-actions {
+      display: flex;
+      gap: $marginSmall;
+      
+      app-button {
+        pointer-events: all;
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 1024px) {
+  .payments-table {
+    .table-header,
+    .table-row {
+      grid-template-columns: 100px 150px 1fr 100px 120px 130px;
+      gap: $marginSmall;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .payments-header-bg {
+    padding: 2rem $paddingSmall 4rem $paddingSmall;
+    
+    .page-title {
+      font-size: 1.75rem;
+    }
+    
+    .page-subtitle {
+      font-size: 1rem;
+    }
+  }
+  
+  .payments-container {
+    padding: 0 $paddingSmall $paddingMedium $paddingSmall;
+  }
+  
+  .summary-section {
+    margin-top: -3rem;
+  }
+  
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .payments-table {
+    .table-header {
+      display: none;
+    }
+    
+    .table-row {
+      grid-template-columns: 1fr;
+      gap: $marginSmall;
+      padding: 1rem;
+      border: 1px solid #e2e8f0;
+      border-radius: $borderRadius;
+      margin-bottom: $marginSmall;
+      
+      &:hover {
+        transform: none;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+      
+      > div {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        
+        &::before {
+          content: attr(data-label);
+          font-weight: 600;
+          color: #64748b;
+          font-size: 0.875rem;
+        }
+      }
+      
+      .col-date::before { content: 'Date: '; }
+      .col-invoice::before { content: 'Facture: '; }
+      .col-subject::before { content: 'Matière: '; }
+      .col-amount::before { content: 'Montant: '; }
+      .col-status::before { content: 'Statut: '; }
+      .col-actions::before { content: 'Actions: '; }
+    }
+  }
+}
