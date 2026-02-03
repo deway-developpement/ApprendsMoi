@@ -131,7 +131,7 @@
 
 .zoom-container {
   flex: 1;
-  min-height: 500px;
+  min-height: 400px;
   border-radius: 10px;
   position: relative;
   overflow: hidden;
@@ -225,10 +225,43 @@
 .visio-card--chat {
   min-height: 75vh;
   min-width: 100vh;
+  border-color: rgba(249, 115, 22, 0.55);
+  background: linear-gradient(140deg, rgba(249, 115, 22, 0.06), rgba(245, 158, 11, 0.04) 40%, #ffffff 70%);
+  overflow: hidden;
 
   @media (max-width: 1100px) {
     min-height: 60vh;
   }
+}
+
+.visio-card--chat::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: min(170px, 35%);
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.08;
+  background: repeating-linear-gradient(
+    -30deg,
+    #111827 0 8px,
+    transparent 8px 18px
+  );
+}
+
+.chat-tiger-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.25rem 0.65rem;
+  font-size: $tinierFontSize;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #0f172a;
+  background: linear-gradient(90deg, #f59e0b, #f97316);
+  border: 1px solid rgba(15, 23, 42, 0.2);
 }
 
 .chat-window {
