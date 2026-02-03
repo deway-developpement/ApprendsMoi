@@ -147,6 +147,20 @@
       color: #64748b;
       margin: 0;
     }
+
+    .metric-inline {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #334155;
+      margin: 0;
+    }
+
+    .widget-action-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      flex-wrap: wrap;
+    }
   }
 }
 

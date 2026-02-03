@@ -50,9 +50,8 @@
           </div>
           <div class="widget-content">
             <p class="metric-value">{{ averageRatingLabel }}<span *ngIf="averageRatingLabel !== '-'"> / 5</span></p>
-            <p class="subtext" *ngIf="teacherStats.numberOfReviewers > 0; else noRatingYet">
-              Basee sur {{ numberOfReviewersLabel }} avis
-            </p>
+            <p class="metric-inline">{{ numberOfReviewersLabel }} avis</p>
+            <p class="subtext" *ngIf="teacherStats.numberOfReviewers > 0; else noRatingYet">Nombre d'avis recus</p>
             <ng-template #noRatingYet>
               <p class="subtext">Aucun avis pour le moment</p>
             </ng-template>
@@ -64,12 +63,23 @@
             <div class="icon-circle orange">
               <app-small-icon icon="/assets/icons/notification.svg" [size]="30"></app-small-icon>
             </div>
-            <h3>Nombre d'avis</h3>
+            <h3>Notifications ({{ pendingRequests.length }})</h3>
           </div>
-          <div class="widget-content">
-            <p class="metric-value">{{ numberOfReviewersLabel }}</p>
-            <p class="subtext">Parents ayant laisse un avis</p>
+          <div class="widget-content" *ngIf="pendingRequests.length > 0; else noNotifications">
+            <p class="metric-value">{{ pendingRequests.length }}</p>
+            <p class="subtext"><strong>{{ pendingRequests[0].parentName }}</strong></p>
+            <p class="subtext">{{ pendingRequests[0].subject }} - {{ pendingRequests[0].date | date:'dd/MM HH:mm' }}</p>
+            <div class="widget-action-row">
+              <app-button variant="primary" size="small" (click)="acceptRequest(pendingRequests[0])">Accepter</app-button>
+              <app-button variant="ghost" size="small" (click)="rejectRequest(pendingRequests[0])">Refuser</app-button>
+            </div>
           </div>
+          <ng-template #noNotifications>
+            <div class="widget-content">
+              <p class="metric-value">0</p>
+              <p class="subtext">Aucune notification en attente</p>
+            </div>
+          </ng-template>
         </div>
 
         <div class="widget-card accent-green">
