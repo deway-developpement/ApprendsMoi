@@ -159,6 +159,11 @@ h1 {
     background: $SecondaryColor;
     border-color: $SecondaryColor;
   }
+
+  &.is-recurring {
+    background: $colorTopProf;
+    border-color: $colorTopProf;
+  }
 }
 
 .calendar-scroll {
@@ -430,7 +435,7 @@ h1 {
   padding: $paddingLarge;
   position: sticky;
   top: $marginLarge;
-  min-height: 400px;
+  min-height: 300px;
   border: 1px solid transparent;
   transition: $transitionMedium;
 
@@ -523,7 +528,7 @@ h1 {
   padding: $paddingLarge;
   position: sticky;
   top: $marginLarge;
-  min-height: 420px;
+  min-height: 300px;
   border: 1px solid rgba($PrimaryColor, 0.08);
   transition: all $transitionMedium;
   display: flex;
