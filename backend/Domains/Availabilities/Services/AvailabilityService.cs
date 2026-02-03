@@ -26,9 +26,9 @@ public class AvailabilityService
             throw new ArgumentException("Non-recurring availability must have an availability date");
         }
 
-        if (isRecurring && availabilityDate.HasValue)
+        if (isRecurring && (dayOfWeek < 0 || dayOfWeek > 6))
         {
-            throw new ArgumentException("Recurring availability should not have a specific date");
+            throw new ArgumentException("DayOfWeek must be between 0 (Sunday) and 6 (Saturday) for recurring availability");
         }
 
         if (endTime <= startTime)
@@ -45,10 +45,7 @@ public class AvailabilityService
                 throw new ArgumentException("AvailabilityDate must be today or in the future");
             }
 
-            if ((int)availabilityDate.Value.DayOfWeek != dayOfWeek)
-            {
-                throw new ArgumentException("DayOfWeek does not match AvailabilityDate");
-            }
+            dayOfWeek = (int)availabilityDate.Value.DayOfWeek;
         }
 
         var existingAvailabilities = await _dbContext.Availabilities
