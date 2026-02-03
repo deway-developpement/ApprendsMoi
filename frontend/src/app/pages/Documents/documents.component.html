@@ -18,7 +18,7 @@
       </p>
 
       <div class="upload-form">
-        <div class="file-upload-group">
+        <div *ngIf="!hasApprovedOrPendingIdPaper()" class="file-upload-group">
           <label for="file-ID_PAPER" class="file-label" id="label-ID_PAPER">
             <span class="file-type">Pièce d'identité (Obligatoire)</span>
             <span class="file-info">PDF uniquement, max 10MB</span>
@@ -31,6 +31,9 @@
             (change)="onFileSelected($event, DocumentType.ID_PAPER)"
             class="file-input"
           />
+          <div class="info-message" *ngIf="hasRejectedIdPaper()">
+            Votre pièce d'identité a été rejetée. Vous pouvez en soumettre une nouvelle.
+          </div>
           <div class="file-name" *ngIf="selectedIdPaper">
             Sélectionné : {{ selectedIdPaper.name }}
           </div>
@@ -49,7 +52,6 @@
             (change)="onFileSelected($event, DocumentType.DIPLOMA)"
             class="file-input"
             multiple
-            onchange="if (this.files && this.files.length > 5) { alert('Vous ne pouvez sélectionner que 5 fichiers maximum pour les diplômes.'); this.value = ''; }"
           />
           <div class="file-name" *ngIf="selectedDiplomas.length > 0">
             Sélectionné : {{ selectedDiplomas.length }} diplôme(s)
@@ -106,7 +108,7 @@
             </button>
             
             <button
-              *ngIf="confirmingDeleteId !== doc.id"
+              *ngIf="confirmingDeleteId !== doc.id && canDeleteDocument(doc)"
               (click)="confirmDeleteDocument(doc.id)"
               [attr.aria-label]="'Supprimer ' + getDocumentTypeLabel(doc.documentType)"
               class="btn btn-danger btn-small"
