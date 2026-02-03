@@ -1,7 +1,6 @@
 <app-header theme="light"></app-header>
 
 <div class="dashboard-wrapper">
-  
   <div class="dashboard-header-bg admin-theme">
     <div class="header-content">
       <h1 class="welcome-title">Bonjour Admin 👋</h1>
@@ -10,7 +9,6 @@
   </div>
 
   <main class="dashboard-container">
-    
     <section class="kpi-section">
       <div class="kpi-grid">
         <div class="kpi-card" *ngFor="let kpi of kpis" [ngClass]="kpi.colorClass">
@@ -20,31 +18,23 @@
           <div class="kpi-info">
             <span class="kpi-value">{{ kpi.value }}</span>
             <span class="kpi-label">{{ kpi.label }}</span>
-            <span class="kpi-trend" *ngIf="kpi.trend" 
-                  [class.positive]="kpi.trend.startsWith('+')" 
-                  [class.negative]="kpi.trend.startsWith('-')">
-              {{ kpi.trend }} vs M-1
-            </span>
           </div>
         </div>
       </div>
     </section>
 
     <div class="content-split">
-      
       <section class="action-section">
         <div class="section-header">
           <h2>⚡ Actions requises</h2>
           <span class="badge-count">{{ alerts.length }}</span>
         </div>
-        
+
         <div class="card-list">
-          <div class="action-card" *ngFor="let alert of paginatedAlerts" [class.urgent]="alert.priority === 'high'">
+          <div class="action-card" *ngFor="let alert of paginatedAlerts">
             <div class="status-indicator"></div>
-            <div class="action-icon" [ngSwitch]="alert.type">
-               <app-small-icon *ngSwitchCase="'document'" icon="/assets/icons/document.svg" [size]="30"></app-small-icon>
-               <app-small-icon *ngSwitchCase="'litige'" icon="/assets/icons/problem.svg" [size]="30"></app-small-icon>
-               <app-small-icon *ngSwitchCase="'review'" icon="/assets/icons/star.svg" [size]="30"></app-small-icon>
+            <div class="action-icon">
+              <app-small-icon icon="/assets/icons/document.svg" [size]="30"></app-small-icon>
             </div>
             <div class="action-content">
               <h3>{{ alert.title }}</h3>
@@ -52,12 +42,12 @@
               <span class="date">{{ alert.date | date:'dd MMM à HH:mm' }}</span>
             </div>
             <div class="action-btn">
-              <app-button variant="ghost" size="small">Traiter</app-button>
+              <app-button variant="ghost" size="small" (click)="navigateTo('/documents')">Traiter</app-button>
             </div>
           </div>
-          
+
           <div class="empty-state" *ngIf="alerts.length === 0">
-            <p>🎉 Rien à signaler, tout est à jour !</p>
+            <p>Aucun document en attente.</p>
           </div>
         </div>
 
@@ -65,9 +55,9 @@
           <button class="nav-btn" (click)="prevPage()" [disabled]="currentPage === 1">
             <app-small-icon icon="/assets/icons/chevron-left.svg" [size]="24"></app-small-icon>
           </button>
-          
+
           <span class="page-info">Page {{ currentPage }} sur {{ totalPages }}</span>
-          
+
           <button class="nav-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">
             <app-small-icon icon="/assets/icons/chevron_right.svg" [size]="24"></app-small-icon>
           </button>
@@ -90,7 +80,6 @@
           </div>
         </div>
       </section>
-
     </div>
 
     <section class="shortcuts-section">
@@ -118,6 +107,5 @@
         </button>
       </div>
     </section>
-
   </main>
 </div>

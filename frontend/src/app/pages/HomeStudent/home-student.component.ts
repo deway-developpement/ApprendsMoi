@@ -1,21 +1,14 @@
-﻿import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { HeaderComponent } from '../../components/Header/header.component';
-import { ButtonComponent } from '../../components/shared/Button/button.component';
 import { SmallIconComponent } from '../../components/shared/SmallIcon/small-icon.component';
 import { CoursesScheduleComponent, Course } from '../../components/shared/CoursesSchedule/courses-schedule.component';
 import { AuthService, UserDto } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
 import { environment } from '../../environments/environment';
-
-interface Message {
-  sender: string;
-  preview: string;
-  date: Date;
-}
 
 interface MeetingResponse {
   id: number;
@@ -28,6 +21,16 @@ interface MeetingResponse {
   studentId: string;
 }
 
+interface StudentStatsDto {
+  totalHoursThisMonth: number;
+  numberOfCoursesThisMonth: number;
+}
+
+interface StatsResponseDto {
+  userType?: string | null;
+  stats?: Record<string, unknown> | null;
+}
+
 @Component({
   selector: 'app-home-student',
   templateUrl: './home-student.component.html',
@@ -36,7 +39,6 @@ interface MeetingResponse {
   imports: [
     CommonModule,
     HeaderComponent,
-    ButtonComponent,
     SmallIconComponent,
     CoursesScheduleComponent
   ]
@@ -47,26 +49,35 @@ export class HomeStudentComponent implements OnInit {
   private readonly toastService = inject(ToastService);
   private readonly router = inject(Router);
   private readonly apiBaseUrl = `${environment.apiUrl}/api/zoom`;
+  private readonly statsUrl = `${environment.apiUrl}/api/stats`;
   private readonly usersBaseUrl = `${environment.apiUrl}/api/Users`;
   private readonly userCache = new Map<string, UserDto>();
 
   userName = 'Eleve';
   currentUserId: string | null = null;
 
-  // Data
-  nextCourse: Course | null = null;
-  lastMessage: Message | null = null;
+  // Real backend data
   courses: Course[] = [];
+  totalHoursThisMonth = 0;
+  numberOfCoursesThisMonth = 0;
 
   async ngOnInit(): Promise<void> {
     await this.loadUser();
-    await this.loadMeetings();
+    await Promise.all([
+      this.loadStudentStats(),
+      this.loadMeetings()
+    ]);
+  }
 
-    this.lastMessage = {
-      sender: 'Julie B.',
-      preview: 'N\'oublie pas de faire l\'exercice 3 page 12 pour demain !',
-      date: new Date()
-    };
+  get totalHoursThisMonthLabel(): string {
+    return new Intl.NumberFormat('fr-FR', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    }).format(this.totalHoursThisMonth);
+  }
+
+  get numberOfCoursesThisMonthLabel(): string {
+    return new Intl.NumberFormat('fr-FR').format(this.numberOfCoursesThisMonth);
   }
 
   private async loadUser(): Promise<void> {
@@ -77,7 +88,7 @@ export class HomeStudentComponent implements OnInit {
       try {
         user = await firstValueFrom(this.authService.fetchMe());
       } catch (err) {
-        this.toastService.error(this.getErrorMessage(err, 'Impossible de charger l\'utilisateur.'));
+        this.toastService.error(this.getErrorMessage(err, "Impossible de charger l'utilisateur."));
         return;
       }
     }
@@ -94,6 +105,28 @@ export class HomeStudentComponent implements OnInit {
     }
   }
 
+  private async loadStudentStats(): Promise<void> {
+    try {
+      const response = await firstValueFrom(this.http.get<StatsResponseDto>(this.statsUrl));
+      const stats = response?.stats;
+
+      if (!stats) {
+        this.totalHoursThisMonth = 0;
+        this.numberOfCoursesThisMonth = 0;
+        return;
+      }
+
+      const parsed = this.extractStudentStats(stats);
+      this.totalHoursThisMonth = parsed.totalHoursThisMonth;
+      this.numberOfCoursesThisMonth = parsed.numberOfCoursesThisMonth;
+    } catch (err) {
+      console.error('Error loading student stats:', err);
+      this.totalHoursThisMonth = 0;
+      this.numberOfCoursesThisMonth = 0;
+      this.toastService.error('Impossible de charger les statistiques etudiant.');
+    }
+  }
+
   private async loadMeetings(): Promise<void> {
     try {
       const meetings = await firstValueFrom(
@@ -101,7 +134,7 @@ export class HomeStudentComponent implements OnInit {
       );
 
       const courses = await Promise.all(
-        (meetings ?? []).map(async (meeting) => {
+        (meetings ?? []).map(async meeting => {
           const dateValue = meeting.scheduledStartTime ?? meeting.createdAt;
           const courseDate = this.parseUtcDate(dateValue);
           const safeDate = Number.isNaN(courseDate.getTime()) ? new Date() : courseDate;
@@ -123,8 +156,6 @@ export class HomeStudentComponent implements OnInit {
       );
 
       this.courses = courses.sort((a, b) => a.date.getTime() - b.date.getTime());
-      this.nextCourse =
-        this.courses.find(c => c.status === 'Confirmé' && c.date > new Date()) ?? null;
     } catch (err) {
       this.toastService.error(this.getErrorMessage(err, 'Impossible de charger les rendez-vous.'));
     }
@@ -144,7 +175,7 @@ export class HomeStudentComponent implements OnInit {
       const user = await firstValueFrom(this.http.get<UserDto>(`${this.usersBaseUrl}/${userId}`));
       this.userCache.set(userId, user);
       return this.formatUserName(user) || fallback;
-    } catch (err) {
+    } catch {
       return fallback;
     }
   }
@@ -155,6 +186,18 @@ export class HomeStudentComponent implements OnInit {
       return fullName;
     }
     return user.username || '';
+  }
+
+  private extractStudentStats(stats: Record<string, unknown>): StudentStatsDto {
+    return {
+      totalHoursThisMonth: this.toNumber(stats['totalHoursThisMonth'] ?? stats['TotalHoursThisMonth']),
+      numberOfCoursesThisMonth: this.toNumber(stats['numberOfCoursesThisMonth'] ?? stats['NumberOfCoursesThisMonth'])
+    };
+  }
+
+  private toNumber(value: unknown): number {
+    const numericValue = Number(value);
+    return Number.isFinite(numericValue) ? numericValue : 0;
   }
 
   private parseUtcDate(dateString: string | null | undefined): Date {
