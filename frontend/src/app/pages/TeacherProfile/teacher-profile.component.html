@@ -98,16 +98,19 @@
             <div class="calendar-title">
               <div>
                 <h3>Créneaux disponibles</h3>
-                <p>Sélectionnez un créneau bleu pour continuer.</p>
+                <p>Sélectionnez un créneau disponible pour réserver une séance.</p>
               </div>
-              <span class="calendar-status" *ngIf="availabilityLoading">Chargement...</span>
-            </div>
-
-            <div class="calendar-legend">
-              <span class="legend-pill available">Disponible</span>
-              <span class="legend-pill selected">Sélectionné</span>
-              <span class="legend-pill booked">Réservé</span>
-              <span class="legend-pill past">Passé</span>
+              <div class="calendar-legend">
+                <span class="legend-item">
+                  <span class="legend-dot available"></span> Disponible
+                </span>
+                <span class="legend-item">
+                  <span class="legend-dot selected"></span> Sélectionné
+                </span>
+                <span class="legend-item">
+                  <span class="legend-dot booked"></span> Réservé
+                </span>
+              </div>
             </div>
 
             <div class="calendar-nav">
@@ -115,7 +118,8 @@
                 variant="ghost" 
                 size="small" 
                 (click)="previousWeek()"
-                [disabled]="availabilityLoading">
+                [disabled]="availabilityLoading"
+                [style.visibility]="isCurrentWeek ? 'hidden' : 'visible'">
                 ← Semaine précédente
               </app-button>
 
@@ -223,45 +227,6 @@
           <app-button variant="primary" routerLink="/login">Se connecter</app-button>
         </div>
       </ng-template>
-    </section>
-
-    <section class="profile-section split">
-      <div class="availability-card">
-        <div class="section-title">
-          <h2>Prochains créneaux</h2>
-          <p class="section-subtitle">Disponibilités à venir cette semaine.</p>
-        </div>
-        <div class="slot-list">
-          <div class="slot-item" *ngFor="let slot of t.availability">
-            <div>
-              <span class="slot-day">{{ slot.label }}</span>
-              <span class="slot-time">{{ slot.time }}</span>
-            </div>
-            <span class="slot-format">{{ slot.format }}</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="details-card">
-        <div class="detail-block">
-          <h3>Langues</h3>
-          <div class="pill-row">
-            <span class="pill soft" *ngFor="let lang of t.languages">{{ lang }}</span>
-          </div>
-        </div>
-        <div class="detail-block">
-          <h3>Formation</h3>
-          <ul>
-            <li *ngFor="let edu of t.education">{{ edu }}</li>
-          </ul>
-        </div>
-        <div class="detail-block">
-          <h3>Certifications</h3>
-          <ul>
-            <li *ngFor="let cert of t.certifications">{{ cert }}</li>
-          </ul>
-        </div>
-      </div>
     </section>
 
     <app-teacher-reviews 
