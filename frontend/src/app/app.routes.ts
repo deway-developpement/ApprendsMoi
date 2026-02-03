@@ -12,6 +12,7 @@ import { SearchForTeachersComponent } from './pages/SearchForTeachers/search-for
 import { TeacherProfileComponent } from './pages/TeacherProfile/teacher-profile.component';
 import { HomeComponent } from './pages/Home/home.component';
 import { DocumentsComponent } from './pages/Documents/documents.component';
+import { PaymentsComponent } from './pages/Payments/payments.component';
 import { teacherOnlyGuard, verifiedTeacherGuard } from './guards/verified-teacher.guard';
 
 export const routes: Routes = [
@@ -33,6 +34,7 @@ export const routes: Routes = [
   { path: 'teachers/:id', component: TeacherProfileComponent },
   { path: 'home', component: HomeComponent },
   { path: 'documents', component: DocumentsComponent, canActivate: [teacherOnlyGuard] },
+  { path: 'payments', component: PaymentsComponent },
   { path: '**', redirectTo: '' }
 ];
 
