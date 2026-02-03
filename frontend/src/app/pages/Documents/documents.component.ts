@@ -7,6 +7,7 @@ import { HeaderComponent } from '../../components/Header/header.component';
 import { environment } from '../../environments/environment';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
+import { ModalService } from '../../services/modal.service';
 import {
   DocumentUploadResult,
   BatchUploadResponse,
@@ -29,6 +30,7 @@ export class DocumentsComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
+  private modalService = inject(ModalService);
   private location = inject(Location);
   private destroy$ = new Subject<void>();
 
@@ -169,19 +171,53 @@ export class DocumentsComponent implements OnInit, OnDestroy {
     }
   }
 
-  async validateDocuments(documentIds: string[], approve: boolean): Promise<void> {
+  async validateDocuments(documents: PendingDocument[] | string[], approve: boolean): Promise<void> {
+    // Convert string IDs to documents if needed
+    const docsToValidate = documents.map(doc => 
+      typeof doc === 'string' 
+        ? this.pendingDocuments.find(d => d.id === doc)
+        : doc
+    ).filter((doc): doc is PendingDocument => doc !== undefined);
+
     // Ask for confirmation when batch approving multiple documents
-    if (approve && documentIds.length > 1) {
-      if (!confirm(`Êtes-vous sûr de vouloir approuver ${documentIds.length} document(s) ?`)) {
+    if (approve && docsToValidate.length > 1) {
+      const confirmed = await this.modalService.confirm(
+        `Êtes-vous sûr de vouloir approuver ${docsToValidate.length} document(s) ?`,
+        'Confirmation'
+      );
+      if (!confirmed) {
         return;
       }
     }
 
-    const validationItems = documentIds.map(id => ({
-      documentId: id,
-      approve: approve,
-      rejectionReason: approve ? null : prompt(`Raison du rejet de ${id} ?`)
-    }));
+    const validationItems = [];
+    
+    for (const doc of docsToValidate) {
+      let rejectionReason = null;
+      
+      if (!approve) {
+        rejectionReason = await this.modalService.prompt(
+          `Raison du rejet de ${doc.fileName}`,
+          'Raison du rejet',
+          'Entrez la raison du rejet...'
+        );
+        
+        // User cancelled the prompt
+        if (rejectionReason === null) {
+          continue;
+        }
+      }
+      
+      validationItems.push({
+        documentId: doc.id,
+        approve: approve,
+        rejectionReason: rejectionReason
+      });
+    }
+    
+    if (validationItems.length === 0) {
+      return;
+    }
 
     try {
       const response = await this.http
@@ -242,8 +278,8 @@ export class DocumentsComponent implements OnInit, OnDestroy {
     }
   }
 
-  getPendingDocumentIds(): string[] {
-    return this.pendingDocuments.map(d => d.id);
+  getPendingDocuments(): PendingDocument[] {
+    return this.pendingDocuments;
   }
 
   getTeacherName(firstN: any, lastN: any): string {

@@ -169,14 +169,14 @@
               Télécharger
             </button>
             <button
-              (click)="validateDocuments([doc.id], true)"
+              (click)="validateDocuments([doc], true)"
               [attr.aria-label]="'Approuver ' + getDocumentTypeLabel(doc.documentType) + ' de ' + getTeacherName(doc.teacherFirstName, doc.teacherLastName)"
               class="btn btn-success btn-small"
             >
               Approuver
             </button>
             <button
-              (click)="validateDocuments([doc.id], false)"
+              (click)="validateDocuments([doc], false)"
               [attr.aria-label]="'Rejeter ' + getDocumentTypeLabel(doc.documentType) + ' de ' + getTeacherName(doc.teacherFirstName, doc.teacherLastName)"
               class="btn btn-danger btn-small"
             >
@@ -187,7 +187,7 @@
 
         <div class="batch-actions" *ngIf="pendingDocuments.length > 1">
           <button
-            (click)="validateDocuments(getPendingDocumentIds(), true)"
+            (click)="validateDocuments(getPendingDocuments(), true)"
             [attr.aria-label]="'Approuver tous les ' + pendingDocuments.length + ' documents en attente'"
             class="btn btn-success"
           >

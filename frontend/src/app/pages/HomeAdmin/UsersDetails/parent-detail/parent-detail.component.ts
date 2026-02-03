@@ -1,9 +1,10 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 // Services
 import { UserDto } from '../../../../services/auth.service';
+import { ToastService } from '../../../../services/toast.service';
 
 // UI Components
 import { ButtonComponent } from '../../../../components/shared/Button/button.component';
@@ -52,9 +53,11 @@ export class ParentDetailComponent implements OnInit {
     // Fetch logic would go here
   }
 
+  toastService = inject(ToastService);
+
   suspendParent() {
     if(confirm('Voulez-vous suspendre ce compte parent ? Cela bloquera également les réservations.')) {
-      alert('Compte parent suspendu.');
+      this.toastService.success('Compte parent suspendu.');
     }
   }
 }
