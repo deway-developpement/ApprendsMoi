@@ -1,1 +1,1 @@
-dotnet run --reset-migrations 
+dotnet run --reset-migrations --populate
