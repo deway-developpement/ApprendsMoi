@@ -14,6 +14,33 @@
     margin-bottom: 2rem;
     
     h2 { font-size: 1.5rem; color: $PrimaryColor; margin: 0; }
+
+    .action-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: $biggerFontSize;
+      font-weight: 600;
+      color: $SecondaryColor;
+      text-decoration: none;
+      transition: color $transitionFast, transform $transitionFast;
+
+      &:hover {
+        color: $SecondaryColorHover;
+        transform: scale(1.01);
+      }
+
+      &:active {
+        color: $SecondaryColorActive;
+      }
+    }
+
+    .spacer {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 1.5rem;
+    }
   }
 
   .tabs {
@@ -30,7 +57,7 @@
       font-weight: 600;
       color: #64748b;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: color $transitionFast, transform $transitionFast;
 
       &.active {
         background: white;

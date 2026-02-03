@@ -11,31 +11,31 @@
           [icon]="'assets/icons/verified-user.svg'"
           [size]="25"
           class="verified-icon"
-          title="Profil verifie"
+          title="Profil vérifié"
           [invertColor]="true">
         </app-icon>
       </div>
 
       <p class="welcome-subtitle" *ngIf="isVerified">
-        Voici le resume de votre activite pour ce mois.
+        Voici le résumé de votre activité pour ce mois.
       </p>
       <p class="welcome-subtitle warning" *ngIf="!isVerified">
-        Votre compte n'est pas encore verifie. Veuillez soumettre vos documents d'identite.
+        Votre compte n'est pas encore vérifié. Veuillez soumettre vos documents d'identité.
       </p>
     </div>
   </div>
 
   <main class="dashboard-container">
     <div *ngIf="!isVerified" class="verification-warning">
-      <h3>Acces limite</h3>
-      <p>Votre compte enseignant n'est pas encore verifie. Pour acceder a toutes les fonctionnalites :</p>
+      <h3>Accès limité</h3>
+      <p>Votre compte enseignant n'est pas encore vérifié. Pour accéder à toutes les fonctionnalités :</p>
       <ol>
-        <li>Soumettez votre piece d'identite (obligatoire)</li>
-        <li>Ajoutez vos diplomes (optionnel mais recommande)</li>
-        <li>Attendez la validation par notre equipe</li>
+        <li>Soumettez votre pièce d'identité (obligatoire)</li>
+        <li>Ajoutez vos diplômes (optionnel mais recommandé)</li>
+        <li>Attendez la validation par notre équipe</li>
       </ol>
       <a class="verification-link" routerLink="/documents">
-        Acceder a la gestion des documents
+        Accéder à la gestion des documents
       </a>
     </div>
 
@@ -51,7 +51,7 @@
           <div class="widget-content">
             <p class="metric-value">{{ averageRatingLabel }}<span *ngIf="averageRatingLabel !== '-'"> / 5</span></p>
             <p class="metric-inline">{{ numberOfReviewersLabel }} avis</p>
-            <p class="subtext" *ngIf="teacherStats.numberOfReviewers > 0; else noRatingYet">Nombre d'avis recus</p>
+            <p class="subtext" *ngIf="teacherStats.numberOfReviewers > 0; else noRatingYet">Nombre d'avis reçus</p>
             <ng-template #noRatingYet>
               <p class="subtext">Aucun avis pour le moment</p>
             </ng-template>
@@ -91,7 +91,7 @@
           </div>
           <div class="widget-content">
             <p class="metric-value">{{ earningsThisMonthLabel }}</p>
-            <p class="subtext">Total cumule sur le mois en cours</p>
+            <p class="subtext">Total cumulé sur le mois en cours</p>
           </div>
         </div>
 
@@ -100,25 +100,20 @@
             <div class="icon-circle purple">
               <app-small-icon icon="/assets/icons/people.svg" [size]="30"></app-small-icon>
             </div>
-            <h3>Eleves suivis</h3>
+            <h3>Elèves suivis</h3>
           </div>
           <div class="widget-content">
             <p class="metric-value">{{ currentStudentsFollowingLabel }}</p>
-            <p class="subtext">Eleves actuellement suivis</p>
+            <p class="subtext">Elèves actuellement suivis</p>
           </div>
         </div>
       </div>
     </section>
 
-    <div *ngIf="isVerified" class="card-header-actions">
-      <a class="see-more-btn" routerLink="/teacher/planning">
-        Mettre a jour mes disponibilites
-      </a>
-    </div>
-
     <app-courses-schedule
       *ngIf="isVerified"
       [courses]="courses"
+      [showPlanningLink]="true"
       (action)="openVisio($event)">
     </app-courses-schedule>
 
@@ -133,14 +128,14 @@
 
     <section *ngIf="isVerified" class="documents-section">
       <div class="section-header">
-        <h3>Mes documents de verification</h3>
+        <h3>Mes documents de vérification</h3>
       </div>
       <div class="section-content">
         <p class="section-description">
-          Gerez vos documents d'identite et diplomes pour la verification de votre compte.
+          Gérez vos documents d'identité et diplômes pour la vérification de votre compte.
         </p>
         <a class="action-link" routerLink="/documents">
-          Acceder a mes documents
+          Accéder à mes documents
         </a>
       </div>
     </section>
