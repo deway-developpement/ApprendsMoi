@@ -79,7 +79,22 @@ export class DocumentsComponent implements OnInit, OnDestroy {
       if (documentType === DocumentType.ID_PAPER) {
         this.selectedIdPaper = input.files[0];
       } else if (documentType === DocumentType.DIPLOMA) {
-        this.selectedDiplomas = Array.from(input.files);
+        const files = Array.from(input.files);
+        const remainingSlots = 5 - this.selectedDiplomas.length;
+
+        if (remainingSlots <= 0) {
+          this.toastService.warning('Vous avez déjà sélectionné 5 diplômes maximum');
+          input.value = '';
+          return;
+        }
+
+        if (files.length > remainingSlots) {
+          this.toastService.warning('Vous ne pouvez sélectionner que 5 fichiers maximum pour les diplômes');
+        }
+
+        const filesToAdd = files.slice(0, remainingSlots);
+        this.selectedDiplomas = [...this.selectedDiplomas, ...filesToAdd];
+        input.value = '';
       }
     }
   }
@@ -273,13 +288,36 @@ export class DocumentsComponent implements OnInit, OnDestroy {
       await this.loadMyDocuments();
     } catch (error: any) {
       console.error('Delete error:', error);
-      this.toastService.error('Impossible de supprimer le document');
+      if (error.status === 404 || error.status === 400) {
+        this.toastService.error('Impossible de supprimer un document approuvé');
+      } else {
+        this.toastService.error('Impossible de supprimer le document');
+      }
       this.confirmingDeleteId = null;
     }
   }
 
   getPendingDocuments(): PendingDocument[] {
     return this.pendingDocuments;
+  }
+
+  hasApprovedOrPendingIdPaper(): boolean {
+    return this.myDocuments.some(doc => 
+      doc.documentType === DocumentType.ID_PAPER && 
+      (doc.status === DocumentStatus.APPROVED || doc.status === DocumentStatus.PENDING)
+    );
+  }
+
+  hasRejectedIdPaper(): boolean {
+    return this.myDocuments.some(doc => 
+      doc.documentType === DocumentType.ID_PAPER && 
+      doc.status === DocumentStatus.REJECTED
+    );
+  }
+
+  canDeleteDocument(doc: TeacherDocumentDto): boolean {
+    // Cannot delete approved documents
+    return doc.status !== DocumentStatus.APPROVED;
   }
 
   getTeacherName(firstN: any, lastN: any): string {
@@ -302,4 +340,5 @@ export class DocumentsComponent implements OnInit, OnDestroy {
     this.location.back();
   }
 }
+
 
