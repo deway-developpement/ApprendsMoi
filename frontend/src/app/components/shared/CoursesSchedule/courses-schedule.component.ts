@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { IconButtonComponent } from '../IconButton/icon-button.component'; // Ajustez le chemin selon votre structure
 
 export interface Course {
@@ -16,12 +17,13 @@ export interface Course {
 @Component({
   selector: 'app-courses-schedule',
   standalone: true,
-  imports: [CommonModule, IconButtonComponent],
+  imports: [CommonModule, IconButtonComponent, RouterLink],
   templateUrl: './courses-schedule.component.html',
   styleUrls: ['./courses-schedule.component.scss']
 })
 export class CoursesScheduleComponent {
   @Input() courses: Course[] = [];
+  @Input() showPlanningLink = false;
   @Output() action = new EventEmitter<Course>();
   
   currentTab: 'upcoming' | 'history' = 'upcoming';

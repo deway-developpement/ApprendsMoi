@@ -1,17 +1,22 @@
 <section class="courses-section">
   <div class="section-header-row">
     <h2>📅 Emploi du temps</h2>
-    <div class="tabs">
-      <button 
-        [class.active]="currentTab === 'upcoming'" 
-        (click)="toggleTab('upcoming')">
-        À venir
-      </button>
-      <button 
-        [class.active]="currentTab === 'history'" 
-        (click)="toggleTab('history')">
-        Passés
-      </button>
+    <div class="spacer">
+      <a *ngIf="showPlanningLink" class="action-link" routerLink="/teacher/planning">
+        Gérer mes disponibilités
+      </a>
+      <div class="tabs">
+        <button 
+          [class.active]="currentTab === 'upcoming'" 
+          (click)="toggleTab('upcoming')">
+          À venir
+        </button>
+        <button 
+          [class.active]="currentTab === 'history'" 
+          (click)="toggleTab('history')">
+          Passés
+        </button>
+      </div>
     </div>
   </div>
 
