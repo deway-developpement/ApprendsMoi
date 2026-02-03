@@ -96,7 +96,14 @@ export class TeacherProfileComponent implements OnInit {
   private readonly subjectService = inject(SubjectService);
   private readonly route = inject(ActivatedRoute);
 
+  selectedFormat: CourseFormat = CourseFormat.VISIO;
+
   currentReferenceDate: Date = new Date();
+
+  formatOptions: SelectOption[] = [
+    { label: '💻 Visioconférence', value: CourseFormat.VISIO },
+    { label: '🏠 À domicile', value: CourseFormat.HOME }
+  ];
 
   teacher: TeacherProfile | null = null;
   teacherId: string | null = null;
@@ -225,42 +232,38 @@ export class TeacherProfileComponent implements OnInit {
     return;
   }
 
-  this.isBooking = true;
-  try {
-    // On construit manuellement la date sans passer par l'objet Date pour éviter le décalage UTC
-    // Format attendu : "YYYY-MM-DDTHH:mm:00"
-    const startDateRaw = `${this.bookingDate}T${this.bookingTime}:00.000Z`;
+    this.isBooking = true;
+    try {
+      const startDateRaw = `${this.bookingDate}T${this.bookingTime}:00.000Z`;
 
-    await firstValueFrom(
-      this.bookingService.createCourse({
-        teacherId: this.teacherId!,
-        studentId: String(studentId),
-        subjectId: String(this.selectedSubjectId),
-        startDate: startDateRaw,
-        durationMinutes: 60,
-        format: CourseFormat.VISIO 
-      })
-    );
+      await firstValueFrom(
+        this.bookingService.createCourse({
+          teacherId: this.teacherId!,
+          studentId: String(studentId),
+          subjectId: String(this.selectedSubjectId),
+          startDate: startDateRaw,
+          durationMinutes: 60,
+          format: this.selectedFormat // MODIFIÉ : Utilise la variable sélectionnée
+        })
+      );
 
-    this.toastService.success('Cours réservé avec succès.');
-    this.resetBooking();
-    this.loadTeacherData();
-  } catch (err) {
-    this.toastService.error(this.getErrorMessage(err, 'Impossible de réserver le cours.'));
-  } finally {
-    this.isBooking = false;
+      this.toastService.success('Cours réservé avec succès.');
+      this.resetBooking();
+      this.loadTeacherData();
+    } catch (err) {
+      this.toastService.error(this.getErrorMessage(err, 'Impossible de réserver le cours.'));
+    } finally {
+      this.isBooking = false;
+    }
   }
-}
 
   selectSlot(day: CalendarDay, slot: TimeSlot): void {
     if (!this.isSlotAvailable(day, slot) || this.isSlotBooked(day, slot) || this.isSlotPast(day, slot)) return;
-    console.log("Selecting slot:", { day, slot });
     this.selectedSlotKey = this.bookingService.buildSlotKey(day.key, slot.startTime);
     this.selectedSlotLabel = `${day.label} ${day.dateLabel}`;
     this.selectedSlotRange = slot.rangeLabel;
     this.bookingDate = day.key;
     this.bookingTime = slot.startTime.slice(0, 5);
-    console.log("bookingTime set to:", this.bookingTime);
   }
 
   isSlotAvailable = (day: CalendarDay, slot: TimeSlot) => {
@@ -276,7 +279,6 @@ export class TeacherProfileComponent implements OnInit {
 
   private applyExistingCourses(courses: any[]): void {
     if (!courses || courses.length === 0) {
-      console.log('❌ Pas de cours existants');
       return;
     }
 
@@ -288,26 +290,17 @@ export class TeacherProfileComponent implements OnInit {
       const hours = timePart.split(':')[0]; // "08"
       const minutes = timePart.split(':')[1]; // "00"
       
-      console.log(`Course ${idx}:`, {
-        rawStartDate: course.startDate,
-        extractedHours: hours,
-        extractedMinutes: minutes
-      });
-
       // La date au format YYYY-MM-DD
       const dateKey = isoString.split('T')[0]; // "2026-01-29"
       const startTime = `${hours}:${minutes}:00`;
       const key = this.bookingService.buildSlotKey(dateKey, startTime);
       
-      console.log(`  → Slot clé générée: ${key}`);
       this.bookedSlotKeys.add(key);
     });
     
-    console.log('📋 Tous les booked slot keys:', Array.from(this.bookedSlotKeys));
   }
     
   private applyAvailabilities(availabilities: AvailabilityResponse[]): void {
-    console.log('📅 Availabilities reçus:', availabilities);
     
     availabilities.forEach((av) => {
       const startMin = this.bookingService.timeToMinutes(av.startTime);
