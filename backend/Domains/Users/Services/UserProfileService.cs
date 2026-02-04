@@ -14,6 +14,7 @@ public class UserProfileService(AppDbContext db) {
             .Include(u => u.Teacher)
             .Include(u => u.Parent)
             .Include(u => u.Student)
+            .Where(u => u.Profile != ProfileType.Admin)
             .ToListAsync(ct);
 
         return users.Select(MapToDto).ToList();

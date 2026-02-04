@@ -3,13 +3,14 @@
 .profile-page {
   min-height: 100vh;
   color: $PrimaryColor;
-  margin-top: 6rem;
+  background: $backgroundColor;
 }
 
 // Hero Section
 .profile-hero {
-  // A subtle gradient using Primary and Secondary colors
-  padding: 3.5rem $paddingMedium 3rem;
+  background: $PrimaryColor;
+  color: white;
+  padding: 3.5rem $paddingMedium 5rem;
 }
 
 .hero-content {
@@ -22,7 +23,7 @@
 
 .back-link {
   text-decoration: none;
-  color: $PrimaryColorHover;
+  color: rgba(white, 0.8);
   font-weight: 600;
   font-size: $smallerFontSize;
   display: inline-flex;
@@ -31,7 +32,7 @@
   transition: color $transitionFast;
 
   &:hover {
-    color: $PrimaryColor;
+    color: white;
   }
 }
 

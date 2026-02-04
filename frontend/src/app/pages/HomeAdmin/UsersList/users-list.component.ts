@@ -13,7 +13,7 @@ import { SmallIconComponent } from '../../../components/shared/SmallIcon/small-i
 // Services
 import { UserService } from '../../../services/user.service';
 import { ProfileType, UserDto } from '../../../services/auth.service';
-import { ToastService } from '../../../services/toast.service'; // Assurez-vous que le chemin est correct
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-users-list',
@@ -76,7 +76,6 @@ export class UsersListComponent implements OnInit {
         this.users = data;
         this.applyFilters();
         this.isLoading = false;
-        // Optionnel : Un toast info si la liste est vide au chargement
         if (data.length === 0) {
           this.toastService.info('Aucun utilisateur trouvé dans la base de données.');
         }

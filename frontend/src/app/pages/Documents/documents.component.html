@@ -6,17 +6,87 @@
       <button class="back-button" (click)="goBack()">
         ← Retour
       </button>
-      <h1>Gestion des documents</h1>
-      <p>Envoyez et gérez vos documents de vérification</p>
+      <h1 *ngIf="isTeacher">Mon profil enseignant</h1>
+      <h1 *ngIf="isAdmin">Gestion des documents</h1>
+      <p *ngIf="isTeacher">Gérez vos matières, documents de vérification et tarifs</p>
+      <p *ngIf="isAdmin">Examinez et validez les documents des enseignants</p>
+    </div>
+
+      <!-- Subject Selector Section -->
+      <div *ngIf="isTeacher">
+        <app-subject-selector></app-subject-selector>
+      </div>
+
+    <!-- Admin Pending Documents Section -->
+    <div *ngIf="isAdmin" class="section pending-section">
+      <h2>Examen des documents en attente</h2>
+
+      <div *ngIf="loadingPending" class="loading">
+        Chargement des documents en attente...
+      </div>
+
+      <div *ngIf="!loadingPending && pendingDocuments.length === 0" class="empty-state">
+        <p>Aucun document en attente</p>
+      </div>
+
+      <div *ngIf="!loadingPending && pendingDocuments.length > 0" class="pending-list">
+        <div *ngFor="let doc of pendingDocuments" class="pending-card">
+          <div class="document-info">
+            <div class="document-header">
+              <h3>{{ getDocumentTypeLabel(doc.documentType) }}</h3>
+              <span class="status-badge status-pending">En attente</span>
+            </div>
+            <p class="file-name">{{ doc.fileName }}</p>
+            <p class="uploaded-date">Envoyé : {{ doc.uploadedAt | date: 'short' }}</p>
+            <p class="teacher-name">Enseignant : {{ getTeacherName(doc.teacherFirstName, doc.teacherLastName) }}</p>
+          </div>
+
+          <div class="document-actions">
+            <button
+              (click)="downloadDocument(doc.id, doc.fileName)"
+              [attr.aria-label]="'Afficher ' + getDocumentTypeLabel(doc.documentType) + ' de ' + getTeacherName(doc.teacherFirstName, doc.teacherLastName)"
+              class="btn btn-secondary btn-small"
+            >
+              Télécharger
+            </button>
+            <button
+              (click)="validateDocuments([doc], true)"
+              [attr.aria-label]="'Approuver ' + getDocumentTypeLabel(doc.documentType) + ' de ' + getTeacherName(doc.teacherFirstName, doc.teacherLastName)"
+              class="btn btn-success btn-small"
+            >
+              Approuver
+            </button>
+            <button
+              (click)="validateDocuments([doc], false)"
+              [attr.aria-label]="'Rejeter ' + getDocumentTypeLabel(doc.documentType) + ' de ' + getTeacherName(doc.teacherFirstName, doc.teacherLastName)"
+              class="btn btn-danger btn-small"
+            >
+              Rejeter
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="batch-actions" *ngIf="!loadingPending && pendingDocuments.length > 1">
+        <button
+          (click)="validateDocuments(getPendingDocuments(), true)"
+          [attr.aria-label]="'Approuver tous les ' + pendingDocuments.length + ' documents en attente'"
+          class="btn btn-success"
+        >
+          Approuver tous
+        </button>
+      </div>
     </div>
 
     <!-- Teacher Upload Section -->
-    <div *ngIf="isTeacher" class="section upload-section">
-      <h2>Envoyer les documents</h2>
+    <div *ngIf="isTeacher" class="section upload-section documents-section">
+      <h2>Documents de vérification</h2>
       <p class="section-description">
-        Envoyez votre pièce d'identité (obligatoire) et vos diplômes (optionnels, jusqu'à 5)
+        Gérez vos documents d'identité et diplômes
       </p>
 
+      <h3>Envoyer des documents</h3>
+        
       <div class="upload-form">
         <div *ngIf="!hasApprovedOrPendingIdPaper()" class="file-upload-group">
           <label for="file-ID_PAPER" class="file-label" id="label-ID_PAPER">
@@ -68,11 +138,8 @@
           {{ uploading ? 'Envoi en cours...' : 'Envoyer les documents' }}
         </button>
       </div>
-    </div>
 
-    <!-- My Documents Section -->
-    <div *ngIf="isTeacher" class="section documents-section">
-      <h2>Mes documents</h2>
+      <h3>Statut de mes documents</h3>
 
       <div *ngIf="loadingDocuments" class="loading">
         Chargement des documents...
@@ -132,69 +199,6 @@
               </button>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-
-      <!-- Subject Selector Section -->
-      <div *ngIf="isTeacher" class="section subject-selector-section">
-        <app-subject-selector></app-subject-selector>
-      </div>
-
-    <!-- Admin Pending Documents Section -->
-    <div *ngIf="isAdmin" class="section pending-section">
-      <h2>Examen des documents en attente</h2>
-
-      <div *ngIf="loadingPending" class="loading">
-        Chargement des documents en attente...
-      </div>
-
-      <div *ngIf="!loadingPending && pendingDocuments.length === 0" class="empty-state">
-        <p>Aucun document en attente</p>
-      </div>
-
-      <div *ngIf="!loadingPending && pendingDocuments.length > 0" class="pending-list">
-        <div *ngFor="let doc of pendingDocuments" class="pending-card">
-          <div class="pending-info">
-            <h3>{{ getDocumentTypeLabel(doc.documentType) }}</h3>
-            <p class="file-name">{{ doc.fileName }}</p>
-            <p class="uploaded-date">Envoyé : {{ doc.uploadedAt | date: 'short' }}</p>
-            <p class="teacher-name">Enseignant : {{ getTeacherName(doc.teacherFirstName, doc.teacherLastName) }}</p>
-          </div>
-
-          <div class="pending-actions">
-            <button
-              (click)="downloadDocument(doc.id, doc.fileName)"
-              [attr.aria-label]="'Afficher ' + getDocumentTypeLabel(doc.documentType) + ' de ' + getTeacherName(doc.teacherFirstName, doc.teacherLastName)"
-              class="btn btn-secondary btn-small"
-            >
-              Télécharger
-            </button>
-            <button
-              (click)="validateDocuments([doc], true)"
-              [attr.aria-label]="'Approuver ' + getDocumentTypeLabel(doc.documentType) + ' de ' + getTeacherName(doc.teacherFirstName, doc.teacherLastName)"
-              class="btn btn-success btn-small"
-            >
-              Approuver
-            </button>
-            <button
-              (click)="validateDocuments([doc], false)"
-              [attr.aria-label]="'Rejeter ' + getDocumentTypeLabel(doc.documentType) + ' de ' + getTeacherName(doc.teacherFirstName, doc.teacherLastName)"
-              class="btn btn-danger btn-small"
-            >
-              Rejeter
-            </button>
-          </div>
-        </div>
-
-        <div class="batch-actions" *ngIf="pendingDocuments.length > 1">
-          <button
-            (click)="validateDocuments(getPendingDocuments(), true)"
-            [attr.aria-label]="'Approuver tous les ' + pendingDocuments.length + ' documents en attente'"
-            class="btn btn-success"
-          >
-            Approuver tous
-          </button>
         </div>
       </div>
     </div>

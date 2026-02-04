@@ -4,7 +4,6 @@
   padding: $paddingLarge;
   max-width: $maxContentWidth;
   margin: 0 auto;
-  margin-top: 2rem;
   width: 100%;
 }
 
@@ -18,7 +17,7 @@
   .header-text {
     h1 {
       font-size: $titleFontSize;
-      color: $heroIntroBackground; // Dark color
+      color: $heroIntroBackground;
       margin-bottom: 0.25rem;
       font-weight: 700;
     }

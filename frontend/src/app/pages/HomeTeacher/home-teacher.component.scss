@@ -3,10 +3,12 @@
 .dashboard-wrapper {
   min-height: 100vh;
   margin-top: 3rem;
+  background: $backgroundColor;
 }
 
 .dashboard-header-bg {
-  color: $PrimaryColor;
+  background: $PrimaryColor;
+  color: white;
   padding: 3rem $paddingMedium 6rem $paddingMedium;
 
   .header-content {
@@ -17,12 +19,14 @@
       font-size: 2.5rem;
       font-weight: 700;
       margin-bottom: $marginSmall;
+      color: white;
     }
 
     .welcome-subtitle {
       font-size: 1.1rem;
-      opacity: 0.9;
+      opacity: 0.85;
       font-weight: 300;
+      color: white;
 
       &.warning {
         background: #fff3cd;

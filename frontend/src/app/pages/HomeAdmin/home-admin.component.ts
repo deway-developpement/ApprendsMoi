@@ -34,7 +34,7 @@ interface RecentActivity {
 }
 
 interface AdminStatsDto {
-  activeUsersLastMonth: number;
+  activeUsersThisMonth: number;
   commissionsThisMonth: number;
   completedCoursesThisMonth: number;
 }
@@ -71,7 +71,7 @@ export class HomeAdminComponent implements OnInit {
   itemsPerPage = 3;
 
   kpis: Kpi[] = this.buildKpis({
-    activeUsersLastMonth: 0,
+    activeUsersThisMonth: 0,
     commissionsThisMonth: 0,
     completedCoursesThisMonth: 0
   });
@@ -129,7 +129,7 @@ export class HomeAdminComponent implements OnInit {
     return [
       {
         label: 'Utilisateurs Actifs',
-        value: this.numberFormatter.format(stats.activeUsersLastMonth),
+        value: this.numberFormatter.format(stats.activeUsersThisMonth),
         icon: '/assets/icons/people.svg',
         colorClass: 'blue'
       },
@@ -188,7 +188,7 @@ export class HomeAdminComponent implements OnInit {
 
   private extractAdminStats(stats: Record<string, unknown>): AdminStatsDto {
     return {
-      activeUsersLastMonth: this.toNumber(stats['activeUsersLastMonth'] ?? stats['ActiveUsersLastMonth']),
+      activeUsersThisMonth: this.toNumber(stats['activeUsersThisMonth'] ?? stats['ActiveUsersThisMonth']),
       commissionsThisMonth: this.toNumber(stats['commissionsThisMonth'] ?? stats['CommissionsThisMonth']),
       completedCoursesThisMonth: this.toNumber(stats['completedCoursesThisMonth'] ?? stats['CompletedCoursesThisMonth'])
     };

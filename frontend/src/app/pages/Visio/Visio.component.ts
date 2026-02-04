@@ -169,8 +169,10 @@ export class Visio implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked
         this.resetChatState();
         this.meetingId = parseInt(id, 10);
         this.courseId = null; // Will be set from meeting response
-        // Defer to next tick to avoid ExpressionChangedAfterItHasBeenCheckedError
-        setTimeout(() => this.loadMeetingAndInit(), 0);
+        // Wait for view to be ready before loading meeting
+        if (this.viewReady) {
+          this.loadMeetingAndInit();
+        }
       } else {
         this.sdkError = 'ID de reunion manquant';
       }
@@ -179,9 +181,18 @@ export class Visio implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked
 
   ngAfterViewInit(): void {
     this.viewReady = true;
-    if (this.zoomSdkConfig.meetingNumber && !this.sdkReady) {
-      this.tryInitZoomSdk();
-    }
+    this.cdr.detectChanges();
+    
+    // Use requestAnimationFrame + setTimeout to ensure DOM is fully rendered
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        if (this.meetingId && !this.zoomSdkConfig.meetingNumber && !this.isLoadingMeeting) {
+          this.loadMeetingAndInit();
+        } else if (this.zoomSdkConfig.meetingNumber && !this.sdkReady && !this.isInitializingSdk) {
+          this.tryInitZoomSdk();
+        }
+      }, 50);
+    });
   }
 
   ngAfterViewChecked(): void {
@@ -245,7 +256,6 @@ export class Visio implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked
     this.cdr.detectChanges();
 
     // If teacher is leaving, mark the course as completed
-    console.log('Current user profile type:', this.currentUser?.profileType, 'Course ID:', this.courseId);
     if (this.currentUser?.profileType === ProfileType.Teacher && this.courseId) {
       await this.markCourseAsCompleted();
     }
@@ -262,13 +272,11 @@ export class Visio implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked
     if (!this.courseId) return;
 
     try {
-      console.log('Marking course as completed:', this.courseId);
       await firstValueFrom(
         this.http.put(`${this.coursesBaseUrl}/${this.courseId}`, {
           status: 'COMPLETED'
         })
       );
-      console.log('Course marked as completed');
     } catch (err) {
       console.error('Error marking course as completed:', err);
     }
@@ -306,9 +314,9 @@ export class Visio implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked
 
       this.cdr.detectChanges();
 
-      // Auto-initialize SDK
+      // Auto-initialize SDK with a small delay to ensure DOM is stable
       if (this.viewReady) {
-        this.tryInitZoomSdk();
+        setTimeout(() => this.tryInitZoomSdk(), 100);
       }
 
       this.tryInitChat();
@@ -346,9 +354,9 @@ export class Visio implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked
 
       this.cdr.detectChanges();
 
-      // Auto-initialize SDK
+      // Auto-initialize SDK with a small delay to ensure DOM is stable
       if (this.viewReady) {
-        this.tryInitZoomSdk();
+        setTimeout(() => this.tryInitZoomSdk(), 100);
       }
 
       this.tryInitChat();
@@ -371,20 +379,35 @@ export class Visio implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked
   private tryInitZoomSdk(): void {
     if (!this.zoomContainer?.nativeElement) {
       if (this.viewReady) {
-        this.sdkError = 'Container Zoom non trouvé';
+        // Retry after a short delay to ensure DOM is ready
+        setTimeout(() => {
+          if (this.zoomContainer?.nativeElement && !this.sdkReady && !this.isInitializingSdk) {
+            this.tryInitZoomSdk();
+          } else if (!this.zoomContainer?.nativeElement) {
+            this.sdkError = 'Container Zoom non trouvé';
+          }
+        }, 200);
       }
       return;
     }
 
-    if (this.sdkReady) return;
+    if (this.sdkReady || this.isInitializingSdk) return;
 
     if (typeof ZoomMtgEmbedded === 'undefined') {
-      this.sdkError = 'SDK Zoom non chargé.';
+      // SDK might not be loaded yet, retry
+      setTimeout(() => {
+        if (typeof ZoomMtgEmbedded !== 'undefined' && !this.sdkReady && !this.isInitializingSdk) {
+          this.tryInitZoomSdk();
+        } else if (typeof ZoomMtgEmbedded === 'undefined') {
+          this.sdkError = 'SDK Zoom non chargé.';
+        }
+      }, 500);
       return;
     }
 
     this.isInitializingSdk = true;
     this.sdkError = '';
+    this.cdr.detectChanges();
 
     // Create a new client instance for this session
     this.zoomClient = ZoomMtgEmbedded.createClient();

@@ -2,11 +2,13 @@
 
 .planning-page {
   min-height: 100vh;
-  margin-top: 6rem; // Keep as is or use a specific layout variable if you have one
   color: $PrimaryColor;
+  background: $backgroundColor;
 }
 
 .planning-hero {
+  background: $PrimaryColor;
+  color: white;
   padding: 3rem $paddingMedium 4rem;
 }
 
@@ -21,9 +23,9 @@
 
 .back-button {
   width: 100px;
-  background: #f0f4ff;
-  border: 1px solid #5e72e4;
-  color: #5e72e4;
+  background: rgba(white, 0.1);
+  border: 1px solid rgba(white, 0.3);
+  color: white;
   padding: 0.5rem 1rem;
   border-radius: 8px;
   cursor: pointer;
@@ -32,8 +34,8 @@
   transition: all 0.3s ease;
 
   &:hover {
-    background: #5e72e4;
-    color: white;
+    background: rgba(white, 0.2);
+    border-color: white;
   }
 
   @media (max-width: 768px) {
@@ -48,19 +50,19 @@
   letter-spacing: 0.12em;
   font-size: $tinierFontSize;
   font-weight: 600;
-  color: $PrimaryColorHover;
+  color: rgba(white, 0.7);
 }
 
 h1 {
   margin: 0;
   font-size: $titleFontSize;
-  color: $PrimaryColor;
+  color: white;
   line-height: 1.1;
 }
 
 .subtitle {
   margin: 0;
-  color: $PrimaryColorHover;
+  color: rgba(white, 0.8);
   font-size: $regularFontSize;
   max-width: 720px;
   line-height: 1.5;
@@ -411,9 +413,9 @@ h1 {
   .slot {
     position: relative;
     &.is-recurring {
-      background-color: rgba($colorTopProf, 0.1);
+      background-color: $colorTopProf;
       border-color: $colorTopProf;
-      color: $colorTopProf;
+      color: white;
     }
     &.is-selected {
       outline: 2px solid $SecondaryColor;

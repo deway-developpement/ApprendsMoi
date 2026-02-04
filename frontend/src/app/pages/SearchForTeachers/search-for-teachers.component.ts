@@ -213,19 +213,21 @@ export class SearchForTeachersComponent implements OnInit {
     const travelRadius = teacher.travelRadiusKm ?? 0;
     const format = travelRadius >= 10 ? 'Hybride' : travelRadius > 0 ? 'Domicile' : 'Visio';
 
+    const isTeacher1 = teacher.lastName === 'CROISSAULT';
+    
     return {
       id: teacher.id,
       name: fullName || 'Professeur',
       city,
       format,
-      pricePerHour: 30,
-      rating: 4.8,
-      reviews: 20,
+      pricePerHour: isTeacher1 ? 35 : 40,
+      rating: isTeacher1 ? 3.7 : 4.8,
+      reviews: isTeacher1 ? 3 : 12,
       bio: teacher.bio || 'Profil en cours de mise à jour.',
-      subjects: ['Toutes matières'],
-      subjectSlugs: ['all'],
-      levels: ['Tous niveaux'],
-      levelSlugs: ['all'],
+      subjects: isTeacher1 ? ['Mathématiques', 'Anglais'] : ['Français'],
+      subjectSlugs: isTeacher1 ? ['mathematiques', 'anglais'] : ['francais'],
+      levels: isTeacher1 ? ['Collège', 'Lycée'] : ['Collège'],
+      levelSlugs: isTeacher1 ? ['college', 'lycee'] : ['college'],
       isPremium: teacher.isPremium,
       isVerified: teacher.verificationStatus === 1,
       isTop: teacher.isPremium,

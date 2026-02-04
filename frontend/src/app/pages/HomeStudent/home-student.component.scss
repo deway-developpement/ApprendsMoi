@@ -8,7 +8,8 @@
 
 // 1. Hero Background
 .dashboard-header-bg {
-  color: $PrimaryColor;
+  background: $PrimaryColor;
+  color: white;
   padding: 3rem $paddingMedium 6rem $paddingMedium; // Bottom padding allows widgets to overlap
   
   .header-content {
@@ -19,12 +20,14 @@
       font-size: 2.5rem;
       font-weight: 700;
       margin-bottom: $marginSmall;
+      color: white;
     }
     
     .welcome-subtitle {
       font-size: 1.1rem;
       opacity: 0.9;
       font-weight: 300;
+      color: white;
     }
   }
 }
