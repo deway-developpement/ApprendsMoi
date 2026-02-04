@@ -11,11 +11,13 @@ $adminPurple: #8b5cf6;
 .dashboard-wrapper {
   min-height: 100vh;
   margin-top: 3rem;
+  background: $backgroundColor;
 }
 
 // 1. Header spécifique Admin
 .dashboard-header-bg.admin-theme {
-  color: $PrimaryColor;
+  background: $PrimaryColor;
+  color: white;
   padding: 3rem $paddingMedium 6rem $paddingMedium;
   
   .header-content {
@@ -26,8 +28,9 @@ $adminPurple: #8b5cf6;
       font-size: 2rem;
       font-weight: 700;
       margin-bottom: 0.5rem;
+      color: white;
     }
-    .welcome-subtitle { opacity: 0.8; font-weight: 300; }
+    .welcome-subtitle { opacity: 0.85; font-weight: 300; color: white; }
   }
 }
 

@@ -1,7 +1,7 @@
 namespace backend.Domains.Stats;
 
 public class AdminStatsDto {
-    public int ActiveUsersLastMonth { get; set; }
+    public int ActiveUsersThisMonth { get; set; }
     public decimal CommissionsThisMonth { get; set; }
     public int CompletedCoursesThisMonth { get; set; }
 }

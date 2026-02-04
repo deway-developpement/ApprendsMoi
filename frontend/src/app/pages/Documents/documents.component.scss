@@ -1,6 +1,8 @@
+@import "variables";
+
 .documents-container {
   min-height: 100vh;
-  background: #f8f9fa;
+  background: $backgroundColor;
 }
 
 .content-wrapper {
@@ -10,19 +12,22 @@
 }
 
 .page-header {
-  margin-bottom: 3rem;
+  background: $PrimaryColor;
+  color: white;
+  margin: -2rem -2rem 3rem -2rem;
+  padding: 3rem 2rem;
+  border-radius: 12px;
   text-align: center;
   position: relative;
-//   padding: 0;
-  margin-top: 0;
 
   .back-button {
     position: absolute;
-    left: 0;
-    top: 0;
-    background: #f0f4ff;
-    border: 1px solid #5e72e4;
-    color: #5e72e4;
+    left: 2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(white, 0.1);
+    border: 1px solid rgba(white, 0.3);
+    color: white;
     padding: 0.5rem 1rem;
     border-radius: 8px;
     cursor: pointer;
@@ -31,22 +36,22 @@
     transition: all 0.3s ease;
 
     &:hover {
-      background: #5e72e4;
-      color: white;
+      background: rgba(white, 0.2);
+      border-color: white;
     }
   }
 
   h1 {
     font-size: 2.5rem;
     font-weight: 700;
-    color: #1a1a1a;
+    color: white;
     margin-bottom: 0.5rem;
     margin-top: 0;
   }
 
   p {
     font-size: 1.1rem;
-    color: #666;
+    color: rgba(white, 0.85);
   }
 }
 
@@ -62,6 +67,13 @@
     font-weight: 600;
     color: #1a1a1a;
     margin-bottom: 0.5rem;
+  }
+
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #333;
+    margin: 1.5rem 0 1rem 0;
   }
 
   .section-description {
@@ -153,11 +165,10 @@
     color: #999;
   }
 
-  .documents-list,
-  .pending-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
+  .pending-list, .documents-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2.5rem;
   }
 }
 
@@ -165,8 +176,10 @@
 .pending-card {
   border: 1px solid #e9ecef;
   border-radius: 8px;
-  padding: 1.5rem;
+  padding: 2.5rem;
   transition: all 0.3s ease;
+  width: 300px;
+  flex-shrink: 0;
 
   &:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -217,7 +230,7 @@
   }
 
   .uploaded-date,
-  .teacher-id {
+  .teacher-name {
     font-size: 0.85rem;
     color: #999;
     margin: 0.5rem 0;
@@ -238,12 +251,12 @@
     }
   }
 
-  .document-actions,
-  .pending-actions {
+  .document-actions {
     display: flex;
     gap: 0.5rem;
     margin-top: 1rem;
     align-items: center;
+    flex-wrap: wrap;
 
     .confirm-delete {
       display: flex;
@@ -285,9 +298,11 @@
   margin-top: 1.5rem;
   padding-top: 1.5rem;
   border-top: 1px solid #e9ecef;
+  display: flex;
+  justify-content: center;
 
   .btn {
-    width: 100%;
+    max-width: 300px;
   }
 }
 
@@ -359,10 +374,5 @@
 
   .section {
     padding: 1.5rem;
-  }
-
-  .documents-list,
-  .pending-list {
-    grid-template-columns: 1fr !important;
   }
 }

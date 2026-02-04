@@ -3,11 +3,13 @@
 .search-page {
   min-height: 100vh;
   color: $PrimaryColor;
-  margin-top: 6rem;
+  background: $backgroundColor;
 }
 
 .search-hero {
-  padding: 3.5rem $paddingMedium 3rem;
+  background: $PrimaryColor;
+  color: white;
+  padding: 3.5rem $paddingMedium 4rem;
   position: relative;
   overflow: hidden;
 }
@@ -33,7 +35,7 @@
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-size: $tinierFontSize;
-  color: $PrimaryColorHover;
+  color: rgba(white, 0.7);
   font-weight: 600;
 }
 
@@ -41,12 +43,13 @@ h1 {
   margin: 0;
   font-size: $titleFontSize;
   line-height: 1.1;
+  color: white;
 }
 
 .subtitle {
   margin: 0;
   font-size: $smallerFontSize;
-  color: $PrimaryColorHover;
+  color: rgba(white, 0.8);
   max-width: 520px;
   line-height: 1.5;
 }
@@ -297,12 +300,6 @@ h1 {
   color: $PrimaryColorHover;
   line-height: 1.5;
   font-size: $tinierFontSize;
-  
-  // Optional: clamp text
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .tag-row,
