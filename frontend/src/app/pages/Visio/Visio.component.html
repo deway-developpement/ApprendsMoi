@@ -78,7 +78,7 @@
     <div class="chat-input">
       <input
         type="text"
-        placeholder="Ecrivez un message..."
+        placeholder="Écrivez un message..."
         aria-label="Nouveau message"
         [(ngModel)]="messageContent"
         (keydown.enter)="sendMessage()"
@@ -98,8 +98,8 @@
 <div *ngIf="showRatingModal" class="rating-modal" (click)="closeRatingModal()">
   <div class="rating-modal__card" (click)="$event.stopPropagation()">
     <h3 class="rating-modal__title">{{ isEditingRating ? 'Modifiez votre note' : 'Notez votre professeur' }}</h3>
-    <p class="rating-modal__subtitle">Votre avis aide a ameliorer les cours.</p>
-    <p *ngIf="isEditingRating" class="rating-info">Vous avez deja note ce professeur. Vous pouvez modifier votre avis.</p>
+    <p class="rating-modal__subtitle">Votre avis aide à améliorer les cours.</p>
+    <p *ngIf="isEditingRating" class="rating-info">Vous avez déjà noté ce professeur. Vous pouvez modifier votre avis.</p>
     <p *ngIf="isLoadingRating" class="rating-loading">Chargement de votre note...</p>
     <div class="rating-stars">
       <button
@@ -117,7 +117,7 @@
       rows="3"
       [(ngModel)]="ratingComment"
       [disabled]="isLoadingRating"
-      placeholder="Ecrivez un commentaire (optionnel)">
+      placeholder="Écrivez un commentaire (optionnel)">
     </textarea>
     <p *ngIf="ratingError" class="rating-error">{{ ratingError }}</p>
     <div class="rating-actions">
@@ -126,7 +126,7 @@
         variant="primary"
         (click)="submitRating()"
         [disabled]="isSubmittingRating || isLoadingRating">
-        {{ isSubmittingRating ? 'Envoi...' : (isEditingRating ? 'Mettre a jour' : 'Envoyer') }}
+        {{ isSubmittingRating ? 'Envoi...' : (isEditingRating ? 'Mettre à jour' : 'Envoyer') }}
       </app-button>
     </div>
   </div>

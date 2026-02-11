@@ -7,14 +7,16 @@
 
   h2 {
     margin: 0 0 0.5rem 0;
-    color: #333;
-    font-size: 1.5rem;
+    color: #1a1a1a;
+    font-size: 1.75rem;
+    font-weight: 600;
   }
 
   h3 {
     margin: 1.5rem 0 1rem 0;
-    color: #555;
-    font-size: 1.2rem;
+    color: #333;
+    font-size: 1.25rem;
+    font-weight: 600;
   }
 
   .section-description {
@@ -99,7 +101,7 @@
     .form-row {
       display: flex;
       gap: 1rem;
-      align-items: flex-end;
+      align-items: flex-start;
 
       @media (max-width: 768px) {
         flex-direction: column;
@@ -113,6 +115,10 @@
           width: 100%;
         }
       }
+    }
+
+    .form-row > button {
+      margin-top: 1.5rem;
     }
 
     .form-group {

@@ -165,7 +165,6 @@ export class AuthService {
   fetchMe(): Observable<UserDto> {
     return this.http.get<UserDto>(`${this.API_URL}/api/Auth/me`).pipe(
       tap(user => {
-        console.log('User chargé:', user);
         this.currentUserSubject.next(user);
       }),
       catchError(err => {
